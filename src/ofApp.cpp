@@ -40,7 +40,8 @@ void ofApp::setup(){
 	//if you use something that can properly locate the head in 3d (like a kinect), you don't need this fudge factor
 	viewerDistance = 0.4f;
 
-	model.setup("C:\\Users\\mark\\Documents\\iclone\\heidi\\heidi.fbx");
+	//model.setup("C:\\Users\\mark\\Documents\\iclone\\heidi\\heidi.fbx");
+	model.setup("C:\\Users\\mark\\Documents\\iclone\\h2\\h_Dance graceful.fbx");
 	//model2.setup("C:\\Users\\mark\\Documents\\iclone\\reggie\\reggie_Catwalk.fbx");
 
 	model.setPlay(aiString("AnimStack::Dance graceful"));
