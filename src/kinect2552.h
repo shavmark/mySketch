@@ -224,13 +224,18 @@ namespace From2552Software {
 
 		void points2String() {
 			// cheap kinect simulator
+			/* some data
+			(770.518,441.921) (842.698,434.649) (805.191,473.964) (778.772,523.574) (841.424,519.049) (809.291,452.827) (872.202,446.718) (830.224,483.636) (817.031,524.677) (872.917,518.66) (809.291,452.827) (872.202,446.718) (830.224,483.636) (817.031,524.677) (872.917,518.66)
+
 			for (auto face : facePoint)	{
 				string s = "(";
 				s += ofToString(face.X);
+				s += ",";
 				s += ofToString(face.Y);
-				s += ")";
+				s += ") ";
 				strings += ofToString(s);
 			}
+			*/
 		}
 		string strings;
 
