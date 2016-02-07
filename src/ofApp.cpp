@@ -41,7 +41,7 @@ void ofApp::setup(){
 	viewerDistance = 0.4f;
 
 	model.setup("C:\\Users\\mark\\Documents\\iclone\\heidi\\heidi.fbx");
-	model2.setup("C:\\Users\\mark\\Documents\\iclone\\reggie\\reggie_Catwalk.fbx");
+	//model2.setup("C:\\Users\\mark\\Documents\\iclone\\reggie\\reggie_Catwalk.fbx");
 
 	model.setPlay(aiString("AnimStack::Dance graceful"));
 	//model2.setPlay(aiString("AnimStack::Catwalk"));
@@ -49,14 +49,14 @@ void ofApp::setup(){
 	//From2552Software::Sound sound;
 	//sound.test();
 
-	//myKinect.open();
+	myKinect.open();
 	//audio.setup(&myKinect);
 	//audio.setup(&myKinect);
 	//audio.setup(&myKinect);
 	
 	//faces.setup(&myKinect);
-	//bodies.useFaces();
-	//bodies.setup(&myKinect);
+	bodies.useFaces();
+	bodies.setup(&myKinect);
 
 	//ofSetWindowShape(640 * 2, 480 * 2);
 
@@ -133,7 +133,7 @@ void ofApp::update(){
 	model2.update();
 	//faces.baseline(); //use to debug, can do what ever needed to get things to work, to create a working base line
 	//faces.update();
-	//bodies.update();
+	bodies.update();
 	//audio.update();
 	//audio.update();
 #if sample	
@@ -220,6 +220,7 @@ void ofApp::draw(){
 	model.draw();
 	//model.drawMesh();
 	easyCam.end();
+	bodies.draw();
 	return;
 
 	material.begin();
@@ -265,7 +266,7 @@ void ofApp::draw(){
 	//kinect.getBodySource()->drawProjected(previewWidth, 0 + colorTop, previewWidth, colorHeight, ofxKFW2::ProjectionCoordinates::DepthCamera);
 	//faces.drawProjected(kinect.getBodySource()->getBodies(), previewWidth, 0 + colorTop, previewWidth, colorHeight, ofxKFW2::ProjectionCoordinates::DepthCamera);
 	//faces.draw();
-	//bodies.draw();
+	bodies.draw();
 	ofDisableDepthTest();
 	camera.end();
 	material.begin();

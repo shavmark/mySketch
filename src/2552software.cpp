@@ -108,8 +108,7 @@ namespace From2552Software {
 		IEnumSpObjectTokens*   pEnum;
 		ULONG                  ulCount = 0;
 
-		if (FAILED(::CoInitialize(NULL)))
-		{
+		if (FAILED(::CoInitialize(NULL)))		{
 			return;
 		}
 		HRESULT hr = S_OK;
@@ -117,40 +116,34 @@ namespace From2552Software {
 		// Find the best matching installed en-us recognizer.
 		CComPtr<ISpObjectToken> cpRecognizerToken;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = SpFindBestToken(SPCAT_RECOGNIZERS, L"language=409", NULL, &cpRecognizerToken);
 		}
 
 		// Create the in-process recognizer and immediately set its state to inactive.
 		CComPtr<ISpRecognizer> cpRecognizer;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer.CoCreateInstance(CLSID_SpInprocRecognizer);
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->SetRecognizer(cpRecognizerToken);
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->SetRecoState(SPRST_INACTIVE);
 		}
 
 		// Create a new recognition context from the recognizer.
 		CComPtr<ISpRecoContext> cpContext;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->CreateRecoContext(&cpContext);
 		}
 
 		// Subscribe to the speech recognition event and end stream event.
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			ULONGLONG ullEventInterest = SPFEI(SPEI_RECOGNITION);
 			hr = cpContext->SetInterest(ullEventInterest, ullEventInterest);
 		}
@@ -158,17 +151,14 @@ namespace From2552Software {
 		// Establish a Win32 event to signal when speech events are available.
 		HANDLE hSpeechNotifyEvent = INVALID_HANDLE_VALUE;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpContext->SetNotifyWin32Event();
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hSpeechNotifyEvent = cpContext->GetNotifyEventHandle();
 
-			if (INVALID_HANDLE_VALUE == hSpeechNotifyEvent)
-			{
+			if (INVALID_HANDLE_VALUE == hSpeechNotifyEvent)			{
 				// Notification handle unsupported.
 				hr = E_NOINTERFACE;
 			}
@@ -177,13 +167,11 @@ namespace From2552Software {
 		// Initialize an audio object to use the default audio input of the system and set the recognizer to use it.
 		CComPtr<ISpAudio> cpAudioIn;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpAudioIn.CoCreateInstance(CLSID_SpMMAudioIn);
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->SetInput(cpAudioIn, TRUE);
 		}
 
@@ -191,44 +179,37 @@ namespace From2552Software {
 		WAVEFORMATEX* pWfexCoMemRetainedAudioFormat = NULL;
 		GUID guidRetainedAudioFormat = GUID_NULL;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = SpConvertStreamFormatEnum(SPSF_16kHz16BitMono, &guidRetainedAudioFormat, &pWfexCoMemRetainedAudioFormat);
 		}
 
 		// Instruct the recognizer to retain the audio from its recognition results.
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpContext->SetAudioOptions(SPAO_RETAIN_AUDIO, &guidRetainedAudioFormat, pWfexCoMemRetainedAudioFormat);
 		}
 
-		if (NULL != pWfexCoMemRetainedAudioFormat)
-		{
+		if (NULL != pWfexCoMemRetainedAudioFormat)		{
 			CoTaskMemFree(pWfexCoMemRetainedAudioFormat);
 		}
 
 		// Create a new grammar and load an SRGS grammar from file.
 		CComPtr<ISpRecoGrammar> cpGrammar;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpContext->CreateGrammar(0, &cpGrammar);
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammar->LoadCmdFromFile(L"grammar.grxml", SPLO_STATIC);
 		}
 
 		// Set all top-level rules in the new grammar to the active state.
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammar->SetRuleState(NULL, NULL, SPRS_ACTIVE);
 		}
 
 		// Set the recognizer state to active to begin recognition.
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->SetRecoState(SPRST_ACTIVE_ALWAYS);
 		}
 
@@ -241,17 +222,14 @@ namespace From2552Software {
 		// Speech recognition event loop.
 		BOOL fContinue = TRUE;
 
-		while (fContinue && SUCCEEDED(hr))
-		{
+		while (fContinue && SUCCEEDED(hr))		{
 			// Wait for either a speech event or an exit event, with a 15 second timeout.
 			DWORD dwMessage = WaitForMultipleObjects(sp_countof(rghEvents), rghEvents, FALSE, 15000);
 
-			switch (dwMessage)
-			{
+			switch (dwMessage)			{
 				// With the WaitForMultipleObjects call above, WAIT_OBJECT_0 is a speech event from hSpeechNotifyEvent.
 			case WAIT_OBJECT_0:
-			{
-				// Sequentially grab the available speech events from the speech event queue.
+			{				// Sequentially grab the available speech events from the speech event queue.
 				CSpEvent spevent;
 
 				while (S_OK == spevent.GetFrom(cpContext))
@@ -266,34 +244,29 @@ namespace From2552Software {
 						LPWSTR pszCoMemResultText = NULL;
 						hr = pResult->GetText(SP_GETWHOLEPHRASE, SP_GETWHOLEPHRASE, TRUE, &pszCoMemResultText, NULL);
 
-						if (SUCCEEDED(hr))
-						{
+						if (SUCCEEDED(hr))						{
 							wprintf(L"Recognition event received, text=\"%s\"\r\n", pszCoMemResultText);
 						}
 
 						// Also retrieve the retained audio we requested.
 						CComPtr<ISpStreamFormat> cpRetainedAudio;
 
-						if (SUCCEEDED(hr))
-						{
+						if (SUCCEEDED(hr))						{
 							hr = pResult->GetAudio(0, 0, &cpRetainedAudio);
 						}
 
 						// To demonstrate, we'll speak the retained audio back using ISpVoice.
 						CComPtr<ISpVoice> cpVoice;
 
-						if (SUCCEEDED(hr))
-						{
+						if (SUCCEEDED(hr))						{
 							hr = cpVoice.CoCreateInstance(CLSID_SpVoice);
 						}
 
-						if (SUCCEEDED(hr))
-						{
+						if (SUCCEEDED(hr))						{
 							hr = cpVoice->SpeakStream(cpRetainedAudio, SPF_DEFAULT, 0);
 						}
 
-						if (NULL != pszCoMemResultText)
-						{
+						if (NULL != pszCoMemResultText)						{
 							CoTaskMemFree(pszCoMemResultText);
 						}
 
@@ -324,34 +297,29 @@ namespace From2552Software {
 		hr = cpVoice.CoCreateInstance(CLSID_SpVoice);
 
 		//Set the audio format
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cAudioFmt.AssignFormat(SPSF_22kHz16BitMono);
 		}
 
 		//Call SPBindToFile, a SAPI helper method,  to bind the audio stream to the file
 		if (SUCCEEDED(hr))
 		{
-
 			hr = SPBindToFile(L"c:\\ttstemp.wav", SPFM_CREATE_ALWAYS,
 				&cpStream, &cAudioFmt.FormatId(), cAudioFmt.WaveFormatExPtr());
 		}
 
 		//set the output to cpStream so that the output audio data will be stored in cpStream
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpVoice->SetOutput(cpStream, TRUE);
 		}
 
 		//Speak the text "hello world" synchronously
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpVoice->Speak(L"Hello World", SPF_DEFAULT, NULL);
 		}
 
 		//close the stream
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpStream->Close();
 		}
 
@@ -386,86 +354,70 @@ namespace From2552Software {
 		// Note: the word delimiter is set as " ", so that the text we
 		// attach to the transition can be multiple words (for example,
 		// "fly to Seattle" is implicitly "fly" + "to" + "Seattle"):
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammarBuilder->AddWordTransition(hStateTravel, NULL, L"fly to Seattle", L" ", SPWT_LEXICAL, 1, NULL);
 		}
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammarBuilder->AddWordTransition(hStateTravel, NULL, L"fly to New York", L" ", SPWT_LEXICAL, 1, NULL);
 		}
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammarBuilder->AddWordTransition(hStateTravel, NULL, L"fly to Washington DC", L" ", SPWT_LEXICAL, 1, NULL);
 		}
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammarBuilder->AddWordTransition(hStateTravel, NULL, L"drive to Seattle", L" ", SPWT_LEXICAL, 1, NULL);
 		}
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammarBuilder->AddWordTransition(hStateTravel, NULL, L"drive to New York", L" ", SPWT_LEXICAL, 1, NULL);
 		}
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammarBuilder->AddWordTransition(hStateTravel, NULL, L"drive to Washington DC", L" ", SPWT_LEXICAL, 1, NULL);
 		}
 		// Find the best matching installed en-US recognizer.
 		//CComPtr<ISpObjectToken> cpRecognizerToken;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = SpFindBestToken(SPCAT_RECOGNIZERS, L"language=409", NULL, &cpRecognizerToken);
 		}
 
 		// Create the in-process recognizer and immediately set its state to inactive.
 		//CComPtr<ISpRecognizer> cpRecognizer;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer.CoCreateInstance(CLSID_SpInprocRecognizer);
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->SetRecognizer(cpRecognizerToken);
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->SetRecoState(SPRST_INACTIVE);
 		}
 
 		// Create a new recognition context from the recognizer.
 		//CComPtr<ISpRecoContext> cpContext;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->CreateRecoContext(&cpContext);
 		}
 
 		// Subscribe to the speech recognition event and end stream event.
-		if (SUCCEEDED(hr))
-		{
-			ULONGLONG ullEventInterest = SPFEI(SPEI_RECOGNITION) | SPFEI(SPEI_END_SR_STREAM);
+		if (SUCCEEDED(hr))		{			ULONGLONG ullEventInterest = SPFEI(SPEI_RECOGNITION) | SPFEI(SPEI_END_SR_STREAM);
 			hr = cpContext->SetInterest(ullEventInterest, ullEventInterest);
 		}
 
 		// Establish a Win32 event to signal when speech events are available.
 		//HANDLE hSpeechNotifyEvent = INVALID_HANDLE_VALUE;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpContext->SetNotifyWin32Event();
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpContext->SetNotifyWin32Event();
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hSpeechNotifyEvent = cpContext->GetNotifyEventHandle();
 
 			if (INVALID_HANDLE_VALUE == hSpeechNotifyEvent)
@@ -477,8 +429,7 @@ namespace From2552Software {
 		// Set up an audio input stream using a .wav file and set the recognizer's input.
 		CComPtr<ISpStream> cpInputStream;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = SPBindToFile(L"Test.wav", SPFM_OPEN_READONLY, &cpInputStream);
 		}
 
@@ -490,33 +441,28 @@ namespace From2552Software {
 		// Create a new grammar and load an SRGS grammar from file.
 		//CComPtr<ISpRecoGrammar> cpGrammar;
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpContext->CreateGrammar(0, &cpGrammar);
 		}
 
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammar->LoadCmdFromFile(L"grammar.grxml", SPLO_STATIC);
 		}
 
 		// Set all top-level rules in the new grammar to the active state.
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpGrammar->SetRuleState(NULL, NULL, SPRS_ACTIVE);
 		}
 
 		// Finally, set the recognizer state to active to begin recognition.
-		if (SUCCEEDED(hr))
-		{
+		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->SetRecoState(SPRST_ACTIVE_ALWAYS);
 		}
 
 		 hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, (void     **)&pVoice);
 		if (SUCCEEDED(hr)) {
 			hr = SpEnumTokens(SPCAT_VOICES, L"Gender=Female", NULL, &pEnum);
-			if (SUCCEEDED(hr))
-			{
+			if (SUCCEEDED(hr))			{
 				// Get the number of voices.
 				hr = pEnum->GetCount(&ulCount);
 			}
@@ -528,18 +474,15 @@ namespace From2552Software {
 					pVoiceToken->Release();
 				}
 
-				if (SUCCEEDED(hr))
-				{
+				if (SUCCEEDED(hr))				{
 					hr = pEnum->Next(1, &pVoiceToken, NULL);
 				}
 
-				if (SUCCEEDED(hr))
-				{
+				if (SUCCEEDED(hr))				{
 					hr = pVoice->SetVoice(pVoiceToken);
 				}
 
-				if (SUCCEEDED(hr))
-				{
+				if (SUCCEEDED(hr))				{
 					wchar_t* start = L"<?xml version=\"1.0\" encoding=\"ISO - 8859 - 1\"?><speak version = \"1.0\" xmlns = \"http://www.w3.org/2001/10/synthesis\"	xml:lang = \"en-US\">";
 					wchar_t* end = L"</speak>";
 					const wchar_t *xml = L"<voice required = \"Gender=Male\"> hi! <prosody pitch=\"fast\"> This is low pitch. </prosody><prosody volume=\"x - loud\"> This is extra loud volume. </prosody>";

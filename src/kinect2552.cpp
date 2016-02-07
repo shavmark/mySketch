@@ -550,6 +550,9 @@ void KinectFace::draw()
 				height = 5.0;
 				offset = 10;
 			}
+			if (mouthCornerRight().X > 0) {
+				points2String();
+			}
 			float width = abs(mouthCornerRight().X - mouthCornerLeft().X);
 			ofDrawEllipse(mouthCornerLeft().X-5, mouthCornerLeft().Y+ offset, width+5, height);
 		}

@@ -222,6 +222,18 @@ namespace From2552Software {
 		PointF mouthCornerLeft() { return facePoint[FacePointType_MouthCornerLeft]; };
 		PointF mouthCornerRight() { return facePoint[FacePointType_MouthCornerRight]; };
 
+		void points2String() {
+			// cheap kinect simulator
+			for (auto face : facePoint)	{
+				string s = "(";
+				s += ofToString(face.X);
+				s += ofToString(face.Y);
+				s += ")";
+				strings += ofToString(s);
+			}
+		}
+		string strings;
+
 		friend class KinectFaces;
 
 	protected:
