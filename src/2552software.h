@@ -18,9 +18,6 @@
 #include "ofxAssimpModelLoader.h"
 #include "ofMain.h"
 
-
-#include "cAnimationController.h"
-
 namespace From2552Software {
 
 	// root class, basic and small but items every object needs.  Try to avoid adding data to keep it small

@@ -24,6 +24,77 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		void keyPressed(int key);
 
+		void ofApp::drawScene(bool isPreview){
+	
+	ofEnableDepthTest();
+
+	if (false) { // keep to learn how to tie to kinect
+		ofPushStyle();
+		ofSetColor(150, 100, 100);
+		ofDrawGrid(1.0f, 5.0f, true);
+		
+		ofSetColor(255);
+		
+		//--
+		//draw camera preview
+		//
+		headTrackedCamera.transformGL();
+		
+		ofPushMatrix();
+		ofScale(0.002f, 0.002f, 0.002f);
+		ofNode().draw();
+		ofPopMatrix();
+		
+		ofMultMatrix(headTrackedCamera.getProjectionMatrix().getInverse());
+		
+		ofNoFill();
+		ofDrawBox(2.0f);
+		
+		headTrackedCamera.restoreTransformGL();
+		//
+		//--
+		
+		//--
+		//draw window preview
+		//
+		window.clear();
+		window.addVertex(windowTopLeft);
+		window.addVertex(windowBottomLeft);
+		window.addVertex(windowBottomRight);
+		window.setMode(OF_PRIMITIVE_LINE_STRIP);
+		window.draw();
+		glPointSize(3.0f);
+		window.drawVertices();
+		//
+		//--
+        ofPopStyle();
+	}
+	
+	ofPushStyle();
+	ofNoFill();
+	ofColor col(200,100,100);
+	for (float z = 0.0f; z > -40.0f; z-= 0.1f){
+		col.setHue(int(-z * 100.0f + ofGetElapsedTimef() * 10.0f) % 360);
+		ofSetColor(col);
+		ofDrawRectangle(-windowWidth / 2.0f, -windowHeight / 2.0f, z, windowWidth, windowHeight);
+	}
+	ofPopStyle();
+	
+	ofPushStyle();
+	ofEnableSmoothing();
+	ofSetColor(255);
+	ofSetLineWidth(5.0f);
+	ofBeginShape();
+	for (unsigned int i=0; i<headPositionHistory.size(); i++) {
+		ofPoint vertex(headPositionHistory[i].x, headPositionHistory[i].y, -float( headPositionHistory.size() - i ) * 0.05f);
+		ofCurveVertex(vertex);
+	}
+	ofEndShape(false);
+	ofPopStyle();
+	
+	ofDisableDepthTest();
+}
+
 		From2552Software::KinectBodies bodies;
 		From2552Software::KinectFaces faces;
 		From2552Software::KinectAudio audio;
@@ -35,7 +106,9 @@ class ofApp : public ofBaseApp{
 		ofLight	light;
 		ofEasyCam camera;
 		ofMaterial material;
-		SceneAnimator sa;
+
+		// example only, but a good one, SceneAnimator sa;
+		
 		ofPlanePrimitive plane;
 		ofCamera cam;
 		float angle;
@@ -44,5 +117,15 @@ class ofApp : public ofBaseApp{
 
 		deque<ofVec3f> pathVertices;
 		ofMesh pathLines;
+		ofCamera headTrackedCamera;
+		float windowWidth;
+		float windowHeight;
+		ofVec3f windowTopLeft;
+		ofVec3f windowBottomLeft;
+		ofVec3f windowBottomRight;
+		float viewerDistance;
 
+		deque<ofPoint> headPositionHistory;
+
+		ofVboMesh window;
 };

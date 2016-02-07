@@ -177,31 +177,6 @@ void ofApp::update(){
 	//--
 #endif
 }
-void ofApp::drawScene() {
-
-	ofPushStyle();
-	ofNoFill();
-	ofColor col(200, 100, 100);
-	for (float z = 0.0f; z > -40.0f; z -= 0.1f) {
-		col.setHue(int(-z * 100.0f + ofGetElapsedTimef() * 10.0f) % 360);
-		ofSetColor(col);
-		ofDrawRectangle(-windowWidth / 2.0f, -windowHeight / 2.0f, z, windowWidth, windowHeight);
-	}
-	ofPopStyle();
-
-	ofPushStyle();
-	ofEnableSmoothing();
-	ofSetColor(255);
-	ofSetLineWidth(5.0f);
-	ofBeginShape();
-	for (unsigned int i = 0; i<headPositionHistory.size(); i++) {
-		ofPoint vertex(headPositionHistory[i].x, headPositionHistory[i].y, -float(headPositionHistory.size() - i) * 0.05f);
-		ofCurveVertex(vertex);
-	}
-	ofEndShape(false);
-	ofPopStyle();
-
-}
 //--------------------------------------------------------------
 void ofApp::draw(){
 
