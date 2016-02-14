@@ -4,6 +4,8 @@
 #include <Synchapi.h>
 #include "2552software.h"
 #include "kinect2552.h"
+#include "ofxBox2d.h"
+#include "ofxBox2dParticleSystem.h"
 
 class ofApp : public ofBaseApp{
 
@@ -102,11 +104,20 @@ class ofApp : public ofBaseApp{
 		
 		From2552Software::TheModel model;
 		From2552Software::TheModel model2;
-
+		ofxBox2d box2d;
+		vector <ofPtr<ofxBox2dCircle> >	circles;		  //	default box2d circles
+		vector <ofPtr<ofxBox2dRect> > boxes;			  //	defalut box2d rects
+		ofxBox2dParticleSystem particles;			      //    LiquidFun particle system
 		ofLight	light;
 		ofEasyCam camera;
 		ofMaterial material;
-
+		ofVideoPlayer myPlayer;
+		ofVideoPlayer robot;
+		int   appFPS;
+		float sequenceFPS;
+		bool  bFrameIndependent;
+		vector <ofImage> images;
+		ofImage backgroundImage;
 		// example only, but a good one, SceneAnimator sa;
 		
 		ofPlanePrimitive plane;

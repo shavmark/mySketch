@@ -89,12 +89,21 @@ namespace From2552Software {
 			}
 			ofxAssimpModelLoader::update();
 		}
+		// low level set of annimation from another model, called before Load time
+		void setAnimations(const TheModel& model)	{
+			//bugbug clear existing animations
+			for (int i = 0; i<model.scene->mNumAnimations; i++) {
+				aiAnimation * animation = model.scene->mAnimations[i];
+				animations.push_back(ofxAssimpAnimation(scene, animation));
+			}
+		}
 		void moveRight() {
 			setPosition(ofGetWidth(), (float)ofGetHeight() * 0.5, 0);
 		}
 		void setPlay(const aiString& myname) {
 			for (unsigned int i = 0; i< getAnimationCount(); i++) {
 				ofxAssimpAnimation &a = getAnimation(i);
+				aiString s = a.getAnimation()->mName;
 				if (a.getAnimation()->mName == myname) {
 					a.play();
 				}
