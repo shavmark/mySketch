@@ -8,6 +8,7 @@
 #include "ofxBox2d.h"
 #include "ofxBox2dParticleSystem.h"
 #include "ofxGui.h"
+#include "ofxParagraph.h"
 
 class ofApp : public ofBaseApp{
 
@@ -133,7 +134,8 @@ class ofApp : public ofBaseApp{
 		ofxButton twoCircles;
 		ofxButton ringButton;
 		ofxLabel screenSize;
-
+		shared_ptr<ofxSmartFont> label;
+		vector<ofxParagraph> paragraphs;
 		ofxPanel gui;
 
 		ofSoundPlayer ring;

@@ -6,7 +6,7 @@
 //http://openframeworks.cc/ofBook/chapters/c++11.html\
 //https://www.govtrack.us/congress/bills/110/hjres3/text/ih
 //http://openframeworks.cc/tutorials/graphics/generativemesh.html
-
+//http://hdl.handle.net/2027/pur1.32754077980880?urlappend=%3Bseq=1
 //https://github.com/Kinect/Docs
 
 /* iclone import notes
