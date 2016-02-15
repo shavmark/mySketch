@@ -2,10 +2,12 @@
 #include <sapi.h>  
 #include <sphelper.h> 
 #include <Synchapi.h>
+
 #include "2552software.h"
 #include "kinect2552.h"
 #include "ofxBox2d.h"
 #include "ofxBox2dParticleSystem.h"
+#include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
 
@@ -25,6 +27,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		void keyPressed(int key);
+		void exit();
 
 		void ofApp::drawScene(bool isPreview){
 	
@@ -117,6 +120,23 @@ class ofApp : public ofBaseApp{
 		float sequenceFPS;
 		bool  bFrameIndependent;
 		vector <ofImage> images;
+		ofTrueTypeFont  franklinBook14;
+
+		void circleResolutionChanged(int & circleResolution);
+		void ringButtonPressed();
+		bool bHide;
+		ofxFloatSlider radius;
+		ofxColorSlider color;
+		ofxVec2Slider center;
+		ofxIntSlider circleResolution;
+		ofxToggle filled;
+		ofxButton twoCircles;
+		ofxButton ringButton;
+		ofxLabel screenSize;
+
+		ofxPanel gui;
+
+		ofSoundPlayer ring;
 		ofImage backgroundImage;
 		// example only, but a good one, SceneAnimator sa;
 		

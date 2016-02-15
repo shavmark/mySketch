@@ -1,10 +1,10 @@
 // store notes here
 //https://github.com/google/liquidfun
-
+//http://www.kstrom.net/isk/maps/mn/treaties.html
 // follow this https://github.com/openframeworks/openFrameworks/wiki/oF-code-style, but let them w/o bugs cast the first flames
-
+//https://docs.google.com/presentation/d/1fEAb4-lSyqxlVGNPog3G1LZ7UgtvxfRAwR0dwd19G4g/edit#slide=id.g386b90fa9_01
 //http://openframeworks.cc/ofBook/chapters/c++11.html\
-
+//https://www.govtrack.us/congress/bills/110/hjres3/text/ih
 //http://openframeworks.cc/tutorials/graphics/generativemesh.html
 
 //https://github.com/Kinect/Docs

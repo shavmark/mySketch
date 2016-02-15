@@ -9,22 +9,48 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	//ofSetLogLevel(OF_LOG_VERBOSE);
+	ofSetFullscreen(true);
+	ofSetFrameRate(60);
+	ofBackgroundHex(0x00000);
+	ofSetLogLevel(OF_LOG_NOTICE);
+	// we add this listener before setting up so the initial circle resolution is correct
+	circleResolution.addListener(this, &ofApp::circleResolutionChanged);
+	ringButton.addListener(this, &ofApp::ringButtonPressed);
 
+	gui.setup(); // most of the time you don't need a name
+	gui.add(filled.setup("fill", true));
+	gui.add(radius.setup("radius", 140, 10, 300));
+	gui.add(center.setup("center", ofVec2f(ofGetWidth()*.5, ofGetHeight()*.5), ofVec2f(0, 0), ofVec2f(ofGetWidth(), ofGetHeight())));
+	gui.add(color.setup("color", ofColor(100, 100, 140), ofColor(0, 0), ofColor(255, 255)));
+	gui.add(circleResolution.setup("circle res", 5, 3, 90));
+	gui.add(twoCircles.setup("two circles"));
+	gui.add(ringButton.setup("ring"));
+	gui.add(screenSize.setup("screen size", ofToString(ofGetWidth()) + "x" + ofToString(ofGetHeight())));
+
+	bHide = false;
+
+	ring.load("ring.wav");
 	box2d.init();
-	box2d.setGravity(0, 10);
+	box2d.setGravity(0, 0);
 	box2d.setFPS(30.0);
-
-	box2d.registerGrabbing();
 	box2d.createBounds();
 
-	particles.setup(box2d.getWorld());
+	ofColor color;
+	color.set(255);
+	particles.setParticleFlag(b2_tensileParticle);
+	particles.loadImage("particle32.png");
+	particles.setup(box2d.getWorld(), 20000, 60.0, 6.0, 42.0, ofColor(0, 0, ofRandom(128, 255)));
 
-	for (int i = 0; i < 5000; i++) {
-		ofVec2f position = ofVec2f(ofRandom(100),
-			ofRandom(ofGetHeight()));
-		ofVec2f velocity = ofVec2f(0, 0);
-		particles.createParticle(position, velocity);
-	}
+	// show images, then wash them away
+
+	images.push_back(ofImage("C:\\Users\\mark\\Pictures\\maps\\Res37.jpe"));
+	images.push_back(ofImage("C:\\Users\\mark\\Pictures\\maps\\Res37-2.jpe"));
+	images.push_back(ofImage("C:\\Users\\mark\\Pictures\\maps\\Res37-2.jpe"));
+	franklinBook14.load("frabk.ttf", 14, true, true, true);
+	franklinBook14.setLineHeight(18.0f);
+	franklinBook14.setLetterSpacing(1.037);
+	ofDisableDepthTest();
+	return;
 	backgroundImage.allocate(ofGetWidth(), ofGetHeight(), OF_IMAGE_COLOR);
 	backgroundImage.loadImage("C:\\Users\\mark\\Documents\\iclone\\images\\robot.jpg");
 	// read the directory for the images
@@ -117,6 +143,8 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	box2d.update();
+	ofSetCircleResolution(circleResolution);
+	return;
 	myPlayer.update(); // get all the new frames
 	robot.update();
 	//faces.update();
@@ -233,29 +261,40 @@ void ofApp::update(){
 }
 //--------------------------------------------------------------
 void ofApp::draw(){
-	for (int i = 0; i<circles.size(); i++) {
-		ofFill();
-		ofSetHexColor(0xf6c738);
-		circles[i].get()->draw();
-	}
+	ofBackgroundGradient(ofColor(0), ofColor(63), OF_GRADIENT_LINEAR);
+	ofFill();
+	franklinBook14.drawStringAsShapes("Hello - I am vector", 15, 480);
 
-	for (int i = 0; i<boxes.size(); i++) {
-		ofFill();
-		ofSetHexColor(0xBF2545);
-		boxes[i].get()->draw();
-	}
-
+	ofEnableBlendMode(OF_BLENDMODE_ADD);
 	particles.draw();
-
+	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 	string info = "";
-	info += "Press [c] for circles\n";
-	info += "Press [b] for blocks\n";
 	info += "Mouse Drag for particles\n";
-	info += "Total Bodies: " + ofToString(box2d.getBodyCount()) + "\n";
 	info += "Total Particles: " + ofToString(particles.getParticleCount()) + "\n\n";
 	info += "FPS: " + ofToString(ofGetFrameRate(), 1) + "\n";
 	ofSetHexColor(0xffffff);
 	ofDrawBitmapString(info, 30, 30);
+	if (filled) {
+		ofFill();
+	}
+	else {
+		ofNoFill();
+	}
+
+	ofSetColor(color);
+	if (twoCircles) {
+		ofDrawCircle(center->x - radius*.5, center->y, radius);
+		ofDrawCircle(center->x + radius*.5, center->y, radius);
+	}
+	else {
+		ofDrawCircle((ofVec2f)center, radius);
+	}
+
+	// auto draw?
+	// should the gui control hiding?
+	if (!bHide) {
+		gui.draw();
+	}
 	return;
 	//backgroundImage.draw(0, 0, ofGetWidth(), ofGetHeight());
 	//myPlayer.draw(0, 0, 300, 300);
@@ -385,6 +424,32 @@ void ofApp::draw(){
 }
 
 void ofApp::mouseDragged(int x, int y, int button) {
+	for (int i = 0; i < 20; i++) {
+		float radius = ofRandom(60, 80);
+		float x = cos(ofRandom(PI * 2.0)) * radius + mouseX;
+		float y = sin(ofRandom(PI * 2.0)) * radius + mouseY;
+		ofVec2f position = ofVec2f(x, y);
+		ofVec2f velocity = ofVec2f(0, 0);
+		ofColor color;
+		int hue = int(ofGetFrameNum() / 4.0) % 255;
+		color.setHsb(hue, 180, 200);
+		particles.setColor(color);
+		particles.createParticle(position, velocity);
+	}
+}
+
+void ofApp::exit() {
+	ringButton.removeListener(this, &ofApp::ringButtonPressed);
+}
+
+//--------------------------------------------------------------
+void ofApp::circleResolutionChanged(int &circleResolution) {
+	ofSetCircleResolution(circleResolution);
+}
+
+//--------------------------------------------------------------
+void ofApp::ringButtonPressed() {
+	ring.play();
 }
 
 //--------------------------------------------------------------
@@ -419,5 +484,19 @@ void ofApp::gotMessage(ofMessage msg){
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
 }
+
 void ofApp::keyPressed(int key) {
+	if (key == 'c') {
+		float r = ofRandom(4, 20);
+		circles.push_back(ofPtr<ofxBox2dCircle>(new ofxBox2dCircle));
+		circles.back().get()->setPhysics(0.9, 0.9, 0.1);
+		circles.back().get()->setup(box2d.getWorld(), mouseX, mouseY, r);
+	}
+	if (key == 'b') {
+		float w = ofRandom(20, 40);
+		float h = ofRandom(20, 40);
+		boxes.push_back(ofPtr<ofxBox2dRect>(new ofxBox2dRect));
+		boxes.back().get()->setPhysics(4.0, 0.53, 0.1);
+		boxes.back().get()->setup(box2d.getWorld(), mouseX, mouseY, w, h);
+	}
 }

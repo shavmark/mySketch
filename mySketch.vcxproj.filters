@@ -242,6 +242,12 @@
     <ClCompile Include="..\..\..\addons\ofxBox2d\libs\triangle\del_impl.cpp">
       <Filter>addons\ofxBox2d\libs\triangle</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxParagraph\src\ofxParagraph.cpp">
+      <Filter>addons\ofxParagraph\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxsmartfont\src\ofxSmartFont.cpp">
+      <Filter>addons\ofxsmartfont\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -315,6 +321,18 @@
     </Filter>
     <Filter Include="addons\ofxBox2d\libs\triangle">
       <UniqueIdentifier>{489365de-164e-49b2-a867-b16b96932d78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxParagraph">
+      <UniqueIdentifier>{f90c7d32-0115-4604-abce-43454fc72aa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxParagraph\src">
+      <UniqueIdentifier>{85260ac4-de36-4dbf-9fba-eab33caa9eaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxsmartfont">
+      <UniqueIdentifier>{d17994ca-1050-4266-a569-5bed13cf9352}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxsmartfont\src">
+      <UniqueIdentifier>{aa5e4e50-df4d-469e-a0c7-c7b33c7fde73}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -707,6 +725,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\addons\ofxBox2d\libs\triangle\triangle_impl.hpp">
       <Filter>addons\ofxBox2d\libs\triangle</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxParagraph\src\ofxParagraph.h">
+      <Filter>addons\ofxParagraph\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxsmartfont\src\ofxSmartFont.h">
+      <Filter>addons\ofxsmartfont\src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
