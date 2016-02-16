@@ -10,6 +10,7 @@
 #include "ofxGui.h"
 #include "ofxParagraph.h"
 
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -134,8 +135,8 @@ class ofApp : public ofBaseApp{
 		ofxButton twoCircles;
 		ofxButton ringButton;
 		ofxLabel screenSize;
-		shared_ptr<ofxSmartFont> label;
-		vector<ofxParagraph> paragraphs;
+		
+		vector<Paragraph2552> paragraphs;
 		ofxPanel gui;
 
 		ofSoundPlayer ring;

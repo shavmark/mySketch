@@ -67,6 +67,9 @@ namespace From2552Software {
 		static void rotateToNormal(ofVec3f normal);
 
 	};
+
+	
+	
 	// 3d model
 	class TheModel : public ofxAssimpModelLoader, public Trace2552 {
 	public: 
