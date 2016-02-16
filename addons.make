@@ -1,1 +1,8 @@
 ofxAssimpModelLoader
+ofxGui
+ofxNetwork
+ofxOsc
+ofxBox2d
+ofxJson
+ofxParagraph
+ofxsmartfont
