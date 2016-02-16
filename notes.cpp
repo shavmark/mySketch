@@ -13,7 +13,7 @@
 // good source, touches on the migration http://www.sjsu.edu/faculty/watkins/lakota.htm
 // http://www.native-languages.org/maps.htm
 // Old Copper, 3000-1000 BC (), https://www.jstor.org/stable/25669519?seq=19#page_scan_tab_contents
-
+//http://www.wikiwand.com/en/Native_Americans_in_the_United_States
 // 3000 BC, as early as 5560 BC, Copper in MN, The Copper Age (3500 – 2300 BC) of Europe
 
 /* iclone import notes
