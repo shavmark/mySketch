@@ -8,6 +8,13 @@
 //http://openframeworks.cc/tutorials/graphics/generativemesh.html
 //http://hdl.handle.net/2027/pur1.32754077980880?urlappend=%3Bseq=1
 //https://github.com/Kinect/Docs
+//The radiocarbon date from the Sandy Lake Dam site provides solid evidence that Archaic inhabitants of northeastern Minnesota were actively involved in the early part of the Old Copper complex, well over six thousand years ago.  The Sandy Lake Dam site has integrity, with intact archaeological deposits containing cultural features and a broad artifact assemblage.  The site has the potential to provide data on a poorly understood time period of prehistory in the state for a variety of research issues such as subsistence, settlement and seasonality patterns, copper technology and use, lithic technology and raw material use, site function and activity areas, and trade and relationships to other cultural groups and regions.  It is this research potential, including providing an absolute date for the Old Copper complex, that demonstrates the importance of the Sandy Lake Dam site in Minnesota archaeology.
+//https://www.academia.edu/11379142/Research_Note_Radiocarbon_Date_for_the_Old_Copper_Component_at_Site_21AK11
+// good source, touches on the migration http://www.sjsu.edu/faculty/watkins/lakota.htm
+// http://www.native-languages.org/maps.htm
+// Old Copper, 3000-1000 BC (), https://www.jstor.org/stable/25669519?seq=19#page_scan_tab_contents
+
+// 3000 BC, as early as 5560 BC, Copper in MN, The Copper Age (3500 – 2300 BC) of Europe
 
 /* iclone import notes
 	//model.setup("C:\\Users\\mark\\Documents\\iclone\\heidi\\heidi.fbx");
