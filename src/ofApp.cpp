@@ -5,22 +5,16 @@
 #include <assimp/exporter.hpp>
 #include <assimp/importer.hpp>
 
+
 //--------------------------------------------------------------
 void ofApp::setup(){
+	paragraphs.build(ofGetWidth());
 	//ofSetLogLevel(OF_LOG_VERBOSE);
 	//ofSetFullscreen(true);
 	ofSetFrameRate(60);
 	//ofBackgroundHex(0x00000);
 	ofSetLogLevel(OF_LOG_NOTICE);
 	
-	int screenWidth = ofGetWidth();
-
-	// once working: strings from file, 30 calc y
-	paragraphs.push_back(Paragraph2552("MAY 25, 2005, WASHINGTON, DC, United States Senate S.J.RES. 15", "TO ACKNOWLEDGE A LONG HISTORY OF OFFICIAL DEPREDATIONS AND ILL-CONCEIVED POLICIES BY THE U.S.GOVERNMENT REGARDING INDIAN TRIBES AND OFFER AN APOLOGY TO ALL NATIVE PEOPLES ON BEHALF OF THE UNITED STATES, COMMITTEE ON INDIAN AFFAIRS",
-		screenWidth));
-	
-	paragraphs.push_back(Paragraph2552("    - JOHN McCAIN, Arizona, Chairman",
-		screenWidth, paragraphs[0].nextRow()));
 
 	return;
 	// we add this listener before setting up so the initial circle resolution is correct
@@ -272,8 +266,8 @@ void ofApp::update(){
 }
 //--------------------------------------------------------------
 void ofApp::draw(){
-	for (int i = 0; i<paragraphs.size(); i++) {
-		paragraphs[i].draw();
+	for (int i = 0; i< paragraphs.get().size(); i++) {
+		paragraphs.get(i).draw();
 	}
 	return;
 	ofBackgroundGradient(ofColor(0), ofColor(63), OF_GRADIENT_LINEAR);

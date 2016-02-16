@@ -136,7 +136,8 @@ class ofApp : public ofBaseApp{
 		ofxButton ringButton;
 		ofxLabel screenSize;
 		
-		vector<Paragraph2552> paragraphs;
+		Paragraphs paragraphs;
+
 		ofxPanel gui;
 
 		ofSoundPlayer ring;
