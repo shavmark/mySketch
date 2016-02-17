@@ -15,7 +15,8 @@
 // Old Copper, 3000-1000 BC (), https://www.jstor.org/stable/25669519?seq=19#page_scan_tab_contents
 //http://www.wikiwand.com/en/Native_Americans_in_the_United_States
 // 3000 BC, as early as 5560 BC, Copper in MN, The Copper Age (3500 – 2300 BC) of Europe
-
+//http://www.slideshare.net/gherm6/minnesota-early-history
+// start here https://en.wikipedia.org/wiki/Bradbury_Brook, oldest know spot in MN
 /* iclone import notes
 	//model.setup("C:\\Users\\mark\\Documents\\iclone\\heidi\\heidi.fbx");
 	//model.setup("..\\..\\heidi.fbx"); // should be in bin\data but need to figure how to that in git bugbug 
