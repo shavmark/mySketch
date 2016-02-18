@@ -17,6 +17,12 @@
 // 3000 BC, as early as 5560 BC, Copper in MN, The Copper Age (3500 – 2300 BC) of Europe
 //http://www.slideshare.net/gherm6/minnesota-early-history
 // start here https://en.wikipedia.org/wiki/Bradbury_Brook, oldest know spot in MN
+// http://www.jstor.org/stable/20707848?seq=1#fndtn-page_thumbnails_tab_contents, study auther, at some point go meet with him
+// ok? https://www.youtube.com/watch?v=FnJgQyctZRE, maybe better https://www.youtube.com/watch?v=gTQqWlfSi34
+/* http://www.towahkon.org/Dakotahistory.html, ties to Bradbury brook? According to one Dakota creation story, a creation story that "figures prominently in Lakota/Dakota creation stories", the sacred lake Mde Wakan (Mille Lacs Lake) is where the Dakota emerged as human beings into this world. The sacred lake is where the Lakota/Dakota people's primary (or first) Garden of Eden site is located*/
+// http://www.towahkon.org/Dakotahistory.html After the Ojibwe were forced to leave their East Coast homelands they settled in the Great Lakes region. "Like other Indian groups, the Ojibwe were forced westward beginning in the 1640s when the [British weapons armed] League of the Iroquois began to attack other tribes in the Great Lakes region to monopolize the fur trade....
+//http://www.amazon.com/Waziyatawin/e/B001K7SRRU
+// http://www.leg.state.mn.us/docs/2009/mandated/090376.pdf - native partnering quotes?
 /* iclone import notes
 	//model.setup("C:\\Users\\mark\\Documents\\iclone\\heidi\\heidi.fbx");
 	//model.setup("..\\..\\heidi.fbx"); // should be in bin\data but need to figure how to that in git bugbug 
