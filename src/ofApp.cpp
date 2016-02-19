@@ -54,6 +54,7 @@ void ofApp::setup(){
 	return;
 	// show images, then wash them away
 
+#if 0
 	images.push_back(ofImage("C:\\Users\\mark\\Pictures\\maps\\Res37.jpe"));
 	images.push_back(ofImage("C:\\Users\\mark\\Pictures\\maps\\Res37-2.jpe"));
 	images.push_back(ofImage("C:\\Users\\mark\\Pictures\\maps\\Res37-2.jpe"));
@@ -71,7 +72,7 @@ void ofApp::setup(){
 	int nFiles = dir.listDir("C:\\Users\\mark\\Documents\\iclone\\images");
 	if (nFiles) {
 
-		for (int i = 0; i<dir.size(); i++) {
+		for (int i = 0; i < dir.size(); i++) {
 
 			// add the image to the vector
 			string filePath = dir.getPath(i);
@@ -85,7 +86,7 @@ void ofApp::setup(){
 
 	// this toggle will tell the sequence
 		// be be indepent of the app fps
-		bFrameIndependent = true;
+	bFrameIndependent = true;
 
 	// this will set the speed to play 
 	// the animation back we set the
@@ -103,7 +104,7 @@ void ofApp::setup(){
 	robot.loadMovie("C:\\Users\\mark\\Documents\\iclone\\images\\robot2.mp4");
 	robot.setLoopState(OF_LOOP_NORMAL);
 	robot.play();
-	
+
 
 	pathLines.setMode(OF_PRIMITIVE_LINE_STRIP);
 	ofDisableArbTex(); // we need GL_TEXTURE_2D for our models coords.
@@ -131,7 +132,7 @@ void ofApp::setup(){
 	//we use this constant since we're using a really hacky headtracking in this example
 	//if you use something that can properly locate the head in 3d (like a kinect), you don't need this fudge factor
 	viewerDistance = 0.4f;
-    
+
 
 	//From2552Software::Sound sound;
 	//sound.test();
@@ -140,13 +141,15 @@ void ofApp::setup(){
 	//audio.setup(&myKinect);
 	//audio.setup(&myKinect);
 	//audio.setup(&myKinect);
-	
+
 	//faces.setup(&myKinect);
 	bodies.useFaces();
 	bodies.setup(&myKinect);
 
 	//ofSetWindowShape(640 * 2, 480 * 2);
 	ofDisableDepthTest(); // draws in order vs z order
+
+#endif // 0
 
 }
 
@@ -170,8 +173,8 @@ void ofApp::update(){
 	box2d.update();
 	ofSetCircleResolution(circleResolution);
 	return;
-	myPlayer.update(); // get all the new frames
-	robot.update();
+//	myPlayer.update(); // get all the new frames
+	//robot.update();
 	//faces.update();
 	bodies.update();
 	return;
@@ -328,8 +331,9 @@ void ofApp::draw(){
 #endif // 0
 
 	return;
+#if 0
 	//backgroundImage.draw(0, 0, ofGetWidth(), ofGetHeight());
-	//myPlayer.draw(0, 0, 300, 300);
+//myPlayer.draw(0, 0, 300, 300);
 	myPlayer.draw(0, 0, ofGetWidth(), ofGetHeight());
 	robot.draw(300, 0, 300, 300);
 	backgroundImage.draw(0, 0, 300, 300);
@@ -414,7 +418,7 @@ void ofApp::draw(){
 
 	material.begin();
 
-	ofNode node= camera.getTarget();
+	ofNode node = camera.getTarget();
 
 	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 	//ofEnableDepthTest();
@@ -422,8 +426,10 @@ void ofApp::draw(){
 #ifndef TARGET_PROGRAMMABLE_GL    
 	glShadeModel(GL_SMOOTH); //some model / light stuff
 #endif
-	
-	
+
+
+#endif // 0
+
 	/*
 	kinect.getDepthSource()->draw(0, 0, previewWidth, previewHeight);  // note that the depth texture is RAW so may appear dark
 
@@ -442,6 +448,7 @@ void ofApp::draw(){
 	//kinect.getBodySource()->drawProjected(previewWidth, 0 + colorTop, previewWidth, colorHeight, ofxKFW2::ProjectionCoordinates::DepthCamera);
 	//faces.drawProjected(kinect.getBodySource()->getBodies(), previewWidth, 0 + colorTop, previewWidth, colorHeight, ofxKFW2::ProjectionCoordinates::DepthCamera);
 	//faces.draw();
+	/*
 	bodies.draw();
 	ofDisableDepthTest();
 	camera.end();
@@ -452,7 +459,7 @@ void ofApp::draw(){
 	ofDrawBitmapString("keys 1-5 load models, spacebar to trigger animation", 10, 30);
 	ofDrawBitmapString("drag to control animation with mouseY", 10, 45);
 	ofDrawBitmapString("num animations for this model: " + ofToString(model.getAnimationCount()), 10, 60);
-
+	*/
 }
 
 void ofApp::mouseDragged(int x, int y, int button) {

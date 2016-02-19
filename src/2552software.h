@@ -70,7 +70,7 @@ namespace From2552Software {
 
 	
 	// 3d model
-	class TheModel : public ofxAssimpModelLoader, public Trace2552 {
+	class Model3D : public ofxAssimpModelLoader, public Trace2552 {
 	public: 
 		void setup(const string& name) {
 			loadModel(name, false);
@@ -92,7 +92,7 @@ namespace From2552Software {
 			ofxAssimpModelLoader::update();
 		}
 		// low level set of annimation from another model, called before Load time
-		void setAnimations(const TheModel& model)	{
+		void setAnimations(const Model3D& model)	{
 			//bugbug clear existing animations
 			for (int i = 0; i<model.scene->mNumAnimations; i++) {
 				aiAnimation * animation = model.scene->mAnimations[i];
