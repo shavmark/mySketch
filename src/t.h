@@ -223,6 +223,22 @@ namespace Software2552 {
 		Defaults defaults;
 	};
 
+	class deck : public Trace2552 {
+	public:
+		deck(const string &nameIn) {
+			name = nameIn;
+		}
+		void addSlide(const string &name) {
+			namesOfSlides.push_back(name);
+		}
+		string &getName() { return name; }
+		vector <string>& getSlides(){ return namesOfSlides; }
+
+	private:
+		string name;
+		vector <string> namesOfSlides;
+	};
+
 	//heart of the system
 	class kernel : public Trace2552 {
 	public:
@@ -255,6 +271,7 @@ namespace Software2552 {
 				value = data.asInt();
 			}
 		}
+		void set(vector <string> &value, const Json::ArrayIndex &data);
 		// all key data needed to run the app goes here
 		TimeLine t;
 		ofxJSON json;  // source json
@@ -263,6 +280,8 @@ namespace Software2552 {
 		KinectFaces faces;
 		KinectAudio audio;
 		Kinect2552 myKinect;
+		vector <deck> decks;
+		
 
 	};
 
