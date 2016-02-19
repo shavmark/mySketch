@@ -1,14 +1,10 @@
 #pragma once
-#include <algorithm>
-#include <functional> 
-#include <cctype>
-#include <locale>
-#include "ofMain.h"
-#include "ofxSmartFont.h"
-#include "ofxParagraph.h"
-#include "ofxJSON.h"
-#include "2552software.h"
 
+#include "2552software.h"
+#include "ofxSmartFont.h"
+#include "ofxJSON.h"
+#include "kinect2552.h"
+#include "ofxParagraph.h"
 // timeline software
 
 namespace Software2552 {
@@ -196,14 +192,14 @@ namespace Software2552 {
 	// time and elements of time
 	class TimeLine : public Trace2552 {
 	public:
-		void setup() {
-			
+		void setup(const Defaults& defaultsIn) {
+			defaults = defaultsIn;
 		}
 		void update() {
 			// remove all timed out items bugbug does this reall work ? 
 			t.erase(std::remove_if(t.begin(), t.end(), okToRemove), t.end());
 		}
-		void draw(const Defaults& defaults) {
+		void draw() {
 			for (TimedState& state : t) {
 				state.draw(defaults);
 			}
@@ -224,52 +220,20 @@ namespace Software2552 {
 	private:
 		
 		vector<TimedState> t; // in order list
+		Defaults defaults;
 	};
 
 	//heart of the system
 	class kernel : public Trace2552 {
 	public:
+		kernel() {}
 		// open, parse json file bugbug move all these large in lines into cpp at some point
-		void setup() {
-			string file = "json.json";
-			if (json.open(file)){
-				logTrace(json.getRawString());
-			}
-			else		{
-				logErrorString("Failed to parse JSON " + file);
-				return;
-			}
-			int i = 5;
-			// parser uses exepections but openFrameworks does not so exceptions end here
-			try {
-				set(defaults.font, json["defaults"]["font"]);
-				set(defaults.duration, json["defaults"]["duration"]);
-				set(i, json["x"]["x"]);
-			}
-			catch(std::exception e){
-				logErrorString(e.what());
-				return;
-			}
-
-
-#if 0
-			int y = 0;
-			for (Json::ArrayIndex i = 0; i < json["treaties"].size(); ++i) {
-				std::string title = json["treaties"][i]["title"].asString();
-				for (Json::ArrayIndex j = 0; j < json["treaties"][i]["text"].size(); ++j) {
-					std::string text = json["treaties"][i]["text"][j]["p"].asString();
-					Paragraph2552 p(title, text, screenWidth, y);
-					paragraphs.push_back(p);
-					y = p.nextRow();
-					title.clear(); // only show title one time
-				}
-			}
-#endif // 0
-
-
+		void setup();
+		void update() {
+			t.update();
 		}
 		void draw() {
-			t.draw(defaults);
+			t.draw();
 		}
 
 	private:

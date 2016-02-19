@@ -16,6 +16,7 @@
 #include "ofFileUtils.h"
 #include "ole2.h"
 #include "ofxAssimpModelLoader.h"
+// !!keep all MS files above ofmain.h https://forum.openframeworks.cc/t/how-to-include-atl-in-vs2012-project/14672/2
 #include "ofMain.h"
 
 namespace Software2552 {

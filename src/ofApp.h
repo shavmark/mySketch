@@ -2,13 +2,14 @@
 #include <sapi.h>  
 #include <sphelper.h> 
 #include <Synchapi.h>
+#include <algorithm>
+#include <functional> 
+#include <cctype>
+#include <locale>
 
-#include "2552software.h"
-#include "kinect2552.h"
 #include "ofxBox2d.h"
 #include "ofxBox2dParticleSystem.h"
 #include "ofxGui.h"
-#include "ofxParagraph.h"
 #include "t.h"
 
 class ofApp : public ofBaseApp{
