@@ -69,7 +69,6 @@ namespace From2552Software {
 	};
 
 	
-	
 	// 3d model
 	class TheModel : public ofxAssimpModelLoader, public Trace2552 {
 	public: 

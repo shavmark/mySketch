@@ -137,7 +137,7 @@ class ofApp : public ofBaseApp{
 		ofxLabel screenSize;
 		
 		Paragraphs paragraphs;
-
+		int years;
 		ofxPanel gui;
 
 		ofSoundPlayer ring;

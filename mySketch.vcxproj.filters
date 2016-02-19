@@ -302,6 +302,9 @@
     <ClCompile Include="..\..\..\addons\ofxJson\libs\jsoncpp\src\jsoncpp.cpp">
       <Filter>addons\ofxJson\libs\jsoncpp\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\t.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -927,6 +930,9 @@
     <ClInclude Include="..\..\..\addons\ofxJson\libs\jsoncpp\include\json\json.h">
       <Filter>addons\ofxJson\libs\jsoncpp\include\json</Filter>
     </ClInclude>
+    <ClInclude Include="src\t.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
@@ -935,5 +941,6 @@
     <None Include="..\..\..\addons\ofxBox2d\libs\Box2D\Particle\b2ParticleAssembly.neon.s">
       <Filter>addons\ofxBox2d\libs\Box2D\Particle</Filter>
     </None>
+    <None Include="bin\data\json.json" />
   </ItemGroup>
 </Project>

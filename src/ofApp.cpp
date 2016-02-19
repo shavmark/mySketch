@@ -8,7 +8,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	paragraphs.build(ofGetWidth());
+	//paragraphs.build(ofGetWidth());
 	//ofSetLogLevel(OF_LOG_VERBOSE);
 	//ofSetFullscreen(true);
 	ofSetFrameRate(60);
@@ -16,8 +16,9 @@ void ofApp::setup(){
 	ofSetLogLevel(OF_LOG_NOTICE);
 	
 
-	return;
+	
 	// we add this listener before setting up so the initial circle resolution is correct
+#if 0
 	circleResolution.addListener(this, &ofApp::circleResolutionChanged);
 	ringButton.addListener(this, &ofApp::ringButtonPressed);
 
@@ -34,6 +35,8 @@ void ofApp::setup(){
 	bHide = false;
 
 	ring.load("ring.wav");
+#endif // 0
+
 	box2d.init();
 	box2d.setGravity(0, 0);
 	box2d.setFPS(30.0);
@@ -43,8 +46,12 @@ void ofApp::setup(){
 	color.set(255);
 	particles.setParticleFlag(b2_tensileParticle);
 	particles.loadImage("particle32.png");
-	particles.setup(box2d.getWorld(), 20000, 60.0, 6.0, 42.0, ofColor(0, 0, ofRandom(128, 255)));
-
+	particles.setup(box2d.getWorld(), 12000, 160.0, 16.0, 92.0, ofColor(0, 0, ofRandom(128, 255)));
+	franklinBook14.load("frabk.ttf", 14, true, true, true);
+	franklinBook14.setLineHeight(18.0f);
+	franklinBook14.setLetterSpacing(1.037);
+	years = 0;
+	return;
 	// show images, then wash them away
 
 	images.push_back(ofImage("C:\\Users\\mark\\Pictures\\maps\\Res37.jpe"));
@@ -146,7 +153,20 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-	return;
+	if (years < 12000) {
+		for (int i = 0; i < 10; i++) {
+			float radius = ofRandom(160, 280);
+			ofVec2f position = ofVec2f(cos(ofRandom(PI * 2.0)), sin(ofRandom(PI * 2.0)));
+			ofVec2f velocity = ofVec2f(0.0f, -50.0f);
+			ofColor color;
+			int hue = int(ofGetFrameNum() / 4.0) % 255;
+			color.setHsb(hue, 180, 255);
+			particles.setColor(color);
+			particles.setParticleFlag(b2_elasticParticle);
+			particles.createParticle(position, velocity);
+		}
+		years += 10;
+	}
 	box2d.update();
 	ofSetCircleResolution(circleResolution);
 	return;
@@ -266,22 +286,24 @@ void ofApp::update(){
 }
 //--------------------------------------------------------------
 void ofApp::draw(){
-	for (int i = 0; i< paragraphs.get().size(); i++) {
-		paragraphs.get(i).draw();
-	}
-	return;
+	
+	//for (int i = 0; i< paragraphs.get().size(); i++) {
+	//	paragraphs.get(i).draw();
+	//}
+	
 	ofBackgroundGradient(ofColor(0), ofColor(63), OF_GRADIENT_LINEAR);
 	ofFill();
-	franklinBook14.drawStringAsShapes("Hello - I am vector", 15, 480);
+	franklinBook14.drawStringAsShapes("Known years native people were in MN before first treaty (12,000)", 15, 480);
 	ofEnableBlendMode(OF_BLENDMODE_ADD);
 	particles.draw();
 	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-	string info = "";
-	info += "Mouse Drag for particles\n";
-	info += "Total Particles: " + ofToString(particles.getParticleCount()) + "\n\n";
-	info += "FPS: " + ofToString(ofGetFrameRate(), 1) + "\n";
-	ofSetHexColor(0xffffff);
-	ofDrawBitmapString(info, 30, 30);
+	//string info = "";
+	//info += "Mouse Drag for particles\n";
+	//info += "Total Particles: " + ofToString(particles.getParticleCount()) + "\n\n";
+	//info += "FPS: " + ofToString(ofGetFrameRate(), 1) + "\n";
+	//ofSetHexColor(0xffffff);
+	//ofDrawBitmapString(info, 30, 30);
+#if 0
 	if (filled) {
 		ofFill();
 	}
@@ -303,6 +325,8 @@ void ofApp::draw(){
 	if (!bHide) {
 		gui.draw();
 	}
+#endif // 0
+
 	return;
 	//backgroundImage.draw(0, 0, ofGetWidth(), ofGetHeight());
 	//myPlayer.draw(0, 0, 300, 300);

@@ -287,6 +287,7 @@ C:\Users\mark\Documents\of_v0.9.1_vs_release\addons\ofxJson\libs\jsoncpp\include
     <ClCompile Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpModelLoader.cpp" />
     <ClCompile Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpTexture.cpp" />
     <ClCompile Include="src\ofxBox2dParticleSystem.cpp" />
+    <ClCompile Include="src\t.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\addons\ofxBox2d\libs\Box2D\Box2D.h" />
@@ -451,6 +452,7 @@ C:\Users\mark\Documents\of_v0.9.1_vs_release\addons\ofxJson\libs\jsoncpp\include
     <ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\libs\assimp\include\assimp\vector3.h" />
     <ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\libs\assimp\include\assimp\version.h" />
     <ClInclude Include="src\ofxBox2dParticleSystem.h" />
+    <ClInclude Include="src\t.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
@@ -466,6 +468,7 @@ C:\Users\mark\Documents\of_v0.9.1_vs_release\addons\ofxJson\libs\jsoncpp\include
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\addons\ofxBox2d\libs\Box2D\Particle\b2ParticleAssembly.neon.s" />
+    <None Include="bin\data\json.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ProjectExtensions>
