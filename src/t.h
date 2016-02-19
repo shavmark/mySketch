@@ -68,9 +68,9 @@ namespace Software2552 {
 		//align right blows up on at least short strings
 		Paragraph2552(string titleIn, string text, int maxWidth, int y = 0, Alignment align = ALIGN_LEFT) : ofxParagraph(text, 0, align) {
 			// fonts are shared via static bugbug verify this
-			setText(ofxSmartText(text, ofxSmartFont::add("raleway/Raleway-Thin.ttf", 14, "raleway-thin")));
+			setText(ofxSmartText(text, ofxSmartFont::add("data/Raleway-Thin.ttf", 14, "raleway-thin")));
 			if (titleIn.length() > 0) {
-				setTitle(ofxSmartText(titleIn, ofxSmartFont::add("raleway/Raleway-Italic.ttf", 18, "raleway-italic")));
+				setTitle(ofxSmartText(titleIn, ofxSmartFont::add("data/Raleway-Italic.ttf", 18, "raleway-italic")));
 			}
 			if (y == 0) {
 				set(maxWidth, title.getHeight() * 3); // default
@@ -124,6 +124,13 @@ namespace Software2552 {
 	// default settings
 	class Defaults {
 	public:
+		Defaults() {
+			font = "data/Raleway - Thin.ttf";
+			italicfont = "data/Raleway-Italic.ttf";
+			boldfont = "data/Raleway-Bold.ttf";
+			fontsize = 18;
+			duration = 0; // forever by default
+		}
 		string font;
 		string italicfont;
 		string boldfont;
@@ -232,8 +239,15 @@ namespace Software2552 {
 				logErrorString("Failed to parse JSON " + file);
 				return;
 			}
-			defaults.font = json["defaults"]["font"].asString();
-			defaults.duration = json["defaults"]["duration"].asFloat();
+			// parser uses exepections but openFrameworks does not so exceptions end here
+			try {
+				defaults.font = json["defaults"]["font"].asString();
+				defaults.duration = json["defaults"]["duration"].asFloat();
+			}
+			catch(exception e){
+				logErrorString("Failed to parse JSON " + e.what); 
+				return;
+			}
 
 
 #if 0
