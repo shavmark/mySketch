@@ -239,13 +239,15 @@ namespace Software2552 {
 				logErrorString("Failed to parse JSON " + file);
 				return;
 			}
+			int i = 5;
 			// parser uses exepections but openFrameworks does not so exceptions end here
 			try {
-				defaults.font = json["defaults"]["font"].asString();
-				defaults.duration = json["defaults"]["duration"].asFloat();
+				set(defaults.font, json["defaults"]["font"]);
+				set(defaults.duration, json["defaults"]["duration"]);
+				set(i, json["x"]["x"]);
 			}
-			catch(exception e){
-				logErrorString("Failed to parse JSON " + e.what); 
+			catch(std::exception e){
+				logErrorString(e.what());
 				return;
 			}
 
@@ -271,6 +273,24 @@ namespace Software2552 {
 		}
 
 	private:
+		void set(string &value, const Json::Value& data) {
+			string s = data.asString();
+			if (s.length() > 0) {
+				value = s;
+			}
+		}
+		void set(float &value, const Json::Value &data) {
+			string s = data.asString();
+			if (s.length() > 0) {
+				value = data.asFloat();
+			}
+		}
+		void set(int &value, const Json::Value &data) {
+			string s = data.asString();
+			if (s.length() > 0) {
+				value = data.asInt();
+			}
+		}
 		// all key data needed to run the app goes here
 		TimeLine t;
 		ofxJSON json;  // source json
