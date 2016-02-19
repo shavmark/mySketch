@@ -11,7 +11,7 @@
 
 // timeline software
 
-namespace From2552Software {
+namespace Software2552 {
 	// match string to font
 	class  ofxSmartText
 	{
@@ -111,50 +111,7 @@ namespace From2552Software {
 		ofxSmartText title; // font for the title bugbug not sure where to delete this yet
 	};
 
-	class Paragraphs {
-	public:
-		void build(int screenWidth, string file = "json.json") {
-
-			// Now parse the JSON and keep it around
-			bool parsingSuccessful = json.open(file);
-
-			if (parsingSuccessful)
-			{
-				ofLogNotice("ofApp::setup") << json.getRawString();
-			}
-			else
-			{
-				ofLogError("ofApp::setup") << "Failed to parse JSON" << endl;
-			}
-
-			int y = 0;
-			for (Json::ArrayIndex i = 0; i < json["treaties"].size(); ++i) {
-				std::string title = json["treaties"][i]["title"].asString();
-				for (Json::ArrayIndex j = 0; j < json["treaties"][i]["text"].size(); ++j) {
-					std::string text = json["treaties"][i]["text"][j]["p"].asString();
-					Paragraph2552 p(title, text, screenWidth, y);
-					paragraphs.push_back(p);
-					y = p.nextRow();
-					title.clear(); // only show title one time
-				}
-			}
-
-		}
-
-		vector<Paragraph2552> & get() {
-			return paragraphs;
-		}
-		Paragraph2552 & get(int i) {
-			return paragraphs[i];
-		}
-
-	private:
-		vector<Paragraph2552> paragraphs;
-		ofxJSONElement json;
-	};
-
-	//bugbug move json logic here too
-
+	// reference to a cited item
 	class Reference {
 	public:
 		// if these strings are displayed they can use a non presentation font as they will be done in a popup or such
@@ -163,13 +120,24 @@ namespace From2552Software {
 		string location;
 		string source;
 	};
+
+	// default settings
+	class Defaults {
+	public:
+		string font;
+		string italicfont;
+		string boldfont;
+		string fontsize;
+		float  duration;
+	};
+
 	// state of system
 	class State : public Trace2552 {
 	public:
 		State() {}
 		void setup() {}
 		void update() {}
-		void draw() {}; // draw all items in State
+		void draw(const Defaults& defaults) {}; // draw all items in State
 
 	private:
 		vector<Paragraph2552> paragraphs;
@@ -194,33 +162,43 @@ namespace From2552Software {
 		}
 		void setup() {}
 		void update() {}
-		void draw() {
+		void draw(const Defaults& defaults) {
 			if (!stop()) {
-				State::draw();
+				State::draw(defaults);
 			}
 		}
-		bool stop() {
+		bool operator==(const TimedState& rhs) { return true;/* do actual comparison */ }
+		const bool stop() {
 			if (!duration) {
 				return false; // no time out if no duration
 			}
 			return (ofGetElapsedTimef() - startTime) > duration;
 		}
-	private:
-		float startTime;
 		float duration;
+		float startTime;
+	private:
 	};
 
+	// cannot have a this, crazy stuff
+	static bool okToRemove(const TimedState& s) {
+		if (!s.duration) {
+			return false; // no time out if no duration
+		}
+		return (ofGetElapsedTimef() - s.startTime) > s.duration;
+	};
 	// time and elements of time
 	class TimeLine : public Trace2552 {
 	public:
-		void setup() {}
+		void setup() {
+			
+		}
 		void update() {
 			// remove all timed out items bugbug does this reall work ? 
 			t.erase(std::remove_if(t.begin(), t.end(), okToRemove), t.end());
 		}
-		void draw() {
+		void draw(const Defaults& defaults) {
 			for (TimedState& state : t) {
-				state.draw();
+				state.draw(defaults);
 			}
 		}
 		void push(const TimedState &state) {
@@ -235,10 +213,59 @@ namespace From2552Software {
 		void reset() {
 			t.clear();
 		}
+
 	private:
-		bool okToRemove(TimedState& s) {
-			return s.stop(); 
-		};
-		vector<TimedState> t;
+		
+		vector<TimedState> t; // in order list
 	};
+
+	//heart of the system
+	class kernel : public Trace2552 {
+	public:
+		// open, parse json file bugbug move all these large in lines into cpp at some point
+		void setup() {
+			string file = "json.json";
+			if (json.open(file)){
+				logTrace(json.getRawString());
+			}
+			else		{
+				logErrorString("Failed to parse JSON " + file);
+				return;
+			}
+			defaults.font = json["defaults"]["font"].asString();
+			defaults.duration = json["defaults"]["duration"].asFloat();
+
+
+#if 0
+			int y = 0;
+			for (Json::ArrayIndex i = 0; i < json["treaties"].size(); ++i) {
+				std::string title = json["treaties"][i]["title"].asString();
+				for (Json::ArrayIndex j = 0; j < json["treaties"][i]["text"].size(); ++j) {
+					std::string text = json["treaties"][i]["text"][j]["p"].asString();
+					Paragraph2552 p(title, text, screenWidth, y);
+					paragraphs.push_back(p);
+					y = p.nextRow();
+					title.clear(); // only show title one time
+				}
+			}
+#endif // 0
+
+
+		}
+		void draw() {
+			t.draw(defaults);
+		}
+
+	private:
+		// all key data needed to run the app goes here
+		TimeLine t;
+		ofxJSON json;  // source json
+		Defaults defaults;
+		KinectBodies bodies;
+		KinectFaces faces;
+		KinectAudio audio;
+		Kinect2552 myKinect;
+
+	};
+
 }

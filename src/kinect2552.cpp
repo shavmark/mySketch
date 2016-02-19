@@ -3,7 +3,7 @@
 //file:///C:/Users/mark/Downloads/KinectHIG.2.0.pdf
 // box2d
 
-namespace From2552Software {
+namespace Software2552 {
 
 	/// <summary>
 	/// KinectAudioStream constructor. from msft sdk

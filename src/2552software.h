@@ -18,7 +18,7 @@
 #include "ofxAssimpModelLoader.h"
 #include "ofMain.h"
 
-namespace From2552Software {
+namespace Software2552 {
 
 	// root class, basic and small but items every object needs.  Try to avoid adding data to keep it small
 	class BaseClass2552 {

@@ -8,6 +8,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+	k.setup(); // create time line
 	//paragraphs.build(ofGetWidth());
 	//ofSetLogLevel(OF_LOG_VERBOSE);
 	//ofSetFullscreen(true);
@@ -176,7 +177,7 @@ void ofApp::update(){
 //	myPlayer.update(); // get all the new frames
 	//robot.update();
 	//faces.update();
-	bodies.update();
+	//bodies.update();
 	return;
 	ofVec3f headPosition(0, 0, viewerDistance);
 	

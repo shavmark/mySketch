@@ -34,7 +34,7 @@ mPositionKeys = p->mPositionKeys[k];
 }
 */
 
-namespace From2552Software {
+namespace Software2552 {
 	bool Trace2552::checkPointer2(IUnknown *p, const string&  message, char*file, int line) {
 		logVerbose2(message, file, line); // should give some good trace
 		if (p == nullptr) {

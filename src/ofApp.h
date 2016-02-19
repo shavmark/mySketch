@@ -9,7 +9,7 @@
 #include "ofxBox2dParticleSystem.h"
 #include "ofxGui.h"
 #include "ofxParagraph.h"
-
+#include "t.h"
 
 class ofApp : public ofBaseApp{
 
@@ -102,11 +102,9 @@ class ofApp : public ofBaseApp{
 	ofDisableDepthTest();
 }
 
-		From2552Software::KinectBodies bodies;
-		From2552Software::KinectFaces faces;
-		From2552Software::KinectAudio audio;
-		From2552Software::Kinect2552 myKinect;
-		
+		Software2552::kernel k;
+
+
 		ofxBox2d box2d;
 		vector <ofPtr<ofxBox2dCircle> >	circles;		  //	default box2d circles
 		vector <ofPtr<ofxBox2dRect> > boxes;			  //	defalut box2d rects
