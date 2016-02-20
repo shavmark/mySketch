@@ -392,16 +392,25 @@ namespace Software2552 {
 			for (auto& g : graphics) {
 				g.trace();
 			}
+			for (auto& c : characters) {
+				c.trace();
+			}
 		}
 
 #endif // _DEBUG
 
 		string title;
-		vector <Audio> audios;
-		vector <Video> videos;
-		vector <Text>  texts;
-		vector <Image> images;
-		vector <Graphic> graphics;
+		vector <Audio> audios; // join with ofaudio
+		vector <Video> videos; // join wiht ofvideo
+		vector <Character> characters; // join with vector <Model3D> models;
+		vector <Image> images; //bugbug join with ofImage vector <ofImage> images;
+		vector <Graphic> graphics; // tie to ofX
+
+		vector <Text>  texts; //bugbug join Text and Paragraph2552 vector<Paragraph2552> paragraphs;
+
+		
+		
+
 	};
 
 	class Deck : public TimeBaseClass {
@@ -426,25 +435,8 @@ namespace Software2552 {
 	private:
 		vector <Slide> slides;
 	};
-	// state of system
-	class State {
-	public:
-		State() {}
-		void setup() {}
-		void update() {}
-		void draw(const Defaults& defaults) {}; // draw all items in State
-
-	private:
-		vector<Paragraph2552> paragraphs;
-		vector<Reference> sources;
-		vector <ofImage> images;
-		vector <Model3D> models;
-		vector <ofVideoPlayer> videoPlayers;
-		ofSoundPlayer soundPlayer;
-	};
-
 	// state that can age out
-	class TimedState : public State {
+	class TimedState {
 	public:
 		//infinite is 0
 		TimedState(float durationIn = 0) {
@@ -458,7 +450,7 @@ namespace Software2552 {
 		void update() {}
 		void draw(const Defaults& defaults) {
 			if (!stop()) {
-				State::draw(defaults);
+				// draw here as needed bugbug big todo, this is the app
 			}
 		}
 		bool operator==(const TimedState& rhs) { return true;/* do actual comparison bugbug */ }
@@ -551,7 +543,9 @@ namespace Software2552 {
 		KinectAudio audio;
 		Kinect2552 myKinect;
 		vector <Deck> decks;
-		
+		vector <ofVideoPlayer> videoPlayers;
+		ofSoundPlayer soundPlayer;
+
 
 	};
 
