@@ -58,9 +58,9 @@ namespace Software2552 {
 #endif
 
 	// return true if there is some data 
-	bool TimeBaseClass::read(const Json::Value &data) {
+	bool TimeLineBaseClass::read(const Json::Value &data) {
 		if (CommonData::read(data)) {
-			READ(duration, data);
+			
 			parse<Reference>(references, data["references"]);
 			return true;
 		}
@@ -76,7 +76,7 @@ namespace Software2552 {
 		
 	bool Defaults::read(const Json::Value &data) {
 		bool found = false;
-		if (TimeBaseClass::read(data)) {
+		if (TimeLineBaseClass::read(data)) {
 			READ(font, data);
 			READ(italicfont, data);
 			READ(boldfont, data);
@@ -116,7 +116,7 @@ namespace Software2552 {
 
 	bool Reference::read(const Json::Value &data) {
 		if (CommonData::read(data)) { // ignore reference as an array or w/o data at this point
-			// no base class so it repeats some data in base class TimeBaseClass
+			// no base class so it repeats some data in base class TimeLineBaseClass
 			READ(url, data);
 			READ(location, data);
 			READ(source, data);
@@ -132,8 +132,9 @@ namespace Software2552 {
 	}
 
 	bool Graphic::read(const Json::Value &data) {
-		if (TimeBaseClass::read(data)) {
+		if (TimeLineBaseClass::read(data)) {
 			READ(type, data);
+			READ(duration, data);
 			READ(x, data);
 			READ(y, data);
 			READ(z, data);
@@ -155,7 +156,7 @@ namespace Software2552 {
 		return false;
 	}
 	bool Slide::read(const Json::Value &data) {
-		if (TimeBaseClass::read(data)) {
+		if (TimeLineBaseClass::read(data)) {
 			READ(title, data);
 			parse<Audio>(audios, data["audio"]);
 			parse<Video>(videos, data["video"]);

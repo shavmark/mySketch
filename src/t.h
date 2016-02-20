@@ -183,20 +183,16 @@ namespace Software2552 {
 	};
 
 	// true for all time based items
-	class TimeBaseClass : public CommonData {
+	class TimeLineBaseClass : public CommonData {
 	public:
-		TimeBaseClass() :CommonData(){
-			duration = 0; // infinite by default
-		}
-		TimeBaseClass(const string&nameIn):CommonData(nameIn) {
-			duration = 0; // infinite by default
-		}
+		TimeLineBaseClass() : CommonData() {};
+		TimeLineBaseClass(const string &name) :CommonData(name) {};
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(TimeBaseClass));
+			basicTrace(STRINGIFY(TimeLineBaseClass));
 			CommonData::trace();
-			basicTrace(ofToString(duration));
+			
 			for (auto& ref : references) {
 				ref.trace();
 			}
@@ -206,35 +202,44 @@ namespace Software2552 {
 
 		bool read(const Json::Value &data);
 		vector <Reference> references;
-		float duration; 
+		
 	};
 
 	// basic graphic like SUN etc to add flavor
-	class Graphic : public TimeBaseClass {
+	class Graphic : public TimeLineBaseClass {
 	public:
 		Graphic() {
 			x = y = z = 0;
+			duration = 0; // infinite by default
+			start = 0; // force reset to be called to make sure timing is right
 		}
 		bool read(const Json::Value &data);
+		void setup() {
+			start = ofGetElapsedTimef();
+		}
+		void update() {}
+		void draw() {}
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
 			basicTrace(STRINGIFY(Graphic));
-			TimeBaseClass::trace();
+			TimeLineBaseClass::trace();
 			basicTrace(type);
+			basicTrace(ofToString(duration));
 			basicTrace(ofToString(x));
 			basicTrace(ofToString(y));
 			basicTrace(ofToString(z));
 			basicTrace(foreground);
 			basicTrace(background);
 		}
-
 #endif // _DEBUG
 
 		int    x, y, z;
 		string type; // 2d, 3d, other
 		string foreground;
 		string background;
+		float duration;
+		float start;
 	};
 
 	class Text : public Graphic {
@@ -296,7 +301,7 @@ namespace Software2552 {
 
 	};
 
-	// audio gets an x,y,z which can be ignored, its better to keep things overall consistant 
+	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
 	class Audio : public Image {
 	public:
 		Audio() {
@@ -334,7 +339,7 @@ namespace Software2552 {
 
 
 	// default settings
-	class Defaults : public TimeBaseClass, public Graphic {
+	class Defaults : public TimeLineBaseClass, public Graphic {
 	public:
 		Defaults() {
 			font = "data/Raleway - Thin.ttf";
@@ -349,7 +354,7 @@ namespace Software2552 {
 		void trace() {
 			basicTrace(STRINGIFY(Defaults));
 
-			TimeBaseClass::trace();
+			TimeLineBaseClass::trace();
 			Graphic::trace();
 
 			basicTrace(font);
@@ -364,18 +369,86 @@ namespace Software2552 {
 		int    fontsize;
 	};
 
-	class Slide : public TimeBaseClass {
+	class Slide : public TimeLineBaseClass {
 	public:
-		Slide(const string&name) :TimeBaseClass(name) {}
+		Slide(const string&name) :TimeLineBaseClass(name) {}
 
-		bool read(const Json::Value &data);
+		void setup()	{
+			for (auto& a : audios) {
+				a.setup();
+			}
+			for (auto& v : videos) {
+				v.setup();
+			}
+			for (auto& t : texts) {
+				t.setup();
+			}
+			for (auto& i : images) {
+				i.setup();
+			}
+			for (auto& g : graphics) {
+				g.setup();
+			}
+			for (auto& c : characters) {
+				c.setup();
+			}
+		}
+
+		void update() {
+			// remove all timed out items 
+			audios.erase(std::remove_if(audios.begin(), audios.end(), okToRemove), audios.end());
+			videos.erase(std::remove_if(videos.begin(), videos.end(), okToRemove), videos.end());
+			characters.erase(std::remove_if(characters.begin(), characters.end(), okToRemove), characters.end());
+			images.erase(std::remove_if(images.begin(), images.end(), okToRemove), images.end());
+			graphics.erase(std::remove_if(graphics.begin(), graphics.end(), okToRemove), graphics.end());
+			texts.erase(std::remove_if(texts.begin(), texts.end(), okToRemove), texts.end());
+			for (auto& a : audios) {
+				a.update();
+			}
+			for (auto& v : videos) {
+				v.update();
+			}
+			for (auto& t : texts) {
+				t.update();
+			}
+			for (auto& i : images) {
+				i.update();
+			}
+			for (auto& g : graphics) {
+				g.update();
+			}
+			for (auto& c : characters) {
+				c.update();
+			}
+
+		}
+		void draw() {
+			for (auto& a : audios) {
+				a.draw();
+			}
+			for (auto& v : videos) {
+				v.draw();
+			}
+			for (auto& t : texts) {
+				t.draw();
+			}
+			for (auto& i : images) {
+				i.draw();
+			}
+			for (auto& g : graphics) {
+				g.draw();
+			}
+			for (auto& c : characters) {
+				c.draw();
+			}
+		}
 
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			basicTrace(STRINGIFY(Slide));
 
-			TimeBaseClass::trace();
+			TimeLineBaseClass::trace();
 			basicTrace(title);
 			for (auto& a : audios) {
 				a.trace();
@@ -399,6 +472,15 @@ namespace Software2552 {
 
 #endif // _DEBUG
 
+		bool read(const Json::Value &data);
+		// cannot have a this, crazy stuff
+		static bool okToRemove(const Graphic& s) {
+			if (!s.duration) {
+				return false; // no time out if no duration
+			}
+			return (ofGetElapsedTimef() - s.start) > s.duration;
+		};
+
 		string title;
 		vector <Audio> audios; // join with ofaudio
 		vector <Video> videos; // join wiht ofvideo
@@ -413,10 +495,24 @@ namespace Software2552 {
 
 	};
 
-	class Deck : public TimeBaseClass {
+	class Deck : public TimeLineBaseClass {
 	public:
-		Deck(const string&name) :TimeBaseClass(name) {}
-
+		Deck(const string&name) :TimeLineBaseClass(name) {}
+		void setup() {
+			for (auto& slide : slides) {
+				slide.setup();
+			}
+		}
+		void update() {
+			for (auto& slide : slides) {
+				slide.update();
+			}
+		}
+		void draw() {
+			for (auto& slide : slides) {
+				slide.draw();
+			}
+		}
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
@@ -429,13 +525,11 @@ namespace Software2552 {
 		void addSlide(const Slide &s) {
 			slides.push_back(s);
 		}
-
 		vector <Slide>& getSlides() { return slides; }
-
 	private:
 		vector <Slide> slides;
 	};
-	// state that can age out
+	// state that can age out BUGBUG just merge with timeline, redundiant -- next step
 	class TimedState {
 	public:
 		//infinite is 0
@@ -465,15 +559,9 @@ namespace Software2552 {
 	private:
 	};
 
-	// cannot have a this, crazy stuff
-	static bool okToRemove(const TimedState& s) {
-		if (!s.duration) {
-			return false; // no time out if no duration
-		}
-		return (ofGetElapsedTimef() - s.startTime) > s.duration;
-	};
-	// time and elements of time
-	class TimeLine  {
+#if 0
+		// time and elements of time
+	class TimeLine {
 	public:
 		void setup(const Defaults& defaultsIn) {
 			defaults = defaultsIn;
@@ -501,10 +589,12 @@ namespace Software2552 {
 		}
 
 	private:
-		
+
 		vector<TimedState> t; // in order list
 		Defaults defaults;
 	};
+#endif // 0
+
 
 	
 
@@ -513,12 +603,21 @@ namespace Software2552 {
 	public:
 		kernel() {}
 		// open, parse json file bugbug move all these large in lines into cpp at some point
-		void setup() { read(); };
+		void setup() { 
+			read();  
+			for (auto& deck : decks) {
+				deck.setup(); // bugbug reset time of start when the graphic is drawn
+			}
+		};
 		void update() {
-			t.update();
+			for (auto& deck : decks) {
+				deck.update();
+			}
 		}
 		void draw() {
-			t.draw();
+			for (auto& deck : decks) {
+				deck.draw();
+			}
 		}
 		bool read();
 #if _DEBUG
@@ -535,7 +634,6 @@ namespace Software2552 {
 		
 	
 		// all key data needed to run the app goes here
-		TimeLine t;
 		ofxJSON json;  // source json
 		Defaults defaults;
 		KinectBodies bodies;
