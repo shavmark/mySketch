@@ -1,13 +1,24 @@
 #include "t.h"
 
 namespace Software2552 {
-	void kernel::set(vector <string> &value, const Json::ArrayIndex &data) {
-		for (Json::ArrayIndex i = 0; i < data; ++i) {
-			//value.push_back(data[i].asString());
+	
+	void slide::read(const Json::Value &data) {
+		READ(title, data);
+		READ(timeline, data);
+		READ(lastupdate, data);
+		for (Json::ArrayIndex j = 0; j < data["reference"].size(); ++j) {
+			Reference ref;
+			ref.read(data["reference"][j]);
+			references.push_back(ref);
 		}
-	}
+		for (Json::ArrayIndex j = 0; j < data["audio"].size(); ++j) {
+			Audio audio;
+			audio.read(data["audio"][j]);
+			audios.push_back(audio);
+		}
 
-	void kernel::setup() {
+	}
+	void kernel::read() {
 		string file = "json.json";
 		if (json.open(file)) {
 			logTrace(json.getRawString());
@@ -19,9 +30,9 @@ namespace Software2552 {
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
-			set(defaults.font, json["defaults"]["font"]);
-			set(defaults.duration, json["defaults"]["duration"]);
-			
+			Defaults def;
+			def.read(json["defaults"]);
+
 			// build order and list of slide decks
 			for (Json::ArrayIndex i = 0; i < json["order"].size(); ++i) {
 				for (Json::ArrayIndex j = 0; j < json["order"][i]["names"].size(); ++j) {
@@ -33,20 +44,16 @@ namespace Software2552 {
 					decks.push_back(nextdeck);
 				}
 			}
-			// build decks
+			// build decks, break out to make code more readable plus the slides can be read in in any order
 			for (auto& currentDeck : decks) {
 				for (Json::ArrayIndex i = 0; i < json[currentDeck.getName()].size(); ++i) {
-						std::string name = json[currentDeck.getName()][i]["name"].asString();
-						slide newslide(json[currentDeck.getName()][i]["name"].asString());
-						std::vector<slide>::iterator it = find(currentDeck.getSlides().begin(), currentDeck.getSlides().end(), newslide);
-						if (it != currentDeck.getSlides().end()) {
-							it->title = json[currentDeck.getName()][i]["title"].asString();
-							it->timeline = json[currentDeck.getName()][i]["timeline"].asString();
-							it->lastupdate = json[currentDeck.getName()][i]["lastupdate"].asString();
-							readReference(it->ref, json[currentDeck.getName()][i]);
-							//for (Json::ArrayIndex j = 0; j < json[currentDeck.getName()][i]["reference"].size(); ++j) {
-							//}
-						}
+					std::string name = json[currentDeck.getName()][i]["name"].asString();
+					slide newslide(json[currentDeck.getName()][i]["name"].asString());
+					// read into matching slide
+					std::vector<slide>::iterator it = find(currentDeck.getSlides().begin(), currentDeck.getSlides().end(), newslide);
+					if (it != currentDeck.getSlides().end()) {
+						it->read(json[currentDeck.getName()][i]); 
+					}
 				}
 			}
 #if 0
@@ -68,14 +75,14 @@ namespace Software2552 {
 
 			//for (auto& deck : decks) {}
 			//set(names, json["order"]["names"]);
-		}
+			}
 		catch (std::exception e) {
 			logErrorString(e.what());
 			return;
 		}
 
 
-	#if 0
+#if 0
 		int y = 0;
 		for (Json::ArrayIndex i = 0; i < json["treaties"].size(); ++i) {
 			std::string title = json["treaties"][i]["title"].asString();
@@ -87,7 +94,8 @@ namespace Software2552 {
 				title.clear(); // only show title one time
 			}
 		}
-	#endif // 0
-	}
+#endif // 0
+		}
+	
 
 }

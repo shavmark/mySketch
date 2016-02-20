@@ -5,9 +5,30 @@
 #include "ofxJSON.h"
 #include "kinect2552.h"
 #include "ofxParagraph.h"
-// timeline software
+
+// timeline software, json based
 
 namespace Software2552 {
+	// helpers
+	// set only if value in json
+	inline void set(string &value, const Json::Value& data) {
+		if (data.size() == 0 && data.asString().length() > 0) { // not an  array and there is data
+			value = data.asString();
+		}
+	}
+	inline void set(float &value, const Json::Value &data) {
+		if (data.size() == 0 && data.asString().length() > 0) { // not an  array and there is data
+			value = data.asFloat();
+		}
+	}
+	inline void set(int &value, const Json::Value &data) {
+		if (data.size() == 0 && data.asString().length() > 0) { // not an  array and there is data
+			value = data.asInt();
+		}
+	}
+#define READ(var, data) set(var, data[#var])
+
+
 	// match string to font
 	class  ofxSmartText
 	{
@@ -106,15 +127,39 @@ namespace Software2552 {
 		}
 		ofxSmartText title; // font for the title bugbug not sure where to delete this yet
 	};
-
 	// reference to a cited item
 	class Reference {
 	public:
-		// if these strings are displayed they can use a non presentation font as they will be done in a popup or such
-		string link;
+		void read(const Json::Value &data) {
+			// no defaults
+			READ(url, data);
+			READ(date, data);
+			READ(location, data);
+			READ(source, data);
+		}
+
+		string url; // can be local too
 		string date;
 		string location;
 		string source;
+	};
+
+	class Audio {
+	public:
+		Audio() {
+			duration = 10.0;  // 10 seconds
+			volume = 5; // 1/2 way
+		}
+		void read(const Json::Value &data) {
+			READ(url, data);
+			READ(volume, data);
+			READ(duration, data);
+			ref.read(data["reference"]);
+		}
+		string url;// can be local too
+		int    volume;
+		float duration;
+		Reference ref;
 	};
 
 	// default settings
@@ -127,10 +172,17 @@ namespace Software2552 {
 			fontsize = 18;
 			duration = 0; // forever by default
 		}
+		void read(const Json::Value &data) {
+			READ(font, data);
+			READ(italicfont, data);
+			READ(boldfont, data);
+			READ(fontsize, data);
+			READ(duration, data);
+		}
 		string font;
 		string italicfont;
 		string boldfont;
-		string fontsize;
+		int    fontsize;
 		float  duration;
 	};
 
@@ -228,6 +280,9 @@ namespace Software2552 {
 		slide(const string&nameIn) {
 			name = nameIn;
 		}
+
+		void read(const Json::Value &data);
+
 		bool operator==(const slide& rhs) { return rhs.name == name; }
 
 		string &getName() { return name; }
@@ -235,7 +290,8 @@ namespace Software2552 {
 		string title;
 		string timeline;
 		string lastupdate;
-		Reference ref;
+		vector <Reference> references;
+		vector <Audio> audios;
 
 	private:
 		string name; // unique name
@@ -262,39 +318,16 @@ namespace Software2552 {
 	public:
 		kernel() {}
 		// open, parse json file bugbug move all these large in lines into cpp at some point
-		void setup();
+		void setup() { read(); };
 		void update() {
 			t.update();
 		}
 		void draw() {
 			t.draw();
 		}
-
+		void read();
 	private:
-		void set(string &value, const Json::Value& data) {
-			string s = data.asString();
-			if (s.length() > 0) {
-				value = s;
-			}
-		}
-		void set(float &value, const Json::Value &data) {
-			string s = data.asString();
-			if (s.length() > 0) {
-				value = data.asFloat();
-			}
-		}
-		void set(int &value, const Json::Value &data) {
-			string s = data.asString();
-			if (s.length() > 0) {
-				value = data.asInt();
-			}
-		}
-		void set(vector <string> &value, const Json::ArrayIndex &data);
-		void readReference(Reference &ref, const Json::Value &data) {
-			for (Json::ArrayIndex j = 0; j < data["reference"].size(); ++j) {
-				ref.link = data["reference"][j]["link"].asString();
-			}
-		}
+		
 	
 		// all key data needed to run the app goes here
 		TimeLine t;
