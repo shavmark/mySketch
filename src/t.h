@@ -154,6 +154,7 @@ namespace Software2552 {
 		string &getName() { return name; }
 		bool read(const Json::Value &data);
 
+	protected:
 		string timelineDate; // date item existed
 		string lastUpdateDate; // last time object was updated
 		string name; // any object can have a name, note, date, reference, duration
@@ -176,7 +177,7 @@ namespace Software2552 {
 			basicTrace(source);
 		}
 #endif
-
+	protected:
 		string url; // can be local too
 		string location;
 		string source;
@@ -215,7 +216,7 @@ namespace Software2552 {
 			delay = 0;
 			started = false;
 		}
-		// cannot have a this, crazy stuff
+		
 		static bool okToRemove(const Graphic& s) {
 			if (!s.duration || !s.started) {
 				return false; // no time out ever, or we have not started yet
@@ -286,7 +287,7 @@ namespace Software2552 {
 			basicTrace(ofToString(size));
 		}
 #endif // _DEBUG
-
+	protected:
 		string paragraph; //bugbug convert to ofxParagraph for here, font and size (not sure about size)
 		string font;
 		int size;
@@ -326,7 +327,7 @@ namespace Software2552 {
 		}
 
 #endif // _DEBUG
-
+	protected:
 		string url; // remote or local bugbug maybe make a better name?  not sure
 
 	};
@@ -369,7 +370,7 @@ namespace Software2552 {
 
 
 	// default settings
-	class Defaults : public TimeLineBaseClass, public Graphic {
+	class Defaults  {
 	public:
 		Defaults() {
 			font = "data/Raleway - Thin.ttf";
@@ -379,131 +380,104 @@ namespace Software2552 {
 		}
 		bool read(const Json::Value &data);
 
+		// get default if needed
+		string getFont(const string& testfont) {
+			if (testfont.length() > 0) {
+				return testfont;
+			}
+			return font;
+		}
+		// get default if needed
+		string getItalicFont(const string& testfont) {
+			if (italicfont.length() > 0) {
+				return italicfont;
+			}
+			return italicfont;
+		}
+		// get default if needed
+		string getBoldFont(const string& testfont) {
+			if (boldfont.length() > 0) {
+				return boldfont;
+			}
+			return boldfont;
+		}
+		// get default if needed
+		int getFontSize(int size) {
+			if (size > 0) {
+				return size;
+			}
+			return fontsize;
+		}
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
 			basicTrace(STRINGIFY(Defaults));
-
-			TimeLineBaseClass::trace();
-			Graphic::trace();
-
 			basicTrace(font);
 			basicTrace(italicfont);
 			basicTrace(boldfont);
 			basicTrace(ofToString(fontsize));
 		}
 #endif
+	protected:
 		string font;
 		string italicfont;
 		string boldfont;
 		int    fontsize;
 	};
+	
+	class Deck; // forward reference
 
 	class Slide : public TimeLineBaseClass {
 	public:
+		friend Deck;
 		Slide(const string&name) :TimeLineBaseClass(name) {}
 
-		void setup()	{
-			for (auto& a : audios) {
-				a.setup();
-			}
-			for (auto& v : videos) {
-				v.setup();
-			}
-			for (auto& t : texts) {
-				t.setup();
-			}
-			for (auto& i : images) {
-				i.setup();
-			}
-			for (auto& g : graphics) {
-				g.setup();
-			}
-			for (auto& c : characters) {
-				c.setup();
-			}
-		}
-
-		void update() {
-			// remove all timed out items 
-			audios.erase(std::remove_if(audios.begin(), audios.end(), Graphic::okToRemove), audios.end());
-			videos.erase(std::remove_if(videos.begin(), videos.end(), Graphic::okToRemove), videos.end());
-			characters.erase(std::remove_if(characters.begin(), characters.end(), Graphic::okToRemove), characters.end());
-			images.erase(std::remove_if(images.begin(), images.end(), Graphic::okToRemove), images.end());
-			graphics.erase(std::remove_if(graphics.begin(), graphics.end(), Graphic::okToRemove), graphics.end());
-			texts.erase(std::remove_if(texts.begin(), texts.end(), Graphic::okToRemove), texts.end());
-			for (auto& a : audios) {
-				a.update();
-			}
-			for (auto& v : videos) {
-				v.update();
-			}
-			for (auto& t : texts) {
-				t.update();
-			}
-			for (auto& i : images) {
-				i.update();
-			}
-			for (auto& g : graphics) {
-				g.update();
-			}
-			for (auto& c : characters) {
-				c.update();
-			}
-
-		}
-		void draw() {
-			for (auto& a : audios) {
-				a.draw();
-			}
-			for (auto& v : videos) {
-				v.draw();
-			}
-			for (auto& t : texts) {
-				t.draw();
-			}
-			for (auto& i : images) {
-				i.draw();
-			}
-			for (auto& g : graphics) {
-				g.draw();
-			}
-			for (auto& c : characters) {
-				c.draw();
-			}
-		}
+		void setup();
+		void update();
+		void draw();
 
 #if _DEBUG
+		template<typename T> void trace(T& vec) {
+			for (auto& a : vec) {
+				a.trace();
+			}
+		}
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			basicTrace(STRINGIFY(Slide));
 
 			TimeLineBaseClass::trace();
 			basicTrace(title);
-			for (auto& a : audios) {
-				a.trace();
-			}
-			for (auto& v : videos) {
-				v.trace();
-			}
-			for (auto& t : texts) {
-				t.trace();
-			}
-			for (auto& i : images) {
-				i.trace();
-			}
-			for (auto& g : graphics) {
-				g.trace();
-			}
-			for (auto& c : characters) {
-				c.trace();
-			}
+			trace(audios);
+			trace(videos);
+			trace(texts);
+			trace(images);
+			trace(graphics);
+			trace(characters);
 		}
 
 #endif // _DEBUG
 
 		bool read(const Json::Value &data);
-		
+
+	protected:
+		template<typename T> void setup(T& vec) {
+			for (auto& a : vec) {
+				a.setup();
+			}
+		}
+		template<typename T> void update(T& vec) {
+			for (auto& a : vec) {
+				a.update();
+			}
+		}
+		template<typename T> void draw(T& vec) {
+			for (auto& a : vec) {
+				a.draw();
+			}
+		}
+
+
 		string title;
 		vector <Audio> audios; // join with ofaudio
 		vector <Video> videos; // join wiht ofvideo
@@ -512,9 +486,6 @@ namespace Software2552 {
 		vector <Graphic> graphics; // tie to ofX
 
 		vector <Text>  texts; //bugbug join Text and Paragraph2552 vector<Paragraph2552> paragraphs;
-
-		
-		
 
 	};
 
@@ -548,86 +519,24 @@ namespace Software2552 {
 		void addSlide(const Slide &s) {
 			slides.push_back(s);
 		}
+		void removeSlide(const Slide &slide) {
+			// remove by name
+			slides.erase(std::remove(slides.begin(), slides.end(), slide), slides.end());
+		}
 		vector <Slide>& getSlides() { return slides; }
+
 	private:
 		vector <Slide> slides;
 	};
-	// state that can age out BUGBUG just merge with timeline, redundiant -- next step
-	class TimedState {
-	public:
-		//infinite is 0
-		TimedState(float durationIn = 0) {
-			reset();
-			duration = durationIn;
-		}
-		void reset() {
-			startTime = ofGetElapsedTimef();
-		}
-		void setup() {}
-		void update() {}
-		void draw(const Defaults& defaults) {
-			if (!stop()) {
-				// draw here as needed bugbug big todo, this is the app
-			}
-		}
-		bool operator==(const TimedState& rhs) { return true;/* do actual comparison bugbug */ }
-		const bool stop() {
-			if (!duration) {
-				return false; // no time out if no duration
-			}
-			return (ofGetElapsedTimef() - startTime) > duration;
-		}
-		float duration;
-		float startTime;
-	private:
-	};
-
-#if 0
-		// time and elements of time
-	class TimeLine {
-	public:
-		void setup(const Defaults& defaultsIn) {
-			defaults = defaultsIn;
-		}
-		void update() {
-			// remove all timed out items bugbug does this reall work ? 
-			t.erase(std::remove_if(t.begin(), t.end(), okToRemove), t.end());
-		}
-		void draw() {
-			for (TimedState& state : t) {
-				state.draw(defaults);
-			}
-		}
-		void push(const TimedState &state) {
-			t.push_back(state); // saves a copy of state
-		}
-		void pop() {
-			t.pop_back();
-		}
-		void remove(const TimedState &state) {
-			t.erase(std::remove(t.begin(), t.end(), state), t.end());
-		}
-		void reset() {
-			t.clear();
-		}
-
-	private:
-
-		vector<TimedState> t; // in order list
-		Defaults defaults;
-	};
-#endif // 0
-
-
-	
 
 	//heart of the system
 	class kernel  {
 	public:
 		kernel() {}
+
 		// open, parse json file bugbug move all these large in lines into cpp at some point
 		void setup() { 
-			read();  
+			
 			for (auto& deck : decks) {
 				deck.setup(); // bugbug reset time of start when the graphic is drawn
 			}
@@ -643,6 +552,7 @@ namespace Software2552 {
 			}
 		}
 		bool read();
+		static Defaults &getDefaults() { return defaults; } // assume global access and one instance
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
@@ -658,16 +568,8 @@ namespace Software2552 {
 	
 		// all key data needed to run the app goes here
 		ofxJSON json;  // source json
-		Defaults defaults;
-		KinectBodies bodies;
-		KinectFaces faces;
-		KinectAudio audio;
-		Kinect2552 myKinect;
-		vector <Deck> decks;
-		vector <ofVideoPlayer> videoPlayers;
-		ofSoundPlayer soundPlayer;
-
-
+		static Defaults defaults;// assume global access and one instance
+		vector <Deck> decks; // core of the data driven app
 	};
 
 }

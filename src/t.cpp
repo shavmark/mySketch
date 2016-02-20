@@ -1,8 +1,9 @@
 #include "t.h"
 
 namespace Software2552 {
-	template<typename T, typename T2>
-	void parse(T2& vec, const Json::Value &data)
+	Defaults kernel::defaults; // on global instance
+
+	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data)
 	{
 		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
 			T item;
@@ -56,6 +57,38 @@ namespace Software2552 {
 	bool PrintJSONTree(const Json::Value &root) {}
 	void PrintJSONValue(const Json::Value &val) {}
 #endif
+	void Slide::setup() {
+		setup(audios);
+		setup(videos);
+		setup(texts);
+		setup(images);
+		setup(graphics);
+		setup(characters);
+	}
+
+	void Slide::update() {
+		// remove all timed out items 
+		audios.erase(std::remove_if(audios.begin(), audios.end(), Graphic::okToRemove), audios.end());
+		videos.erase(std::remove_if(videos.begin(), videos.end(), Graphic::okToRemove), videos.end());
+		characters.erase(std::remove_if(characters.begin(), characters.end(), Graphic::okToRemove), characters.end());
+		images.erase(std::remove_if(images.begin(), images.end(), Graphic::okToRemove), images.end());
+		graphics.erase(std::remove_if(graphics.begin(), graphics.end(), Graphic::okToRemove), graphics.end());
+		texts.erase(std::remove_if(texts.begin(), texts.end(), Graphic::okToRemove), texts.end());
+		update(audios);
+		update(videos);
+		update(texts);
+		update(images);
+		update(graphics);
+		update(characters);
+	}
+	void Slide::draw() {
+		draw(audios);
+		draw(videos);
+		draw(texts);
+		draw(images);
+		draw(graphics);
+		draw(characters);
+	}
 
 	// return true if there is some data 
 	bool TimeLineBaseClass::read(const Json::Value &data) {
@@ -75,18 +108,11 @@ namespace Software2552 {
 	}
 		
 	bool Defaults::read(const Json::Value &data) {
-		bool found = false;
-		if (TimeLineBaseClass::read(data)) {
-			READ(font, data);
-			READ(italicfont, data);
-			READ(boldfont, data);
-			READ(fontsize, data);
-			found = true;
-		}
-		if (Graphic::read(data)) {
-			found = true;
-		}
-		return found;
+		READ(font, data);
+		READ(italicfont, data);
+		READ(boldfont, data);
+		READ(fontsize, data);
+		return true;
 	}
 	// true of any object
 	bool CommonData::read(const Json::Value &data) {
@@ -188,7 +214,7 @@ namespace Software2552 {
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
-			defaults.read(json["defaults"]);
+			defaults.read(json["defaults"]); // global
 
 			// build order and list of slide decks
 			for (Json::ArrayIndex i = 0; i < json["order"].size(); ++i) {

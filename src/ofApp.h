@@ -10,6 +10,9 @@
 #include "ofxBox2d.h"
 #include "ofxBox2dParticleSystem.h"
 #include "ofxGui.h"
+
+#include "2552software.h"
+#include "kinect2552.h"
 #include "t.h"
 
 class ofApp : public ofBaseApp{
@@ -31,6 +34,14 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		void keyPressed(int key);
 		void exit();
+
+		// these items need to go some where else, maybe the App
+		Software2552::KinectBodies bodies;
+		Software2552::KinectFaces faces;
+		Software2552::KinectAudio audio;
+		Software2552::Kinect2552 myKinect;
+		vector <ofVideoPlayer> videoPlayers;
+		ofSoundPlayer soundPlayer;
 
 		void ofApp::drawScene(bool isPreview){
 	

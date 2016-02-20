@@ -8,7 +8,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	k.setup(); // create time line
+	k.read(); // create time line
 	k.trace();
 	//paragraphs.build(ofGetWidth());
 	//ofSetLogLevel(OF_LOG_VERBOSE);
