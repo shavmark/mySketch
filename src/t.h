@@ -425,11 +425,10 @@ namespace Software2552 {
 		int    fontsize;
 	};
 	
-	class Deck; // forward reference
-
+	
 	class Slide : public TimeLineBaseClass {
 	public:
-		friend Deck;
+		
 		Slide(const string&name) :TimeLineBaseClass(name) {}
 
 		void setup();
@@ -570,6 +569,8 @@ namespace Software2552 {
 		ofxJSON json;  // source json
 		static Defaults defaults;// assume global access and one instance
 		vector <Deck> decks; // core of the data driven app
+
+
 	};
 
 }
