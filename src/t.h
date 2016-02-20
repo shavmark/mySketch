@@ -213,18 +213,38 @@ namespace Software2552 {
 			duration = 0; // infinite by default
 			start = 0; // force reset to be called to make sure timing is right
 			delay = 0;
+			started = false;
 		}
+		// cannot have a this, crazy stuff
+		static bool okToRemove(const Graphic& s) {
+			if (!s.duration || !s.started) {
+				return false; // no time out ever, or we have not started yet
+			}
+			return (ofGetElapsedTimef() - (s.start+ s.delay)) > (s.duration + s.delay);
+		};
+		
 		bool read(const Json::Value &data);
+
 		void setup() {
 			start = ofGetElapsedTimef();
 			start += delay;
 		}
 		void update() {
 		}
-		void draw() {
-			if (start <= 0 || ofGetElapsedTimef() > 0) {
-				return; // not started yet
+		bool okToDraw() {
+			if (duration == 0) {
+				return true; // always draw
 			}
+			if (start <= 0) {
+				return false; // not started yet
+			}
+			if (start + delay < ofGetElapsedTimef()) {
+				return false; // not started yet
+			}
+			// still going??
+			return start+delay+duration < ofGetElapsedTimef();
+		}
+		void draw() {
 		}
 #if _DEBUG
 		// echo object (debug only)
@@ -241,7 +261,7 @@ namespace Software2552 {
 			basicTrace(background);
 		}
 #endif // _DEBUG
-
+	protected:
 		int    x, y, z;
 		string type; // 2d, 3d, other
 		string foreground;
@@ -249,6 +269,7 @@ namespace Software2552 {
 		float duration;
 		float start;
 		float delay; // start+delay is the true start
+		bool started;
 	};
 
 	class Text : public Graphic {
@@ -405,12 +426,12 @@ namespace Software2552 {
 
 		void update() {
 			// remove all timed out items 
-			audios.erase(std::remove_if(audios.begin(), audios.end(), okToRemove), audios.end());
-			videos.erase(std::remove_if(videos.begin(), videos.end(), okToRemove), videos.end());
-			characters.erase(std::remove_if(characters.begin(), characters.end(), okToRemove), characters.end());
-			images.erase(std::remove_if(images.begin(), images.end(), okToRemove), images.end());
-			graphics.erase(std::remove_if(graphics.begin(), graphics.end(), okToRemove), graphics.end());
-			texts.erase(std::remove_if(texts.begin(), texts.end(), okToRemove), texts.end());
+			audios.erase(std::remove_if(audios.begin(), audios.end(), Graphic::okToRemove), audios.end());
+			videos.erase(std::remove_if(videos.begin(), videos.end(), Graphic::okToRemove), videos.end());
+			characters.erase(std::remove_if(characters.begin(), characters.end(), Graphic::okToRemove), characters.end());
+			images.erase(std::remove_if(images.begin(), images.end(), Graphic::okToRemove), images.end());
+			graphics.erase(std::remove_if(graphics.begin(), graphics.end(), Graphic::okToRemove), graphics.end());
+			texts.erase(std::remove_if(texts.begin(), texts.end(), Graphic::okToRemove), texts.end());
 			for (auto& a : audios) {
 				a.update();
 			}
@@ -482,14 +503,7 @@ namespace Software2552 {
 #endif // _DEBUG
 
 		bool read(const Json::Value &data);
-		// cannot have a this, crazy stuff
-		static bool okToRemove(const Graphic& s) {
-			if (!s.duration) {
-				return false; // no time out if no duration
-			}
-			return (ofGetElapsedTimef() - s.start) > s.duration;
-		};
-
+		
 		string title;
 		vector <Audio> audios; // join with ofaudio
 		vector <Video> videos; // join wiht ofvideo
