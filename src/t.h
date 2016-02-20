@@ -15,17 +15,17 @@ namespace Software2552 {
 	
 	// set only if value in json
 	inline void set(string &value, const Json::Value& data) {
-		if (data.size() == 0 && data.asString().length() > 0) { // not an  array and there is data
+		if (!data.empty()) { 
 			value = data.asString();
 		}
 	}
 	inline void set(float &value, const Json::Value &data) {
-		if (data.size() == 0 && data.asString().length() > 0) { // not an  array and there is data
+		if (!data.empty()) { // not an  array and there is data
 			value = data.asFloat();
 		}
 	}
 	inline void set(int &value, const Json::Value &data) {
-		if (data.size() == 0 && data.asString().length() > 0) { // not an  array and there is data
+		if (!data.empty()) { // not an  array and there is data
 			value = data.asInt();
 		}
 	}
@@ -130,34 +130,75 @@ namespace Software2552 {
 		}
 		ofxSmartText title; // font for the title bugbug not sure where to delete this yet
 	};
+
+	// common to all classes
+	class CommonData {
+	public:
+		CommonData() {
+		}
+		CommonData(const string&nameIn) {
+			name = nameIn;
+		}
+
+		bool operator==(const CommonData& rhs) { return rhs.name == name; }
+		string &getName() { return name; }
+		bool read(const Json::Value &data);
+
+		string timelineDate; // date item existed
+		string lastUpdateDate; // last time object was updated
+		string name; // any object can have a name, note, date, reference, duration
+		string notes;
+		string date; // bugbug make this a date data type
+	};
+
 	// reference to a cited item
-	class Reference {
+	class Reference : public CommonData {
 	public:
 		void read(const Json::Value &data);
 
 		string url; // can be local too
-		string date;
 		string location;
 		string source;
 	};
 
+	// true for all time based items
+	class TimeBaseClass : public CommonData {
+	public:
+		TimeBaseClass() :CommonData(){
+			duration = 0; // infinite by default
+		}
+		TimeBaseClass(const string&nameIn):CommonData(nameIn) {
+			duration = 0; // infinite by default
+		}
+		
+		bool read(const Json::Value &data);
+		vector <Reference> references;
+		float duration; 
+	};
+
+	class Text : public TimeBaseClass {
+	public:
+		void read(const Json::Value &data);
+		
+		string paragraph; //bugbug convert to ofxParagraph for here, font and size (not sure about size)
+		string font;
+		int size;
+	};
+
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
-	class Character {
+	class Character : public TimeBaseClass {
 	public:
 		Character() {
 			x = y = z = 0;
 			type = "2d";
-			duration = 0; // life of slide?
 		}
 		void read(const Json::Value &data);
 		string type; // 2d, 3d
 		string path;
-		string name;
 		int    x,y,z;
-		float duration;
 		
 	};
-	class Audio {
+	class Audio : public TimeBaseClass {
 	public:
 		Audio() {
 			duration = 10.0;  // 10 seconds
@@ -166,31 +207,28 @@ namespace Software2552 {
 		void read(const Json::Value &data);
 		string url;// can be local too
 		int    volume;
-		float duration;
-		Reference ref;
+		
 	};
 	class Video : public Audio {
 	};
 	// default settings
-	class Defaults {
+	class Defaults : public TimeBaseClass {
 	public:
 		Defaults() {
 			font = "data/Raleway - Thin.ttf";
 			italicfont = "data/Raleway-Italic.ttf";
 			boldfont = "data/Raleway-Bold.ttf";
 			fontsize = 18;
-			duration = 0; // forever by default
 		}
 		void read(const Json::Value &data);
 		string font;
 		string italicfont;
 		string boldfont;
 		int    fontsize;
-		float  duration;
 	};
 
 	// state of system
-	class State : public Trace2552 {
+	class State {
 	public:
 		State() {}
 		void setup() {}
@@ -199,7 +237,6 @@ namespace Software2552 {
 
 	private:
 		vector<Paragraph2552> paragraphs;
-		vector<string> notes; // internal use, not directly displayed other than in a non presentation popup possibly
 		vector<Reference> sources;
 		vector <ofImage> images;
 		vector <Model3D> models;
@@ -245,7 +282,7 @@ namespace Software2552 {
 		return (ofGetElapsedTimef() - s.startTime) > s.duration;
 	};
 	// time and elements of time
-	class TimeLine : public Trace2552 {
+	class TimeLine  {
 	public:
 		void setup(const Defaults& defaultsIn) {
 			defaults = defaultsIn;
@@ -278,46 +315,36 @@ namespace Software2552 {
 		Defaults defaults;
 	};
 
-	class Slide : public Trace2552 {
+	class Slide : public TimeBaseClass {
 	public:
-		Slide(const string&nameIn) {
-			name = nameIn;
-		}
+		Slide(const string&name):TimeBaseClass(name){}
 
 		void read(const Json::Value &data);
-
-		bool operator==(const Slide& rhs) { return rhs.name == name; }
-
-		string &getName() { return name; }
 
 		string title;
 		string timeline;
 		string lastupdate;
-		vector <Reference> references;
 		vector <Audio> audios;
 		vector <Video> videos;
-	private:
-		string name; // unique name
+		vector <Text> texts;
 	};
 
-	class deck : public Trace2552 {
+	class Deck : public TimeBaseClass {
 	public:
-		deck(const string &nameIn) {
-			name = nameIn;
-		}
+		Deck(const string&name) :TimeBaseClass(name) {}
+
 		void addSlide(const Slide &s) {
 			slides.push_back(s);
 		}
-		string &getName() { return name; }
+		
 		vector <Slide>& getSlides(){ return slides; }
 
 	private:
-		string name;
 		vector <Slide> slides;
 	};
 
 	//heart of the system
-	class kernel : public Trace2552 {
+	class kernel  {
 	public:
 		kernel() {}
 		// open, parse json file bugbug move all these large in lines into cpp at some point
@@ -340,7 +367,7 @@ namespace Software2552 {
 		KinectFaces faces;
 		KinectAudio audio;
 		Kinect2552 myKinect;
-		vector <deck> decks;
+		vector <Deck> decks;
 		
 
 	};

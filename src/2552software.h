@@ -27,6 +27,7 @@ namespace Software2552 {
 	private:
 	};
 
+	// can be, but does not need to be, a base class as its all static and can just be called, could not even be a class I suppose
 	class Trace2552 : public BaseClass2552 {
 	public:
 		static bool checkPointer2(IUnknown *p, const string&  message, char*file = __FILE__, int line = __LINE__);

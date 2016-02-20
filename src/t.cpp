@@ -10,57 +10,76 @@ namespace Software2552 {
 			vec.push_back(item);
 		}
 	}
-	void Defaults::read(const Json::Value &data) {
-		READ(font, data);
-		READ(italicfont, data);
-		READ(boldfont, data);
-		READ(fontsize, data);
-		READ(duration, data);
+	// return true if there is some data 
+	bool TimeBaseClass::read(const Json::Value &data) {
+		if (CommonData::read(data)) {
+			READ(duration, data);
+			parse<Reference>(references, data["references"]);
+			return true;
+		}
+		return false;
 	}
+
+	void Defaults::read(const Json::Value &data) {
+		if (TimeBaseClass::read(data)) {
+			READ(font, data);
+			READ(italicfont, data);
+			READ(boldfont, data);
+			READ(fontsize, data);
+		}
+
+	}
+	// true of any object
+	bool CommonData::read(const Json::Value &data) {
+		if (!data.empty()) { // ignore reference as an array or w/o data at this point
+			READ(timelineDate, data);
+			READ(date, data);
+			READ(lastUpdateDate, data);
+			READ(name, data);
+			READ(notes, data);
+			return true;
+		}
+		return false;
+	}
+
 	void Reference::read(const Json::Value &data) {
-		// no defaults
-		READ(url, data);
-		READ(date, data);
-		READ(location, data);
-		READ(source, data);
+		if (CommonData::read(data)) { // ignore reference as an array or w/o data at this point
+			// no base class so it repeats some data in base class TimeBaseClass
+			READ(url, data);
+			READ(location, data);
+			READ(source, data);
+		}
 	}
 	void Character::read(const Json::Value &data) {
-		READ(name, data);
-		READ(path, data);
-		READ(type, data);
-		READ(duration, data);
-		READ(duration, data);
-		READ(x, data);
-		READ(y, data);
-		READ(z, data);
+		if (TimeBaseClass::read(data)) {
+			READ(path, data);
+			READ(type, data);
+			READ(x, data);
+			READ(y, data);
+			READ(z, data);
+		}
 	}
-	
+	void Text::read(const Json::Value &data) {
+		if (TimeBaseClass::read(data)) {
+			READ(paragraph, data);
+			READ(size, data);
+			READ(font, data);
+		}
+	}
 	void Slide::read(const Json::Value &data) {
-		READ(title, data);
-		READ(timeline, data);
-		READ(lastupdate, data);
-		parse<Reference>(references, data["reference"]);
-		for (Json::ArrayIndex j = 0; j < data["reference"].size(); ++j) {
-			Reference ref;
-			ref.read(data["reference"][j]);
-			references.push_back(ref);
-		}
-		for (Json::ArrayIndex j = 0; j < data["audio"].size(); ++j) {
-			Audio audio;
-			audio.read(data["audio"][j]);
-			audios.push_back(audio);
-		}
-		for (Json::ArrayIndex j = 0; j < data["video"].size(); ++j) {
-			Video video;
-			video.read(data["video"][j]);
-			videos.push_back(video);
+		if (TimeBaseClass::read(data)) {
+			READ(title, data);
+			parse<Audio>(audios, data["audio"]);
+			parse<Video>(videos, data["video"]);
+			parse<Text>(texts, data["text"]);
 		}
 	}
 	void Audio::read(const Json::Value &data) {
-		READ(url, data);
-		READ(volume, data);
-		READ(duration, data);
-		ref.read(data["reference"]);
+		if (TimeBaseClass::read(data)) {
+			READ(url, data);
+			READ(volume, data);
+		}
+	
 	}
 	void kernel::read() {
 		string file = "json.json";
@@ -74,15 +93,15 @@ namespace Software2552 {
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
-			Defaults def;
-			def.read(json["defaults"]);
+			defaults.read(json["defaults"]);
 
 			// build order and list of slide decks
 			for (Json::ArrayIndex i = 0; i < json["order"].size(); ++i) {
 				for (Json::ArrayIndex j = 0; j < json["order"][i]["names"].size(); ++j) {
-					deck nextdeck(json["order"][i]["names"][j]["n"].asString());
+					Deck nextdeck(json["order"][i]["names"][j]["name"].asString());
 					for (Json::ArrayIndex k = 0; k < json["order"][i][nextdeck.getName()].size(); ++k) {
-						Slide s(json["order"][i][nextdeck.getName()][k]["s"].asString());
+						Slide s(json["order"][i][nextdeck.getName()][k]["name"].asString()); 
+						// store name now, parse slide below, this allows a nice management of slides in and out, and order
 						nextdeck.addSlide(s);
 					}
 					decks.push_back(nextdeck);
@@ -104,8 +123,8 @@ namespace Software2552 {
 			for (auto& d : decks) {
 				for (Json::ArrayIndex i = 0; i < json[d.getName()].size(); ++i) {
 					std::string name = json[d.getName()][i]["name"].asString();
-					deck d2(name);
-					for (std::vector<deck>::iterator it = decks.begin(); it != decks.end(); ++it) {
+					Deck d2(name);
+					for (std::vector<Deck>::iterator it = decks.begin(); it != decks.end(); ++it) {
 						*it->addSlide();
 					}
 					std::string title = json["treaties"][i]["title"].asString();
