@@ -21,17 +21,51 @@ namespace Software2552 {
 		try {
 			set(defaults.font, json["defaults"]["font"]);
 			set(defaults.duration, json["defaults"]["duration"]);
-		
+			
+			// build order and list of slide decks
 			for (Json::ArrayIndex i = 0; i < json["order"].size(); ++i) {
 				for (Json::ArrayIndex j = 0; j < json["order"][i]["names"].size(); ++j) {
 					deck nextdeck(json["order"][i]["names"][j]["n"].asString());
 					for (Json::ArrayIndex k = 0; k < json["order"][i][nextdeck.getName()].size(); ++k) {
-						string test = json["order"][i][nextdeck.getName()][k]["s"].asString();
-						nextdeck.addSlide(json["order"][i][nextdeck.getName()][k]["s"].asString());
+						slide s(json["order"][i][nextdeck.getName()][k]["s"].asString());
+						nextdeck.addSlide(s);
 					}
 					decks.push_back(nextdeck);
 				}
 			}
+			// build decks
+			for (auto& currentDeck : decks) {
+				for (Json::ArrayIndex i = 0; i < json[currentDeck.getName()].size(); ++i) {
+						std::string name = json[currentDeck.getName()][i]["name"].asString();
+						slide newslide(json[currentDeck.getName()][i]["name"].asString());
+						std::vector<slide>::iterator it = find(currentDeck.getSlides().begin(), currentDeck.getSlides().end(), newslide);
+						if (it != currentDeck.getSlides().end()) {
+							it->title = json[currentDeck.getName()][i]["title"].asString();
+							it->timeline = json[currentDeck.getName()][i]["timeline"].asString();
+							it->lastupdate = json[currentDeck.getName()][i]["lastupdate"].asString();
+							readReference(it->ref, json[currentDeck.getName()][i]);
+							//for (Json::ArrayIndex j = 0; j < json[currentDeck.getName()][i]["reference"].size(); ++j) {
+							//}
+						}
+				}
+			}
+#if 0
+			for (auto& d : decks) {
+				for (Json::ArrayIndex i = 0; i < json[d.getName()].size(); ++i) {
+					std::string name = json[d.getName()][i]["name"].asString();
+					deck d2(name);
+					for (std::vector<deck>::iterator it = decks.begin(); it != decks.end(); ++it) {
+						*it->addSlide();
+					}
+					std::string title = json["treaties"][i]["title"].asString();
+					for (Json::ArrayIndex j = 0; j < json[deck.getName()][i]["names"].size(); ++j) {
+					}
+				}
+			}
+
+#endif // 0
+
+
 			//for (auto& deck : decks) {}
 			//set(names, json["order"]["names"]);
 		}

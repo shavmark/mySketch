@@ -170,7 +170,7 @@ namespace Software2552 {
 				State::draw(defaults);
 			}
 		}
-		bool operator==(const TimedState& rhs) { return true;/* do actual comparison */ }
+		bool operator==(const TimedState& rhs) { return true;/* do actual comparison bugbug */ }
 		const bool stop() {
 			if (!duration) {
 				return false; // no time out if no duration
@@ -223,20 +223,38 @@ namespace Software2552 {
 		Defaults defaults;
 	};
 
+	class slide : public Trace2552 {
+	public:
+		slide(const string&nameIn) {
+			name = nameIn;
+		}
+		bool operator==(const slide& rhs) { return rhs.name == name; }
+
+		string &getName() { return name; }
+
+		string title;
+		string timeline;
+		string lastupdate;
+		Reference ref;
+
+	private:
+		string name; // unique name
+	};
+
 	class deck : public Trace2552 {
 	public:
 		deck(const string &nameIn) {
 			name = nameIn;
 		}
-		void addSlide(const string &name) {
-			namesOfSlides.push_back(name);
+		void addSlide(const slide &s) {
+			slides.push_back(s);
 		}
 		string &getName() { return name; }
-		vector <string>& getSlides(){ return namesOfSlides; }
+		vector <slide>& getSlides(){ return slides; }
 
 	private:
 		string name;
-		vector <string> namesOfSlides;
+		vector <slide> slides;
 	};
 
 	//heart of the system
@@ -272,6 +290,12 @@ namespace Software2552 {
 			}
 		}
 		void set(vector <string> &value, const Json::ArrayIndex &data);
+		void readReference(Reference &ref, const Json::Value &data) {
+			for (Json::ArrayIndex j = 0; j < data["reference"].size(); ++j) {
+				ref.link = data["reference"][j]["link"].asString();
+			}
+		}
+	
 		// all key data needed to run the app goes here
 		TimeLine t;
 		ofxJSON json;  // source json
