@@ -1,11 +1,45 @@
 #include "t.h"
 
 namespace Software2552 {
+	template<typename T, typename T2>
+	void parse(T2& vec, const Json::Value &data)
+	{
+		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
+			T item;
+			item.read(data[j]);
+			vec.push_back(item);
+		}
+	}
+	void Defaults::read(const Json::Value &data) {
+		READ(font, data);
+		READ(italicfont, data);
+		READ(boldfont, data);
+		READ(fontsize, data);
+		READ(duration, data);
+	}
+	void Reference::read(const Json::Value &data) {
+		// no defaults
+		READ(url, data);
+		READ(date, data);
+		READ(location, data);
+		READ(source, data);
+	}
+	void Character::read(const Json::Value &data) {
+		READ(name, data);
+		READ(path, data);
+		READ(type, data);
+		READ(duration, data);
+		READ(duration, data);
+		READ(x, data);
+		READ(y, data);
+		READ(z, data);
+	}
 	
-	void slide::read(const Json::Value &data) {
+	void Slide::read(const Json::Value &data) {
 		READ(title, data);
 		READ(timeline, data);
 		READ(lastupdate, data);
+		parse<Reference>(references, data["reference"]);
 		for (Json::ArrayIndex j = 0; j < data["reference"].size(); ++j) {
 			Reference ref;
 			ref.read(data["reference"][j]);
@@ -16,7 +50,17 @@ namespace Software2552 {
 			audio.read(data["audio"][j]);
 			audios.push_back(audio);
 		}
-
+		for (Json::ArrayIndex j = 0; j < data["video"].size(); ++j) {
+			Video video;
+			video.read(data["video"][j]);
+			videos.push_back(video);
+		}
+	}
+	void Audio::read(const Json::Value &data) {
+		READ(url, data);
+		READ(volume, data);
+		READ(duration, data);
+		ref.read(data["reference"]);
 	}
 	void kernel::read() {
 		string file = "json.json";
@@ -38,7 +82,7 @@ namespace Software2552 {
 				for (Json::ArrayIndex j = 0; j < json["order"][i]["names"].size(); ++j) {
 					deck nextdeck(json["order"][i]["names"][j]["n"].asString());
 					for (Json::ArrayIndex k = 0; k < json["order"][i][nextdeck.getName()].size(); ++k) {
-						slide s(json["order"][i][nextdeck.getName()][k]["s"].asString());
+						Slide s(json["order"][i][nextdeck.getName()][k]["s"].asString());
 						nextdeck.addSlide(s);
 					}
 					decks.push_back(nextdeck);
@@ -48,9 +92,9 @@ namespace Software2552 {
 			for (auto& currentDeck : decks) {
 				for (Json::ArrayIndex i = 0; i < json[currentDeck.getName()].size(); ++i) {
 					std::string name = json[currentDeck.getName()][i]["name"].asString();
-					slide newslide(json[currentDeck.getName()][i]["name"].asString());
+					Slide newslide(json[currentDeck.getName()][i]["name"].asString());
 					// read into matching slide
-					std::vector<slide>::iterator it = find(currentDeck.getSlides().begin(), currentDeck.getSlides().end(), newslide);
+					std::vector<Slide>::iterator it = find(currentDeck.getSlides().begin(), currentDeck.getSlides().end(), newslide);
 					if (it != currentDeck.getSlides().end()) {
 						it->read(json[currentDeck.getName()][i]); 
 					}

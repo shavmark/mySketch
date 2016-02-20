@@ -10,6 +10,9 @@
 
 namespace Software2552 {
 	// helpers
+
+	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data); 
+	
 	// set only if value in json
 	inline void set(string &value, const Json::Value& data) {
 		if (data.size() == 0 && data.asString().length() > 0) { // not an  array and there is data
@@ -130,13 +133,7 @@ namespace Software2552 {
 	// reference to a cited item
 	class Reference {
 	public:
-		void read(const Json::Value &data) {
-			// no defaults
-			READ(url, data);
-			READ(date, data);
-			READ(location, data);
-			READ(source, data);
-		}
+		void read(const Json::Value &data);
 
 		string url; // can be local too
 		string date;
@@ -144,24 +141,36 @@ namespace Software2552 {
 		string source;
 	};
 
+	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
+	class Character {
+	public:
+		Character() {
+			x = y = z = 0;
+			type = "2d";
+			duration = 0; // life of slide?
+		}
+		void read(const Json::Value &data);
+		string type; // 2d, 3d
+		string path;
+		string name;
+		int    x,y,z;
+		float duration;
+		
+	};
 	class Audio {
 	public:
 		Audio() {
 			duration = 10.0;  // 10 seconds
 			volume = 5; // 1/2 way
 		}
-		void read(const Json::Value &data) {
-			READ(url, data);
-			READ(volume, data);
-			READ(duration, data);
-			ref.read(data["reference"]);
-		}
+		void read(const Json::Value &data);
 		string url;// can be local too
 		int    volume;
 		float duration;
 		Reference ref;
 	};
-
+	class Video : public Audio {
+	};
 	// default settings
 	class Defaults {
 	public:
@@ -172,13 +181,7 @@ namespace Software2552 {
 			fontsize = 18;
 			duration = 0; // forever by default
 		}
-		void read(const Json::Value &data) {
-			READ(font, data);
-			READ(italicfont, data);
-			READ(boldfont, data);
-			READ(fontsize, data);
-			READ(duration, data);
-		}
+		void read(const Json::Value &data);
 		string font;
 		string italicfont;
 		string boldfont;
@@ -275,15 +278,15 @@ namespace Software2552 {
 		Defaults defaults;
 	};
 
-	class slide : public Trace2552 {
+	class Slide : public Trace2552 {
 	public:
-		slide(const string&nameIn) {
+		Slide(const string&nameIn) {
 			name = nameIn;
 		}
 
 		void read(const Json::Value &data);
 
-		bool operator==(const slide& rhs) { return rhs.name == name; }
+		bool operator==(const Slide& rhs) { return rhs.name == name; }
 
 		string &getName() { return name; }
 
@@ -292,7 +295,7 @@ namespace Software2552 {
 		string lastupdate;
 		vector <Reference> references;
 		vector <Audio> audios;
-
+		vector <Video> videos;
 	private:
 		string name; // unique name
 	};
@@ -302,15 +305,15 @@ namespace Software2552 {
 		deck(const string &nameIn) {
 			name = nameIn;
 		}
-		void addSlide(const slide &s) {
+		void addSlide(const Slide &s) {
 			slides.push_back(s);
 		}
 		string &getName() { return name; }
-		vector <slide>& getSlides(){ return slides; }
+		vector <Slide>& getSlides(){ return slides; }
 
 	private:
 		string name;
-		vector <slide> slides;
+		vector <Slide> slides;
 	};
 
 	//heart of the system
