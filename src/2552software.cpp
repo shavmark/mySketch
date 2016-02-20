@@ -62,6 +62,12 @@ namespace Software2552 {
 		logError2(message + ":  " + ofToHex(hResult), file, line);
 
 	}
+	// use when source location is not needed
+	void Trace2552::logTraceBasic(const string& message, char *name){
+		string text = name;
+		text += " " + message + ";"; // dirty dump bugbug maybe clean up some day
+		ofLog(OF_LOG_NOTICE, text);
+	}
 	void Trace2552::logTrace2(const string& message,  char*file, int line) {
 		if (ofGetLogLevel() >= OF_LOG_NOTICE) {
 			ofLog(OF_LOG_NOTICE, buildString(message, file, line));

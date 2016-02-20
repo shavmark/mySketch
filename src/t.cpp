@@ -10,6 +10,53 @@ namespace Software2552 {
 			vec.push_back(item);
 		}
 	}
+#if _DEBUG
+	void PrintJSONValue(const Json::Value &val)
+	{
+		if (val.isString()) {
+			basicTrace("asString " + val.asString());
+		}
+		else if (val.isBool()) {
+			basicTrace("asBool " + ofToString(val.asBool()));
+		}
+		else if (val.isInt()) {
+			basicTrace("int " + ofToString(val.asInt()));
+		}
+		else if (val.isUInt()) {
+			basicTrace("uint "+ofToString(val.asUInt()));
+		}
+		else if (val.isDouble()) {
+			basicTrace("double "+ofToString(val.asDouble()));
+		}
+		else
+		{
+			basicTrace("unknown type="+ofToString(val.type()));
+		}
+	}
+
+	bool PrintJSONTree(const Json::Value &root)
+	{
+		if (root.size() > 0) {
+			
+			for (Json::ValueIterator itr = root.begin(); itr != root.end(); itr++) {
+				basicTrace("subvalue(");
+				PrintJSONValue(itr.key());
+				basicTrace(")");
+				PrintJSONTree(*itr);
+			}
+			return true;
+		}
+		else {
+			basicTrace("root");
+			PrintJSONValue(root);
+		}
+		return true;
+	}
+#else
+	bool PrintJSONTree(const Json::Value &root) {}
+	void PrintJSONValue(const Json::Value &val) {}
+#endif
+
 	// return true if there is some data 
 	bool TimeBaseClass::read(const Json::Value &data) {
 		if (CommonData::read(data)) {
@@ -19,18 +66,43 @@ namespace Software2552 {
 		}
 		return false;
 	}
-
-	void Defaults::read(const Json::Value &data) {
+	bool Image::read(const Json::Value &data) {
+		if (Graphic::read(data)) {
+			READ(url, data);
+			return true;
+		}
+		return false;
+	}
+		
+	bool Defaults::read(const Json::Value &data) {
+		bool found = false;
 		if (TimeBaseClass::read(data)) {
 			READ(font, data);
 			READ(italicfont, data);
 			READ(boldfont, data);
 			READ(fontsize, data);
+			found = true;
 		}
-
+		if (Graphic::read(data)) {
+			found = true;
+		}
+		return found;
 	}
 	// true of any object
 	bool CommonData::read(const Json::Value &data) {
+		// this should never be a list, lists are processed in other areas
+		if (data.size() > 0 && data.type() != Json::objectValue)	{
+			PrintJSONValue(data);
+			string error = "invalid data ";
+			if (data.isConvertibleTo(Json::stringValue)) {
+				error += data.asString();
+				logErrorString(error); //bugbug put in the name here to help debug json files
+			}
+			else {
+				PrintJSONTree(data);
+			}
+			return false;
+		}
 		if (!data.empty()) { // ignore reference as an array or w/o data at this point
 			READ(timelineDate, data);
 			READ(date, data);
@@ -42,53 +114,74 @@ namespace Software2552 {
 		return false;
 	}
 
-	void Reference::read(const Json::Value &data) {
+	bool Reference::read(const Json::Value &data) {
 		if (CommonData::read(data)) { // ignore reference as an array or w/o data at this point
 			// no base class so it repeats some data in base class TimeBaseClass
 			READ(url, data);
 			READ(location, data);
 			READ(source, data);
+			return true;
 		}
+		return false;
 	}
-	void Character::read(const Json::Value &data) {
+	bool Character::read(const Json::Value &data) {
+		if (Graphic::read(data)) {
+			return true;
+		}
+		return false;
+	}
+
+	bool Graphic::read(const Json::Value &data) {
 		if (TimeBaseClass::read(data)) {
-			READ(path, data);
 			READ(type, data);
 			READ(x, data);
 			READ(y, data);
 			READ(z, data);
+			READ(foreground, data); // for now just use color  names (see ofColor) bugbug see how color pans out
+			READ(background, data);
+
+			return true;
 		}
+		return false;
 	}
-	void Text::read(const Json::Value &data) {
-		if (TimeBaseClass::read(data)) {
+
+	bool Text::read(const Json::Value &data) {
+		if (Graphic::read(data)) {
 			READ(paragraph, data);
 			READ(size, data);
 			READ(font, data);
+			return true;
 		}
+		return false;
 	}
-	void Slide::read(const Json::Value &data) {
+	bool Slide::read(const Json::Value &data) {
 		if (TimeBaseClass::read(data)) {
 			READ(title, data);
 			parse<Audio>(audios, data["audio"]);
 			parse<Video>(videos, data["video"]);
 			parse<Text>(texts, data["text"]);
+			parse<Image>(images, data["images"]);
+			parse<Graphic>(graphics, data["graphics"]);
+			return true;
 		}
+		return false;
 	}
-	void Audio::read(const Json::Value &data) {
-		if (TimeBaseClass::read(data)) {
-			READ(url, data);
+	bool Audio::read(const Json::Value &data) {
+		if (Image::read(data)) {
 			READ(volume, data);
+			return true;
 		}
+		return false;
 	
 	}
-	void kernel::read() {
+	bool kernel::read() {
 		string file = "json.json";
 		if (json.open(file)) {
 			logTrace(json.getRawString());
 		}
 		else {
 			logErrorString("Failed to parse JSON " + file);
-			return;
+			return false;
 		}
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
@@ -141,10 +234,10 @@ namespace Software2552 {
 			}
 		catch (std::exception e) {
 			logErrorString(e.what());
-			return;
+			return false;
 		}
 
-
+		return true;
 #if 0
 		int y = 0;
 		for (Json::ArrayIndex i = 0; i < json["treaties"].size(); ++i) {

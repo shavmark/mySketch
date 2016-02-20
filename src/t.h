@@ -139,7 +139,17 @@ namespace Software2552 {
 		CommonData(const string&nameIn) {
 			name = nameIn;
 		}
-
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(CommonData));
+			basicTrace(date);
+			basicTrace(timelineDate);
+			basicTrace(lastUpdateDate);
+			basicTrace(name);
+			basicTrace(notes);
+		}
+#endif
 		bool operator==(const CommonData& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
 		bool read(const Json::Value &data);
@@ -154,7 +164,18 @@ namespace Software2552 {
 	// reference to a cited item
 	class Reference : public CommonData {
 	public:
-		void read(const Json::Value &data);
+		bool read(const Json::Value &data);
+
+		// echo object (debug only)
+#if _DEBUG
+		void trace() {
+			basicTrace(STRINGIFY(Reference));
+			CommonData::trace();
+			basicTrace(url);
+			basicTrace(location);
+			basicTrace(source);
+		}
+#endif
 
 		string url; // can be local too
 		string location;
@@ -170,49 +191,150 @@ namespace Software2552 {
 		TimeBaseClass(const string&nameIn):CommonData(nameIn) {
 			duration = 0; // infinite by default
 		}
-		
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(TimeBaseClass));
+			CommonData::trace();
+			basicTrace(ofToString(duration));
+			for (auto& ref : references) {
+				ref.trace();
+			}
+		}
+
+#endif // _DEBUG
+
 		bool read(const Json::Value &data);
 		vector <Reference> references;
 		float duration; 
 	};
 
-	class Text : public TimeBaseClass {
+	// basic graphic like SUN etc to add flavor
+	class Graphic : public TimeBaseClass {
 	public:
-		void read(const Json::Value &data);
-		
+		Graphic() {
+			x = y = z = 0;
+		}
+		bool read(const Json::Value &data);
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Graphic));
+			TimeBaseClass::trace();
+			basicTrace(type);
+			basicTrace(ofToString(x));
+			basicTrace(ofToString(y));
+			basicTrace(ofToString(z));
+			basicTrace(foreground);
+			basicTrace(background);
+		}
+
+#endif // _DEBUG
+
+		int    x, y, z;
+		string type; // 2d, 3d, other
+		string foreground;
+		string background;
+	};
+
+	class Text : public Graphic {
+	public:
+		bool read(const Json::Value &data);
+
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Text));
+			Graphic::trace();
+			basicTrace(paragraph);
+			basicTrace(font);
+			basicTrace(ofToString(size));
+		}
+#endif // _DEBUG
+
 		string paragraph; //bugbug convert to ofxParagraph for here, font and size (not sure about size)
 		string font;
 		int size;
 	};
 
+
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
-	class Character : public TimeBaseClass {
+	class Character : public Graphic {
 	public:
 		Character() {
-			x = y = z = 0;
 			type = "2d";
 		}
-		void read(const Json::Value &data);
-		string type; // 2d, 3d
-		string path;
-		int    x,y,z;
-		
+		bool read(const Json::Value &data);
+
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Character));
+
+			Graphic::trace();
+		}
+
+#endif // _DEBUG
+
 	};
-	class Audio : public TimeBaseClass {
+	class Image : public Graphic {
+	public:
+		bool read(const Json::Value &data);
+
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Image));
+
+			Graphic::trace();
+			basicTrace(url);
+		}
+
+#endif // _DEBUG
+
+		string url; // remote or local bugbug maybe make a better name?  not sure
+
+	};
+
+	// audio gets an x,y,z which can be ignored, its better to keep things overall consistant 
+	class Audio : public Image {
 	public:
 		Audio() {
-			duration = 10.0;  // 10 seconds
 			volume = 5; // 1/2 way
 		}
-		void read(const Json::Value &data);
-		string url;// can be local too
+		bool read(const Json::Value &data);
+
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Audio));
+
+			Image::trace();
+			basicTrace(ofToString(volume));
+		}
+
+#endif // _DEBUG
+
 		int    volume;
 		
 	};
+	
 	class Video : public Audio {
+	public:
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Video));
+
+			Audio::trace();
+		}
+
+#endif // _DEBUG
 	};
+
+
 	// default settings
-	class Defaults : public TimeBaseClass {
+	class Defaults : public TimeBaseClass, public Graphic {
 	public:
 		Defaults() {
 			font = "data/Raleway - Thin.ttf";
@@ -220,13 +342,90 @@ namespace Software2552 {
 			boldfont = "data/Raleway-Bold.ttf";
 			fontsize = 18;
 		}
-		void read(const Json::Value &data);
+		bool read(const Json::Value &data);
+
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Defaults));
+
+			TimeBaseClass::trace();
+			Graphic::trace();
+
+			basicTrace(font);
+			basicTrace(italicfont);
+			basicTrace(boldfont);
+			basicTrace(ofToString(fontsize));
+		}
+#endif
 		string font;
 		string italicfont;
 		string boldfont;
 		int    fontsize;
 	};
 
+	class Slide : public TimeBaseClass {
+	public:
+		Slide(const string&name) :TimeBaseClass(name) {}
+
+		bool read(const Json::Value &data);
+
+#if _DEBUG
+		// echo object (debug only) bugbug make debug only
+		void trace() {
+			basicTrace(STRINGIFY(Slide));
+
+			TimeBaseClass::trace();
+			basicTrace(title);
+			for (auto& a : audios) {
+				a.trace();
+			}
+			for (auto& v : videos) {
+				v.trace();
+			}
+			for (auto& t : texts) {
+				t.trace();
+			}
+			for (auto& i : images) {
+				i.trace();
+			}
+			for (auto& g : graphics) {
+				g.trace();
+			}
+		}
+
+#endif // _DEBUG
+
+		string title;
+		vector <Audio> audios;
+		vector <Video> videos;
+		vector <Text>  texts;
+		vector <Image> images;
+		vector <Graphic> graphics;
+	};
+
+	class Deck : public TimeBaseClass {
+	public:
+		Deck(const string&name) :TimeBaseClass(name) {}
+
+#if _DEBUG
+		// echo object (debug only) bugbug make debug only
+		void trace() {
+			basicTrace(STRINGIFY(Deck));
+			for (auto& slide : slides) {
+				slide.trace();
+			}
+		}
+#endif
+		void addSlide(const Slide &s) {
+			slides.push_back(s);
+		}
+
+		vector <Slide>& getSlides() { return slides; }
+
+	private:
+		vector <Slide> slides;
+	};
 	// state of system
 	class State {
 	public:
@@ -315,33 +514,7 @@ namespace Software2552 {
 		Defaults defaults;
 	};
 
-	class Slide : public TimeBaseClass {
-	public:
-		Slide(const string&name):TimeBaseClass(name){}
-
-		void read(const Json::Value &data);
-
-		string title;
-		string timeline;
-		string lastupdate;
-		vector <Audio> audios;
-		vector <Video> videos;
-		vector <Text> texts;
-	};
-
-	class Deck : public TimeBaseClass {
-	public:
-		Deck(const string&name) :TimeBaseClass(name) {}
-
-		void addSlide(const Slide &s) {
-			slides.push_back(s);
-		}
-		
-		vector <Slide>& getSlides(){ return slides; }
-
-	private:
-		vector <Slide> slides;
-	};
+	
 
 	//heart of the system
 	class kernel  {
@@ -355,7 +528,17 @@ namespace Software2552 {
 		void draw() {
 			t.draw();
 		}
-		void read();
+		bool read();
+#if _DEBUG
+		// echo object (debug only) bugbug make debug only
+		void trace() {
+			basicTrace(STRINGIFY(kernel));
+			for (auto& deck : decks) {
+				deck.trace();
+			}
+		}
+#endif
+
 	private:
 		
 	

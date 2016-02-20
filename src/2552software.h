@@ -19,6 +19,8 @@
 // !!keep all MS files above ofmain.h https://forum.openframeworks.cc/t/how-to-include-atl-in-vs2012-project/14672/2
 #include "ofMain.h"
 
+#define STRINGIFY(p) #p
+
 namespace Software2552 {
 
 	// root class, basic and small but items every object needs.  Try to avoid adding data to keep it small
@@ -39,13 +41,15 @@ namespace Software2552 {
 				ofLog(OF_LOG_VERBOSE, buildString(message, file, line));
 			}
 		}
+		static void logTraceBasic(const string& message, char *name);
 		static void logTrace2(const string& message, char*file, int line);
 		static void logError2(HRESULT hResult, const string&  message, char*file, int line);
 		static bool CheckHresult2(HRESULT hResult, const string& message, char*file, int line);
 		static string buildString(const string& errorIn, char* file, int line);
 		static std::string wstrtostr(const std::wstring &wstr);
 
-		// get the right line number
+		// get the right line number bugbug add DEBUG ONLY
+#if _DEBUG
 #define logError(p1, p2) Trace2552::logError2(p1, p2, __FILE__, __LINE__)
 #define logErrorString(p1) Trace2552::logError2(p1, __FILE__, __LINE__)
 #define logVerbose(p1) Trace2552::logVerbose2(p1, __FILE__, __LINE__)
@@ -53,7 +57,8 @@ namespace Software2552 {
 #define checkPointer(p1, p2) Trace2552::checkPointer2(p1, p2, __FILE__, __LINE__)
 #define checkPointer(p1, p2) Trace2552::checkPointer2(p1, p2, __FILE__, __LINE__)
 #define hresultFails(p1, p2) Trace2552::CheckHresult2(p1, p2, __FILE__, __LINE__)
-
+#define basicTrace(p) Trace2552::logTraceBasic(p, #p)
+#endif
 	};
 
 	template<class Interface> void SafeRelease(Interface *& pInterfaceToRelease)

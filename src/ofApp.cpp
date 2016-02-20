@@ -9,6 +9,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	k.setup(); // create time line
+	k.trace();
 	//paragraphs.build(ofGetWidth());
 	//ofSetLogLevel(OF_LOG_VERBOSE);
 	//ofSetFullscreen(true);
