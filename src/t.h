@@ -212,13 +212,20 @@ namespace Software2552 {
 			x = y = z = 0;
 			duration = 0; // infinite by default
 			start = 0; // force reset to be called to make sure timing is right
+			delay = 0;
 		}
 		bool read(const Json::Value &data);
 		void setup() {
 			start = ofGetElapsedTimef();
+			start += delay;
 		}
-		void update() {}
-		void draw() {}
+		void update() {
+		}
+		void draw() {
+			if (start <= 0 || ofGetElapsedTimef() > 0) {
+				return; // not started yet
+			}
+		}
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -226,6 +233,7 @@ namespace Software2552 {
 			TimeLineBaseClass::trace();
 			basicTrace(type);
 			basicTrace(ofToString(duration));
+			basicTrace(ofToString(delay));
 			basicTrace(ofToString(x));
 			basicTrace(ofToString(y));
 			basicTrace(ofToString(z));
@@ -240,6 +248,7 @@ namespace Software2552 {
 		string background;
 		float duration;
 		float start;
+		float delay; // start+delay is the true start
 	};
 
 	class Text : public Graphic {

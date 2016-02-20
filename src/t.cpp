@@ -135,6 +135,7 @@ namespace Software2552 {
 		if (TimeLineBaseClass::read(data)) {
 			READ(type, data);
 			READ(duration, data);
+			READ(delay, data);
 			READ(x, data);
 			READ(y, data);
 			READ(z, data);
