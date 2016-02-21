@@ -7,9 +7,9 @@
 
 
 //--------------------------------------------------------------
-void ofApp::setup(){
-	k.read(); // create time line
-	k.trace();
+void ofStoryTellerApp::setup(){
+	decks.read(); // create time line
+	decks.trace();
 	//paragraphs.build(ofGetWidth());
 	//ofSetLogLevel(OF_LOG_VERBOSE);
 	//ofSetFullscreen(true);
@@ -157,7 +157,7 @@ void ofApp::setup(){
 
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofStoryTellerApp::update(){
 	if (years < 12000) {
 		for (int i = 0; i < 10; i++) {
 			float radius = ofRandom(160, 280);
@@ -290,7 +290,7 @@ void ofApp::update(){
 #endif
 }
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofStoryTellerApp::draw(){
 	
 	//for (int i = 0; i< paragraphs.get().size(); i++) {
 	//	paragraphs.get(i).draw();
@@ -464,7 +464,7 @@ void ofApp::draw(){
 	*/
 }
 
-void ofApp::mouseDragged(int x, int y, int button) {
+void ofStoryTellerApp::mouseDragged(int x, int y, int button) {
 	for (int i = 0; i < 20; i++) {
 		float radius = ofRandom(60, 80);
 		float x = cos(ofRandom(PI * 2.0)) * radius + mouseX;
@@ -479,54 +479,54 @@ void ofApp::mouseDragged(int x, int y, int button) {
 	}
 }
 
-void ofApp::exit() {
-	ringButton.removeListener(this, &ofApp::ringButtonPressed);
+void ofStoryTellerApp::exit() {
+	ringButton.removeListener(this, &ofStoryTellerApp::ringButtonPressed);
 }
 
 //--------------------------------------------------------------
-void ofApp::circleResolutionChanged(int &circleResolution) {
+void ofStoryTellerApp::circleResolutionChanged(int &circleResolution) {
 	ofSetCircleResolution(circleResolution);
 }
 
 //--------------------------------------------------------------
-void ofApp::ringButtonPressed() {
+void ofStoryTellerApp::ringButtonPressed() {
 	ring.play();
 }
 
 //--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button) {
+void ofStoryTellerApp::mousePressed(int x, int y, int button) {
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button) {
+void ofStoryTellerApp::mouseReleased(int x, int y, int button) {
 }
 //--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
+void ofStoryTellerApp::mouseMoved(int x, int y ){
 
 }
 
+
 //--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
+void ofStoryTellerApp::mouseExited(int x, int y){
 
 }
 
 //--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
+void ofStoryTellerApp::windowResized(int w, int h){
 
 }
 
 //--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
+void ofStoryTellerApp::gotMessage(ofMessage msg){
 
 }
 
-void ofApp::keyPressed(int key) {
+//--------------------------------------------------------------
+void ofStoryTellerApp::dragEvent(ofDragInfo dragInfo){ 
+
+}
+
+void ofStoryTellerApp::keyPressed(int key) {
 	if (key == 'c') {
 		float r = ofRandom(4, 20);
 		circles.push_back(ofPtr<ofxBox2dCircle>(new ofxBox2dCircle));

@@ -29,6 +29,8 @@ namespace Software2552 {
 			value = data.asInt();
 		}
 	}
+
+// will only set vars if there is a string to set, ok to preserve existing values
 #define READ(var, data) set(var, data[#var])
 
 
@@ -131,8 +133,108 @@ namespace Software2552 {
 		ofxSmartText title; // font for the title bugbug not sure where to delete this yet
 	};
 
-	// common to all classes
-	class CommonData {
+	// default settings
+	class Defaults {
+	public:
+		Defaults() {
+			font = "data/Raleway - Thin.ttf";
+			italicfont = "data/Raleway-Italic.ttf";
+			boldfont = "data/Raleway-Bold.ttf";
+			fontsize = 18;
+		}
+		bool read(const Json::Value &data);
+
+		// get default if needed
+		string getFont(const string& testfont) {
+			if (testfont.length() > 0) {
+				return testfont;
+			}
+			return font;
+		}
+		// get default if needed
+		string getItalicFont(const string& testfont) {
+			if (italicfont.length() > 0) {
+				return italicfont;
+			}
+			return italicfont;
+		}
+		// get default if needed
+		string getBoldFont(const string& testfont) {
+			if (boldfont.length() > 0) {
+				return boldfont;
+			}
+			return boldfont;
+		}
+		// get default if needed
+		int getFontSize(int size) {
+			if (size > 0) {
+				return size;
+			}
+			return fontsize;
+		}
+		ofLight & getLight() { return light; }
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Defaults));
+			basicTrace(font);
+			basicTrace(italicfont);
+			basicTrace(boldfont);
+			basicTrace(ofToString(fontsize));
+		}
+#endif
+	protected:
+		string font;
+		string italicfont;
+		string boldfont;
+		int    fontsize;
+		ofLight	 light;
+		ofCamera camera;
+	};
+
+	class Timeline {
+	public:
+		Timeline() {
+		}
+		Timeline(const string& titleIn) {
+			title = titleIn;
+		}
+		Timeline(const Defaults& defaultsIn, const string& titleIn) {
+			title = titleIn;
+			myDefaults = defaultsIn; // start with common defaults for example
+		}
+		bool operator==(const Timeline& rhs) { return rhs.title == title; }
+		string &getTitle() { return title; }
+
+		// read in my defaults and title
+		bool read(const Json::Value &data) {
+			read(data["defaults"]); // any item in a timeline class tree can have its own defaults
+			READ(title, data);
+			return true;
+		}
+		// combine my and my parents defaults
+		Defaults& getDefaults() { 
+			return myDefaults;
+		}
+#if _DEBUG
+		template<typename T> void trace(T& vec) {
+			for (auto& a : vec) {
+				a.trace();
+			}
+		}
+		// echo object (debug only) bugbug make debug only
+		void trace() {
+			basicTrace(STRINGIFY(Timeline));
+			myDefaults.trace();
+		}
+
+#endif // _DEBUG
+	private:
+		Defaults myDefaults; // every object can have its own  defaults that derives from this object
+		string title; // title of deck, slide etc. Must be unique
+	};
+
+	class CommonData  {
 	public:
 		CommonData() {
 		}
@@ -369,68 +471,12 @@ namespace Software2552 {
 	};
 
 
-	// default settings
-	class Defaults  {
-	public:
-		Defaults() {
-			font = "data/Raleway - Thin.ttf";
-			italicfont = "data/Raleway-Italic.ttf";
-			boldfont = "data/Raleway-Bold.ttf";
-			fontsize = 18;
-		}
-		bool read(const Json::Value &data);
-
-		// get default if needed
-		string getFont(const string& testfont) {
-			if (testfont.length() > 0) {
-				return testfont;
-			}
-			return font;
-		}
-		// get default if needed
-		string getItalicFont(const string& testfont) {
-			if (italicfont.length() > 0) {
-				return italicfont;
-			}
-			return italicfont;
-		}
-		// get default if needed
-		string getBoldFont(const string& testfont) {
-			if (boldfont.length() > 0) {
-				return boldfont;
-			}
-			return boldfont;
-		}
-		// get default if needed
-		int getFontSize(int size) {
-			if (size > 0) {
-				return size;
-			}
-			return fontsize;
-		}
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			basicTrace(STRINGIFY(Defaults));
-			basicTrace(font);
-			basicTrace(italicfont);
-			basicTrace(boldfont);
-			basicTrace(ofToString(fontsize));
-		}
-#endif
-	protected:
-		string font;
-		string italicfont;
-		string boldfont;
-		int    fontsize;
-	};
 	
 	
-	class Slide : public TimeLineBaseClass {
+	class Slide : public Timeline {
 	public:
-		
-		Slide(const string&name) :TimeLineBaseClass(name) {}
-
+		Slide(const string& title) : Timeline(title) {}
+		Slide(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
 		void setup();
 		void update();
 		void draw();
@@ -445,8 +491,7 @@ namespace Software2552 {
 		void trace() {
 			basicTrace(STRINGIFY(Slide));
 
-			TimeLineBaseClass::trace();
-			basicTrace(title);
+			Timeline::trace();
 			trace(audios);
 			trace(videos);
 			trace(texts);
@@ -475,22 +520,22 @@ namespace Software2552 {
 				a.draw();
 			}
 		}
-
-
-		string title;
 		vector <Audio> audios; // join with ofaudio
 		vector <Video> videos; // join wiht ofvideo
 		vector <Character> characters; // join with vector <Model3D> models;
 		vector <Image> images; //bugbug join with ofImage vector <ofImage> images;
 		vector <Graphic> graphics; // tie to ofX
-
 		vector <Text>  texts; //bugbug join Text and Paragraph2552 vector<Paragraph2552> paragraphs;
 
 	};
 
-	class Deck : public TimeLineBaseClass {
+	class Deck : public Timeline {
 	public:
-		Deck(const string&name) :TimeLineBaseClass(name) {}
+		Deck(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
+		
+		// read a deck from json (you can also just build one in code)
+		bool read(const string& fileName = "json.json");
+
 		void setup() {
 			for (auto& slide : slides) {
 				slide.setup();
@@ -526,16 +571,23 @@ namespace Software2552 {
 
 	private:
 		vector <Slide> slides;
+		
 	};
-
-	//heart of the system
-	class kernel  {
+	
+	class Decks :public Timeline {
 	public:
-		kernel() {}
+		// set our own defaults
+		Decks(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
 
-		// open, parse json file bugbug move all these large in lines into cpp at some point
-		void setup() { 
-			
+		// get defaults later
+		Decks() : Timeline() {}
+
+		void read() {
+			Deck deck(getDefaults(), "main deck");
+			deck.read("json.json");
+			decks.push_back(deck);
+		}
+		void setup() {
 			for (auto& deck : decks) {
 				deck.setup(); // bugbug reset time of start when the graphic is drawn
 			}
@@ -550,12 +602,11 @@ namespace Software2552 {
 				deck.draw();
 			}
 		}
-		bool read();
-		static Defaults &getDefaults() { return defaults; } // assume global access and one instance
+
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
-			basicTrace(STRINGIFY(kernel));
+			basicTrace(STRINGIFY(Decks));
 			for (auto& deck : decks) {
 				deck.trace();
 			}
@@ -563,14 +614,8 @@ namespace Software2552 {
 #endif
 
 	private:
-		
-	
-		// all key data needed to run the app goes here
-		ofxJSON json;  // source json
-		static Defaults defaults;// assume global access and one instance
-		vector <Deck> decks; // core of the data driven app
-
+		vector<Deck> decks;
+		// bugbug these will come into play later ofLight	light; 	ofEasyCam camera;
 
 	};
-
 }

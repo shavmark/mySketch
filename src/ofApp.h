@@ -15,10 +15,11 @@
 #include "kinect2552.h"
 #include "t.h"
 
-class ofApp : public ofBaseApp{
+
+class ofStoryTellerApp : public ofBaseApp{
 
 	public:
-		ofApp():ofBaseApp(){};
+		ofStoryTellerApp():ofBaseApp(){};
 
 		void setup();
 		void update();
@@ -40,10 +41,10 @@ class ofApp : public ofBaseApp{
 		Software2552::KinectFaces faces;
 		Software2552::KinectAudio audio;
 		Software2552::Kinect2552 myKinect;
-		vector <ofVideoPlayer> videoPlayers;
-		ofSoundPlayer soundPlayer;
 
-		void ofApp::drawScene(bool isPreview){
+		Software2552::Decks decks;
+
+		void ofStoryTellerApp::drawScene(bool isPreview){
 	
 	ofEnableDepthTest();
 
@@ -113,9 +114,6 @@ class ofApp : public ofBaseApp{
 	
 	ofDisableDepthTest();
 }
-
-		Software2552::kernel k;
-
 
 		ofxBox2d box2d;
 		vector <ofPtr<ofxBox2dCircle> >	circles;		  //	default box2d circles

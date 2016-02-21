@@ -1,7 +1,7 @@
 #include "t.h"
 
 namespace Software2552 {
-	Defaults kernel::defaults; // on global instance
+	//Defaults kernel::defaults; // on global instance
 
 	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data)
 	{
@@ -183,8 +183,7 @@ namespace Software2552 {
 		return false;
 	}
 	bool Slide::read(const Json::Value &data) {
-		if (TimeLineBaseClass::read(data)) {
-			READ(title, data);
+		if (Timeline::read(data)) {
 			parse<Audio>(audios, data["audio"]);
 			parse<Video>(videos, data["video"]);
 			parse<Text>(texts, data["text"]);
@@ -202,42 +201,35 @@ namespace Software2552 {
 		return false;
 	
 	}
-	bool kernel::read() {
-		string file = "json.json";
-		if (json.open(file)) {
+	// read as many jason files as needed, each becomes a deck
+	bool Deck::read(const string& fileName) {
+		ofxJSON json;
+
+		if (json.open(fileName)) {
 			logTrace(json.getRawString());
 		}
 		else {
-			logErrorString("Failed to parse JSON " + file);
+			logErrorString("Failed to parse JSON " + fileName);
 			return false;
 		}
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
-			defaults.read(json["defaults"]); // global
+			Timeline::read(json);
 
 			// build order and list of slide decks
 			for (Json::ArrayIndex i = 0; i < json["order"].size(); ++i) {
-				for (Json::ArrayIndex j = 0; j < json["order"][i]["names"].size(); ++j) {
-					Deck nextdeck(json["order"][i]["names"][j]["name"].asString());
-					for (Json::ArrayIndex k = 0; k < json["order"][i][nextdeck.getName()].size(); ++k) {
-						Slide s(json["order"][i][nextdeck.getName()][k]["name"].asString()); 
-						// store name now, parse slide below, this allows a nice management of slides in and out, and order
-						nextdeck.addSlide(s);
-					}
-					decks.push_back(nextdeck);
-				}
+				Slide s(getDefaults(), json["order"][i].asString());
+				// slides stored in order they should be run
+				addSlide(Slide(getDefaults(), json["order"][i].asString()));
 			}
-			// build decks, break out to make code more readable plus the slides can be read in in any order
-			for (auto& currentDeck : decks) {
-				for (Json::ArrayIndex i = 0; i < json[currentDeck.getName()].size(); ++i) {
-					std::string name = json[currentDeck.getName()][i]["name"].asString();
-					Slide newslide(json[currentDeck.getName()][i]["name"].asString());
-					// read into matching slide
-					std::vector<Slide>::iterator it = find(currentDeck.getSlides().begin(), currentDeck.getSlides().end(), newslide);
-					if (it != currentDeck.getSlides().end()) {
-						it->read(json[currentDeck.getName()][i]); 
-					}
+			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
+				Slide lookupslide(json["scenes"][i].asString());
+				// read into matching slide
+				std::vector<Slide>::iterator it = find(getSlides().begin(), getSlides().end(), lookupslide);
+				if (it != getSlides().end()) {
+					// defaults can appear here too
+					it->read(json["scenes"][i]); // update slide in place
 				}
 			}
 #if 0
