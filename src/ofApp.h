@@ -42,7 +42,7 @@ class ofStoryTellerApp : public ofBaseApp{
 		Software2552::KinectAudio audio;
 		Software2552::Kinect2552 myKinect;
 
-		Software2552::Decks decks;
+		Software2552::Story decks;
 
 		void ofStoryTellerApp::drawScene(bool isPreview){
 	

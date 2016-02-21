@@ -13,10 +13,10 @@ namespace Software2552 {
 
 	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data); 
 
-	template<typename T> void trace(T& vec);
-	template<typename T> void setup(T& vec);
-	template<typename T> void update(T& vec);
-	template<typename T> void draw(T& vec);
+	template<typename T> void traceVector(T& vec);
+	template<typename T> void setupVector(T& vec);
+	template<typename T> void updateVector(T& vec);
+	template<typename T> void drawVector(T& vec);
 
 	// set only if value in json
 	inline void set(string &value, const Json::Value& data) {
@@ -139,9 +139,9 @@ namespace Software2552 {
 	};
 
 	// default settings
-	class Defaults {
+	class DefaultSettings {
 	public:
-		Defaults() {
+		DefaultSettings() {
 			font = "data/Raleway - Thin.ttf";
 			italicfont = "data/Raleway-Italic.ttf";
 			boldfont = "data/Raleway-Bold.ttf";
@@ -177,11 +177,10 @@ namespace Software2552 {
 			}
 			return fontsize;
 		}
-		ofLight & getLight() { return light; }
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Defaults));
+			basicTrace(STRINGIFY(DefaultSettings));
 			basicTrace(font);
 			basicTrace(italicfont);
 			basicTrace(boldfont);
@@ -193,6 +192,19 @@ namespace Software2552 {
 		string italicfont;
 		string boldfont;
 		int    fontsize;
+	};
+
+	class DefaultTools {
+	public:
+		DefaultTools() {
+		}
+		ofLight & getLight() { return light; }
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+		}
+#endif
+	protected:
 		ofLight	 light;
 		ofCamera camera;
 	};
@@ -204,22 +216,26 @@ namespace Software2552 {
 		Timeline(const string& titleIn) {
 			title = titleIn;
 		}
-		Timeline(const Defaults& defaultsIn, const string& titleIn) {
+		Timeline(const DefaultSettings& defaultsIn, shared_ptr<DefaultTools> tools, const string& titleIn) {
 			title = titleIn;
-			myDefaults = defaultsIn; // start with common defaults for example
+			defaultSettings = defaultsIn; // start with common defaults for example
+			sharedTools = tools;
 		}
 		bool operator==(const Timeline& rhs) { return rhs.title == title; }
 		string &getTitle() { return title; }
 
 		// read in my defaults and title
 		bool read(const Json::Value &data) {
-			read(data["defaults"]); // any item in a timeline class tree can have its own defaults
+			defaultSettings.read(data);
 			READ(title, data);
 			return true;
 		}
 		// combine my and my parents defaults
-		Defaults& getDefaults() { 
-			return myDefaults;
+		DefaultSettings& getDefaultSettings() { 
+			return defaultSettings;
+		}
+		shared_ptr<DefaultTools> getSharedTools() {
+			return sharedTools;
 		}
 #if _DEBUG
 		template<typename T> void trace(T& vec) {
@@ -230,12 +246,13 @@ namespace Software2552 {
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			basicTrace(STRINGIFY(Timeline));
-			myDefaults.trace();
+			defaultSettings.trace();
 		}
 
 #endif // _DEBUG
 	private:
-		Defaults myDefaults; // every object can have its own  defaults that derives from this object
+		DefaultSettings defaultSettings; // every object can have its own  defaults that derives from this object
+		shared_ptr<DefaultTools> sharedTools; 
 		string title; // title of deck, slide etc. Must be unique
 	};
 
@@ -477,7 +494,8 @@ namespace Software2552 {
 	class Scene : public Timeline {
 	public:
 		Scene(const string& title) : Timeline(title) {}
-		Scene(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
+		Scene(const DefaultSettings& defaults, shared_ptr<DefaultTools> tools, const string& title) : Timeline(defaults, tools, title) {}
+
 		void setup();
 		void update();
 		void draw();
@@ -488,12 +506,12 @@ namespace Software2552 {
 			basicTrace(STRINGIFY(Scene));
 
 			Timeline::trace();
-			trace(audios);
-			trace(videos);
-			trace(texts);
-			trace(images);
-			trace(graphics);
-			trace(characters);
+			traceVector(audios);
+			traceVector(videos);
+			traceVector(texts);
+			traceVector(images);
+			traceVector(graphics);
+			traceVector(characters);
 		}
 
 #endif // _DEBUG
@@ -512,25 +530,19 @@ namespace Software2552 {
 
 	class Scenes : public Timeline {
 	public:
-		Scenes(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
-		
+		Scenes(const DefaultSettings& defaults, shared_ptr<DefaultTools> tools, const string& title) : Timeline(defaults, tools, title) {}
+
 		// read a deck from json (you can also just build one in code)
 		bool read(const string& fileName = "json.json");
 
 		void setup() {
-			for (auto& slide : scenes) {
-				slide.setup();
-			}
+			setupVector(scenes);
 		}
 		void update() {
-			for (auto& slide : scenes) {
-				slide.update();
-			}
+			updateVector(scenes);
 		}
 		void draw() {
-			for (auto& scene : scenes) {
-				slide.draw();
-			}
+			setupVector(scenes);
 		}
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
@@ -555,46 +567,36 @@ namespace Software2552 {
 		
 	};
 	
-	class Decks :public Timeline {
+	class Story :public Timeline {
 	public:
 		// set our own defaults
-		Decks(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
+		Story(const DefaultSettings& defaults, shared_ptr<DefaultTools> tools, const string& title) : Timeline(defaults, tools, title) {}
 
 		// get defaults later
-		Decks() : Timeline() {}
-
-		void read() {
-			Scenes deck(getDefaults(), "main deck");
-			deck.read("json.json");
-			decks.push_back(deck);
-		}
-		void setup() {
-			setup(decks);
-		};
-		void update() {
-			for (auto& deck : decks) {
-				deck.update();
-			}
-		}
-		void draw() {
-			for (auto& deck : decks) {
-				deck.draw();
-			}
-		}
+		Story() : Timeline() {}
 
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
-		void trace() {
-			basicTrace(STRINGIFY(Decks));
-			for (auto& deck : decks) {
-				deck.trace();
-			}
-		}
+		void Story::trace();
 #endif
 
+		void read() {
+			Scenes scenes(getDefaultSettings(), getSharedTools(), "main deck");
+			scenes.read("json.json");
+			story.push_back(scenes);
+		}
+		void setup() {
+			setupVector(story);
+		};
+		void update() {
+			updateVector(story);
+		}
+		void draw() {
+			drawVector(story);
+		}
+
 	private:
-		vector<Scenes> decks;
-		// bugbug these will come into play later ofLight	light; 	ofEasyCam camera;
+		vector<Scenes> story;
 
 	};
 }

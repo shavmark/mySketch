@@ -3,23 +3,23 @@
 namespace Software2552 {
 
 	// helpers
-	template<typename T> void trace(T& vec) {
+	template<typename T> void traceVector(T& vec) {
 		for (auto& a : vec) {
 			a.trace();
 		}
 	}
 
-	template<typename T> void setup(T& vec) {
+	template<typename T> void setupVector(T& vec) {
 		for (auto& a : vec) {
 			a.setup();
 		}
 	}
-	template<typename T> void update(T& vec) {
+	template<typename T> void updateVector(T& vec) {
 		for (auto& a : vec) {
 			a.update();
 		}
 	}
-	template<typename T> void draw(T& vec) {
+	template<typename T> void drawVector(T& vec) {
 		for (auto& a : vec) {
 			a.draw();
 		}
@@ -80,14 +80,20 @@ namespace Software2552 {
 	void PrintJSONValue(const Json::Value &val) {}
 #endif
 	void Scene::setup() {
-		setup(audios);
-		setup(videos);
-		setup(texts);
-		setup(images);
-		setup(graphics);
-		setup(characters);
+		setupVector(audios);
+		setupVector(videos);
+		setupVector(texts);
+		setupVector(images);
+		setupVector(graphics);
+		setupVector(characters);
 	}
-
+#if _DEBUG
+	// echo object (debug only) bugbug make debug only
+	void Story::trace() {
+		basicTrace(STRINGIFY(Story));
+		traceVector(story);
+	}
+#endif
 	void Scene::update() {
 		// remove all timed out items 
 		audios.erase(std::remove_if(audios.begin(), audios.end(), Graphic::okToRemove), audios.end());
@@ -96,20 +102,20 @@ namespace Software2552 {
 		images.erase(std::remove_if(images.begin(), images.end(), Graphic::okToRemove), images.end());
 		graphics.erase(std::remove_if(graphics.begin(), graphics.end(), Graphic::okToRemove), graphics.end());
 		texts.erase(std::remove_if(texts.begin(), texts.end(), Graphic::okToRemove), texts.end());
-		update(audios);
-		update(videos);
-		update(texts);
-		update(images);
-		update(graphics);
-		update(characters);
+		updateVector(audios);
+		updateVector(videos);
+		updateVector(texts);
+		updateVector(images);
+		updateVector(graphics);
+		updateVector(characters);
 	}
 	void Scene::draw() {
-		draw(audios);
-		draw(videos);
-		draw(texts);
-		draw(images);
-		draw(graphics);
-		draw(characters);
+		drawVector(audios);
+		drawVector(videos);
+		drawVector(texts);
+		drawVector(images);
+		drawVector(graphics);
+		drawVector(characters);
 	}
 
 	// return true if there is some data 
@@ -129,7 +135,7 @@ namespace Software2552 {
 		return false;
 	}
 		
-	bool Defaults::read(const Json::Value &data) {
+	bool DefaultSettings::read(const Json::Value &data) {
 		READ(font, data);
 		READ(italicfont, data);
 		READ(boldfont, data);
@@ -239,11 +245,11 @@ namespace Software2552 {
 		try {
 			Timeline::read(json);
 
-			// build order and list of slide decks
+			// build order and list of slide scenes
 			for (Json::ArrayIndex i = 0; i < json["order"].size(); ++i) {
-				Scene s(getDefaults(), json["order"][i].asString());
+				Scene s(getDefaultSettings(), getSharedTools(), json["order"][i].asString());
 				// scenes stored in order they should be run
-				add(Scene(getDefaults(), json["order"][i].asString()));
+				add(Scene(getDefaultSettings(), getSharedTools(), json["order"][i].asString()));
 			}
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				Scene lookupslide(json["scenes"][i].asString());
@@ -254,46 +260,14 @@ namespace Software2552 {
 					it->read(json["scenes"][i]); // update slide in place
 				}
 			}
-#if 0
-			for (auto& d : decks) {
-				for (Json::ArrayIndex i = 0; i < json[d.getName()].size(); ++i) {
-					std::string name = json[d.getName()][i]["name"].asString();
-					Deck d2(name);
-					for (std::vector<Deck>::iterator it = decks.begin(); it != decks.end(); ++it) {
-						*it->addSlide();
-					}
-					std::string title = json["treaties"][i]["title"].asString();
-					for (Json::ArrayIndex j = 0; j < json[deck.getName()][i]["names"].size(); ++j) {
-					}
-				}
-			}
-
-#endif // 0
-
-
-			//for (auto& deck : decks) {}
-			//set(names, json["order"]["names"]);
-			}
+		}
 		catch (std::exception e) {
 			logErrorString(e.what());
 			return false;
 		}
 
 		return true;
-#if 0
-		int y = 0;
-		for (Json::ArrayIndex i = 0; i < json["treaties"].size(); ++i) {
-			std::string title = json["treaties"][i]["title"].asString();
-			for (Json::ArrayIndex j = 0; j < json["treaties"][i]["text"].size(); ++j) {
-				std::string text = json["treaties"][i]["text"][j]["p"].asString();
-				Paragraph2552 p(title, text, screenWidth, y);
-				paragraphs.push_back(p);
-				y = p.nextRow();
-				title.clear(); // only show title one time
-			}
-		}
-#endif // 0
-		}
+	}
 	
 
 }
