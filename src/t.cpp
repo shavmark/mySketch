@@ -1,7 +1,29 @@
 #include "t.h"
 
 namespace Software2552 {
-	//Defaults kernel::defaults; // on global instance
+
+	// helpers
+	template<typename T> void trace(T& vec) {
+		for (auto& a : vec) {
+			a.trace();
+		}
+	}
+
+	template<typename T> void setup(T& vec) {
+		for (auto& a : vec) {
+			a.setup();
+		}
+	}
+	template<typename T> void update(T& vec) {
+		for (auto& a : vec) {
+			a.update();
+		}
+	}
+	template<typename T> void draw(T& vec) {
+		for (auto& a : vec) {
+			a.draw();
+		}
+	}
 
 	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data)
 	{
@@ -57,7 +79,7 @@ namespace Software2552 {
 	bool PrintJSONTree(const Json::Value &root) {}
 	void PrintJSONValue(const Json::Value &val) {}
 #endif
-	void Slide::setup() {
+	void Scene::setup() {
 		setup(audios);
 		setup(videos);
 		setup(texts);
@@ -66,7 +88,7 @@ namespace Software2552 {
 		setup(characters);
 	}
 
-	void Slide::update() {
+	void Scene::update() {
 		// remove all timed out items 
 		audios.erase(std::remove_if(audios.begin(), audios.end(), Graphic::okToRemove), audios.end());
 		videos.erase(std::remove_if(videos.begin(), videos.end(), Graphic::okToRemove), videos.end());
@@ -81,7 +103,7 @@ namespace Software2552 {
 		update(graphics);
 		update(characters);
 	}
-	void Slide::draw() {
+	void Scene::draw() {
 		draw(audios);
 		draw(videos);
 		draw(texts);
@@ -182,7 +204,7 @@ namespace Software2552 {
 		}
 		return false;
 	}
-	bool Slide::read(const Json::Value &data) {
+	bool Scene::read(const Json::Value &data) {
 		if (Timeline::read(data)) {
 			parse<Audio>(audios, data["audio"]);
 			parse<Video>(videos, data["video"]);
@@ -202,7 +224,7 @@ namespace Software2552 {
 	
 	}
 	// read as many jason files as needed, each becomes a deck
-	bool Deck::read(const string& fileName) {
+	bool Scenes::read(const string& fileName) {
 		ofxJSON json;
 
 		if (json.open(fileName)) {
@@ -219,15 +241,15 @@ namespace Software2552 {
 
 			// build order and list of slide decks
 			for (Json::ArrayIndex i = 0; i < json["order"].size(); ++i) {
-				Slide s(getDefaults(), json["order"][i].asString());
-				// slides stored in order they should be run
-				addSlide(Slide(getDefaults(), json["order"][i].asString()));
+				Scene s(getDefaults(), json["order"][i].asString());
+				// scenes stored in order they should be run
+				add(Scene(getDefaults(), json["order"][i].asString()));
 			}
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
-				Slide lookupslide(json["scenes"][i].asString());
+				Scene lookupslide(json["scenes"][i].asString());
 				// read into matching slide
-				std::vector<Slide>::iterator it = find(getSlides().begin(), getSlides().end(), lookupslide);
-				if (it != getSlides().end()) {
+				std::vector<Scene>::iterator it = find(getScenes().begin(), getScenes().end(), lookupslide);
+				if (it != getScenes().end()) {
 					// defaults can appear here too
 					it->read(json["scenes"][i]); // update slide in place
 				}

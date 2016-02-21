@@ -12,7 +12,12 @@ namespace Software2552 {
 	// helpers
 
 	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data); 
-	
+
+	template<typename T> void trace(T& vec);
+	template<typename T> void setup(T& vec);
+	template<typename T> void update(T& vec);
+	template<typename T> void draw(T& vec);
+
 	// set only if value in json
 	inline void set(string &value, const Json::Value& data) {
 		if (!data.empty()) { 
@@ -463,33 +468,24 @@ namespace Software2552 {
 		// echo object (debug only)
 		void trace() {
 			basicTrace(STRINGIFY(Video));
-
 			Audio::trace();
 		}
 
 #endif // _DEBUG
 	};
 
-
-	
-	
-	class Slide : public Timeline {
+	class Scene : public Timeline {
 	public:
-		Slide(const string& title) : Timeline(title) {}
-		Slide(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
+		Scene(const string& title) : Timeline(title) {}
+		Scene(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
 		void setup();
 		void update();
 		void draw();
 
 #if _DEBUG
-		template<typename T> void trace(T& vec) {
-			for (auto& a : vec) {
-				a.trace();
-			}
-		}
 		// echo object (debug only) bugbug make debug only
 		void trace() {
-			basicTrace(STRINGIFY(Slide));
+			basicTrace(STRINGIFY(Scene));
 
 			Timeline::trace();
 			trace(audios);
@@ -505,21 +501,6 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 
 	protected:
-		template<typename T> void setup(T& vec) {
-			for (auto& a : vec) {
-				a.setup();
-			}
-		}
-		template<typename T> void update(T& vec) {
-			for (auto& a : vec) {
-				a.update();
-			}
-		}
-		template<typename T> void draw(T& vec) {
-			for (auto& a : vec) {
-				a.draw();
-			}
-		}
 		vector <Audio> audios; // join with ofaudio
 		vector <Video> videos; // join wiht ofvideo
 		vector <Character> characters; // join with vector <Model3D> models;
@@ -529,48 +510,48 @@ namespace Software2552 {
 
 	};
 
-	class Deck : public Timeline {
+	class Scenes : public Timeline {
 	public:
-		Deck(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
+		Scenes(const Defaults& defaults, const string& title) : Timeline(defaults, title) {}
 		
 		// read a deck from json (you can also just build one in code)
 		bool read(const string& fileName = "json.json");
 
 		void setup() {
-			for (auto& slide : slides) {
+			for (auto& slide : scenes) {
 				slide.setup();
 			}
 		}
 		void update() {
-			for (auto& slide : slides) {
+			for (auto& slide : scenes) {
 				slide.update();
 			}
 		}
 		void draw() {
-			for (auto& slide : slides) {
+			for (auto& scene : scenes) {
 				slide.draw();
 			}
 		}
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
-			basicTrace(STRINGIFY(Deck));
-			for (auto& slide : slides) {
-				slide.trace();
+			basicTrace(STRINGIFY(Scenes));
+			for (auto& scene : scenes) {
+				scene.trace();
 			}
 		}
 #endif
-		void addSlide(const Slide &s) {
-			slides.push_back(s);
+		void add(const Scene &s) {
+			scenes.push_back(s);
 		}
-		void removeSlide(const Slide &slide) {
+		void remove(const Scene &slide) {
 			// remove by name
-			slides.erase(std::remove(slides.begin(), slides.end(), slide), slides.end());
+			scenes.erase(std::remove(scenes.begin(), scenes.end(), slide), scenes.end());
 		}
-		vector <Slide>& getSlides() { return slides; }
+		vector <Scene>& getScenes() { return scenes; }
 
 	private:
-		vector <Slide> slides;
+		vector <Scene> scenes;
 		
 	};
 	
@@ -583,14 +564,12 @@ namespace Software2552 {
 		Decks() : Timeline() {}
 
 		void read() {
-			Deck deck(getDefaults(), "main deck");
+			Scenes deck(getDefaults(), "main deck");
 			deck.read("json.json");
 			decks.push_back(deck);
 		}
 		void setup() {
-			for (auto& deck : decks) {
-				deck.setup(); // bugbug reset time of start when the graphic is drawn
-			}
+			setup(decks);
 		};
 		void update() {
 			for (auto& deck : decks) {
@@ -614,7 +593,7 @@ namespace Software2552 {
 #endif
 
 	private:
-		vector<Deck> decks;
+		vector<Scenes> decks;
 		// bugbug these will come into play later ofLight	light; 	ofEasyCam camera;
 
 	};
