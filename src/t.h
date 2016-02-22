@@ -13,7 +13,10 @@ namespace Software2552 {
 
 	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data); 
 
+#if _DEBUG
 	template<typename T> void traceVector(T& vec);
+#endif // _DEBUG
+
 	template<typename T> void setupVector(T& vec);
 	template<typename T> void updateVector(T& vec);
 	template<typename T> void drawVector(T& vec);
@@ -89,12 +92,13 @@ namespace Software2552 {
 	};
 
 	// set defaults bugbug get to our tracing base class
-	class Paragraph2552 : public ofxParagraph {
+	class Paragraph : public ofxParagraph {
 	public:
 		
 		//align right blows up on at least short strings
-		Paragraph2552(string titleIn, string text, int maxWidth, int y = 0, Alignment align = ALIGN_LEFT) : ofxParagraph(text, 0, align) {
-			// fonts are shared via static bugbug verify this
+		Paragraph(string titleIn, string text, int maxWidth, int y = 0, Alignment align = ALIGN_LEFT) : ofxParagraph(text, 0, align) {
+			// fonts are shared via static bugbug maybe ask before calling to avoid log on it?
+#if 0
 			setText(ofxSmartText(text, ofxSmartFont::add("data/Raleway-Thin.ttf", 14, "raleway-thin")));
 			if (titleIn.length() > 0) {
 				setTitle(ofxSmartText(titleIn, ofxSmartFont::add("data/Raleway-Italic.ttf", 18, "raleway-italic")));
@@ -105,8 +109,11 @@ namespace Software2552 {
 			else {
 				set(maxWidth, y); // assume height is set else where
 			}
+#endif // 0
+
 		};
 
+		// enables easy lay out of paragraphs
 		int nextRow() {
 			return y + title.getHeight() + getHeight();
 		}
@@ -122,84 +129,54 @@ namespace Software2552 {
 
 			title.draw(titleX, titleY);
 		}
-		void setTitle(const ofxSmartText & titleIn) {
+		void setTitle(const ofxParagraph & titleIn) {
 			title = titleIn;
 		}
 		void setText(ofxSmartText & text) {
 			ofxParagraph::setText(text.getText());
 			ofxParagraph::setFont(text.getFont());
 		}
+
 	private:
 		void set(int maxWidth, int yIn) {
 			setWidth((2 * maxWidth) / 3);
 			x = maxWidth / 2 - getWidth() / 2;
 			y = yIn;
 		}
-		ofxSmartText title; // font for the title bugbug not sure where to delete this yet
+		ofxParagraph title; // font for the title bugbug not sure where to delete this yet
 	};
 
-	// default settings
-	class DefaultSettings {
+	//  settings
+	class Settings {
 	public:
-		DefaultSettings() {
-			font = "data/Raleway - Thin.ttf";
-			italicfont = "data/Raleway-Italic.ttf";
-			boldfont = "data/Raleway-Bold.ttf";
-			fontsize = 18;
+		Settings() {
+			font = nullptr;
 		}
+		Settings(const Settings&In) {
+			font = In.font;
+		}
+		const int defaultFontSize = 14;
+
 		bool read(const Json::Value &data);
 
-		// get default if needed
-		string getFont(const string& testfont) {
-			if (testfont.length() > 0) {
-				return testfont;
+		shared_ptr<ofxSmartFont> getFont() {
+			if (font == nullptr) {
+				font = make_shared<ofxSmartFont>();
+				font->add("fonts/Raleway-Thin.ttf", defaultFontSize, "Raleway-Thin");
 			}
 			return font;
 		}
-		// get default if needed
-		string getItalicFont(const string& testfont) {
-			if (italicfont.length() > 0) {
-				return italicfont;
-			}
-			return italicfont;
-		}
-		// get default if needed
-		string getBoldFont(const string& testfont) {
-			if (boldfont.length() > 0) {
-				return boldfont;
-			}
-			return boldfont;
-		}
-		// get default if needed
-		int getFontSize(int size) {
-			if (size > 0) {
-				return size;
-			}
-			return fontsize;
-		}
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			basicTrace(STRINGIFY(DefaultSettings));
-			basicTrace(font);
-			basicTrace(italicfont);
-			basicTrace(boldfont);
-			basicTrace(ofToString(fontsize));
-		}
-#endif
 	protected:
-		string font;
-		string italicfont;
-		string boldfont;
-		int    fontsize;
+		shared_ptr<ofxSmartFont> font;
+	private:
 	};
 
-	class DefaultTools {
+	class Tools {
 	public:
-		DefaultTools() {
+		Tools() {
 		}
 		ofLight & getLight() { return light; }
-#if _DEBUG
+#if _DEBUGDefaultTools
 		// echo object (debug only)
 		void trace() {
 		}
@@ -216,9 +193,9 @@ namespace Software2552 {
 		Timeline(const string& titleIn) {
 			title = titleIn;
 		}
-		Timeline(const DefaultSettings& defaultsIn, shared_ptr<DefaultTools> tools, const string& titleIn) {
+		Timeline(const Settings& defaultsIn, shared_ptr<Tools> tools, const string& titleIn) {
 			title = titleIn;
-			defaultSettings = defaultsIn; // start with common defaults for example
+			settings = defaultsIn; // start with common defaults for example
 			sharedTools = tools;
 		}
 		bool operator==(const Timeline& rhs) { return rhs.title == title; }
@@ -226,33 +203,21 @@ namespace Software2552 {
 
 		// read in my defaults and title
 		bool read(const Json::Value &data) {
-			defaultSettings.read(data);
+			settings.read(data);
 			READ(title, data);
 			return true;
 		}
 		// combine my and my parents defaults
-		DefaultSettings& getDefaultSettings() { 
-			return defaultSettings;
+		Settings& getSettings() {
+			return settings;
 		}
-		shared_ptr<DefaultTools> getSharedTools() {
+		shared_ptr<Tools> getSharedTools() {
 			return sharedTools;
 		}
-#if _DEBUG
-		template<typename T> void trace(T& vec) {
-			for (auto& a : vec) {
-				a.trace();
-			}
-		}
-		// echo object (debug only) bugbug make debug only
-		void trace() {
-			basicTrace(STRINGIFY(Timeline));
-			defaultSettings.trace();
-		}
 
-#endif // _DEBUG
 	private:
-		DefaultSettings defaultSettings; // every object can have its own  defaults that derives from this object
-		shared_ptr<DefaultTools> sharedTools; 
+		Settings settings; // every object can have its own  defaults that derives from this object
+		shared_ptr<Tools> sharedTools; 
 		string title; // title of deck, slide etc. Must be unique
 	};
 
@@ -406,15 +371,11 @@ namespace Software2552 {
 		void trace() {
 			basicTrace(STRINGIFY(Text));
 			Graphic::trace();
-			basicTrace(paragraph);
-			basicTrace(font);
-			basicTrace(ofToString(size));
+			// ofxParagraph does not expose a bunch of stuff that we can echo here, not a big deal
 		}
 #endif // _DEBUG
 	protected:
-		string paragraph; //bugbug convert to ofxParagraph for here, font and size (not sure about size)
-		string font;
-		int size;
+		ofxParagraph paragraph;
 	};
 
 
@@ -494,7 +455,7 @@ namespace Software2552 {
 	class Scene : public Timeline {
 	public:
 		Scene(const string& title) : Timeline(title) {}
-		Scene(const DefaultSettings& defaults, shared_ptr<DefaultTools> tools, const string& title) : Timeline(defaults, tools, title) {}
+		Scene(const Settings& defaults, shared_ptr<Tools> tools, const string& title) : Timeline(defaults, tools, title) {}
 
 		void setup();
 		void update();
@@ -505,7 +466,6 @@ namespace Software2552 {
 		void trace() {
 			basicTrace(STRINGIFY(Scene));
 
-			Timeline::trace();
 			traceVector(audios);
 			traceVector(videos);
 			traceVector(texts);
@@ -524,13 +484,13 @@ namespace Software2552 {
 		vector <Character> characters; // join with vector <Model3D> models;
 		vector <Image> images; //bugbug join with ofImage vector <ofImage> images;
 		vector <Graphic> graphics; // tie to ofX
-		vector <Text>  texts; //bugbug join Text and Paragraph2552 vector<Paragraph2552> paragraphs;
+		vector <Text>  texts; //bugbug join Text and Paragraph vector<Paragraph> paragraphs;
 
 	};
 
 	class Scenes : public Timeline {
 	public:
-		Scenes(const DefaultSettings& defaults, shared_ptr<DefaultTools> tools, const string& title) : Timeline(defaults, tools, title) {}
+		Scenes(const Settings& defaults, shared_ptr<Tools> tools, const string& title) : Timeline(defaults, tools, title) {}
 
 		// read a deck from json (you can also just build one in code)
 		bool read(const string& fileName = "json.json");
@@ -567,10 +527,11 @@ namespace Software2552 {
 		
 	};
 	
+	// an app can run many Stories
 	class Story :public Timeline {
 	public:
 		// set our own defaults
-		Story(const DefaultSettings& defaults, shared_ptr<DefaultTools> tools, const string& title) : Timeline(defaults, tools, title) {}
+		Story(const Settings& defaults, shared_ptr<Tools> tools, const string& title) : Timeline(defaults, tools, title) {}
 
 		// get defaults later
 		Story() : Timeline() {}
@@ -580,12 +541,8 @@ namespace Software2552 {
 		void Story::trace();
 #endif
 
-		void read() {
-			Scenes scenes(getDefaultSettings(), getSharedTools(), "main deck");
-			scenes.read("json.json");
-			story.push_back(scenes);
-		}
 		void setup() {
+			read();
 			setupVector(story);
 		};
 		void update() {
@@ -597,6 +554,12 @@ namespace Software2552 {
 
 	private:
 		vector<Scenes> story;
+		void read() {
+			Scenes scenes(getSettings(), getSharedTools(), "main deck");
+			// code in the list of items to make into the story here. 
+			scenes.read("json.json");
+			story.push_back(scenes);
+		}
 
 	};
 }

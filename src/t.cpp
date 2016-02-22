@@ -3,11 +3,13 @@
 namespace Software2552 {
 
 	// helpers
+#if _DEBUG
 	template<typename T> void traceVector(T& vec) {
 		for (auto& a : vec) {
 			a.trace();
 		}
 	}
+#endif // _DEBUG
 
 	template<typename T> void setupVector(T& vec) {
 		for (auto& a : vec) {
@@ -134,12 +136,24 @@ namespace Software2552 {
 		}
 		return false;
 	}
-		
-	bool DefaultSettings::read(const Json::Value &data) {
-		READ(font, data);
-		READ(italicfont, data);
-		READ(boldfont, data);
-		READ(fontsize, data);
+	bool Settings::read(const Json::Value &data) {
+
+		string name;
+		int size = defaultFontSize;
+		string filename;
+
+		set(name, data["font"]["name"]);
+		set(name, data["font"]["file"]);
+		set(size, data["font"]["size"]);
+
+		if (filename.size() != 0) {
+			// save read in data
+			if (font == nullptr) {
+				font = make_shared<ofxSmartFont>();
+			}
+			font->add(filename, size, name);
+		}
+
 		return true;
 	}
 	// true of any object
@@ -247,16 +261,16 @@ namespace Software2552 {
 
 			// build order and list of slide scenes
 			for (Json::ArrayIndex i = 0; i < json["order"].size(); ++i) {
-				Scene s(getDefaultSettings(), getSharedTools(), json["order"][i].asString());
+				Scene s(getSettings(), getSharedTools(), json["order"][i].asString());
 				// scenes stored in order they should be run
-				add(Scene(getDefaultSettings(), getSharedTools(), json["order"][i].asString()));
+				add(Scene(getSettings(), getSharedTools(), json["order"][i].asString()));
 			}
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				Scene lookupslide(json["scenes"][i].asString());
 				// read into matching slide
 				std::vector<Scene>::iterator it = find(getScenes().begin(), getScenes().end(), lookupslide);
 				if (it != getScenes().end()) {
-					// defaults can appear here too
+					// Settings can appear here too
 					it->read(json["scenes"][i]); // update slide in place
 				}
 			}

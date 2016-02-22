@@ -8,16 +8,14 @@
 
 //--------------------------------------------------------------
 void ofStoryTellerApp::setup(){
-	decks.read(); // create time line
+	decks.setup(); // create time line
 	decks.trace();
 	//paragraphs.build(ofGetWidth());
-	//ofSetLogLevel(OF_LOG_VERBOSE);
-	//ofSetFullscreen(true);
-	ofSetFrameRate(60);
-	//ofBackgroundHex(0x00000);
-	ofSetLogLevel(OF_LOG_NOTICE);
 	
-
+	//ofSetFullscreen(true);
+	//ofSetFrameRate(60);
+	//ofBackgroundHex(0x00000);
+	ofSetLogLevel(OF_LOG_NOTICE);//ofSetLogLevel(OF_LOG_VERBOSE);
 	
 	// we add this listener before setting up so the initial circle resolution is correct
 #if 0
@@ -158,6 +156,8 @@ void ofStoryTellerApp::setup(){
 
 //--------------------------------------------------------------
 void ofStoryTellerApp::update(){
+	decks.update();
+	return;
 	if (years < 12000) {
 		for (int i = 0; i < 10; i++) {
 			float radius = ofRandom(160, 280);
@@ -291,7 +291,8 @@ void ofStoryTellerApp::update(){
 }
 //--------------------------------------------------------------
 void ofStoryTellerApp::draw(){
-	
+	decks.draw();
+	return;
 	//for (int i = 0; i< paragraphs.get().size(); i++) {
 	//	paragraphs.get(i).draw();
 	//}
