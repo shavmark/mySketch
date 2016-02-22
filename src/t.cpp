@@ -12,8 +12,11 @@ namespace Software2552 {
 			if (data.isString()) {
 				echo("type=string, value=\""+ data.asString() + "\">");
 			}
+			else if (data.isBool()) {
+				echo("type=bool, value=" + ofToString(data.asBool()) + ">");
+			}
 			else if (data.isInt()) {
-				echo("type=int, value=" + ofToString(data.isInt()) + ">");
+				echo("type=int, value=" + ofToString(data.asInt()) + ">");
 			}
 			else if (data.isDouble()) {
 				echo("type=float, value=" + ofToString(data.asDouble()) + ">");
@@ -105,6 +108,7 @@ namespace Software2552 {
 		try {
 			if (!data.empty()) { // not an  array and there is data
 				value = data.asFloat();
+				return true;
 			}
 		}
 		catch (std::exception e) {
@@ -112,10 +116,24 @@ namespace Software2552 {
 		}
 		return false;
 	}
-	bool set(int &value, const Json::Value &data) {
+	bool set(bool &value, const Json::Value &data) {
 		try {
 			if (!data.empty()) { // not an  array and there is data
+				value = data.asBool();
+				return true;
+			}
+		}
+		catch (std::exception e) {
+			logErrorString(e.what());
+		}
+		return false;
+	}
+	
+	bool set(int &value, const Json::Value &data) {
+		try {
+			if (!data.empty()) { 
 				value = data.asInt();
+				return true;
 			}
 		}
 		catch (std::exception e) {
@@ -356,6 +374,8 @@ namespace Software2552 {
 
 		if (Timeline::read(data)) {
 			READ(keyname, data);
+			READ(skip, data);
+			READ(block, data);
 			parse<Audio>(audios, data["audio"]);
 			parse<Video>(videos, data["video"]);
 			parse<Text>(texts, data["text"]);
@@ -390,10 +410,11 @@ namespace Software2552 {
 			Timeline::read(json);
 
 			// build order and list of slide scenes
-			for (Json::ArrayIndex i = 0; i < json["order"].size(); ++i) {
+			for (Json::ArrayIndex i = 0; i < json["playList"].size(); ++i) {
 				// scenes stored in order they should be run
-				logTrace("json[order]["+ ofToString(i)+"][keyname]");
-				add(Scene(getSettings(), getSharedTools(), json["order"][i]["keyname"].asString()));
+				Scene scene(getSettings(), getSharedTools());
+				scene.read(json["playList"][i]);
+				add(scene);
 			}
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");

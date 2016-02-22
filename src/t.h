@@ -28,60 +28,12 @@ namespace Software2552 {
 	bool set(string &value, const Json::Value& data);
 	bool set(float &value, const Json::Value &data);
 	bool set(int &value, const Json::Value &data);
+	bool set(bool &value, const Json::Value &data);
+
 
 // will only set vars if there is a string to set, ok to preserve existing values
 // always use this macro or the set function to be sure errors are handled consitantly
 #define READ(var, data) set(var, data[#var])
-
-
-	// match string to font
-	class  ofxSmartText
-	{
-	public:
-		ofxSmartText() { f = nullptr; };
-		ofxSmartText(const string& text, shared_ptr<ofxSmartFont> font) {
-			set(text, font);
-		};
-
-		void set(const string& text, shared_ptr<ofxSmartFont> font) {
-			set(text);
-			set(font);
-		}
-		void set(const string& text) {
-			s = text;
-		}
-		void set(shared_ptr<ofxSmartFont> font) {
-			f = font;
-		}
-		shared_ptr<ofxSmartFont> getFont() {
-			return f;
-		}
-		void draw(int x, int y) {
-			if (getFont()) {
-				getFont()->draw(getText(), x, y);
-			}
-		}
-
-		string getText() {
-			return s;
-		}
-		int getWidth() {
-			if (f == nullptr)
-				return 0;
-
-			return f->width(s);
-		}
-		int getHeight() {
-			if (f == nullptr)
-				return 0; // not sure what to do here, maybe just make sure it never happens
-
-			return f->height(s);
-		}
-
-	private:
-		string s;
-		shared_ptr<ofxSmartFont> f;
-	};
 
 	// set defaults bugbug get to our tracing base class
 	class Paragraph : public ofxParagraph {
@@ -90,19 +42,6 @@ namespace Software2552 {
 		//align right blows up on at least short strings
 		Paragraph(string titleIn, string text, int maxWidth, int y = 0, Alignment align = ALIGN_LEFT) : ofxParagraph(text, 0, align) {
 			// fonts are shared via static bugbug maybe ask before calling to avoid log on it?
-#if 0
-			setText(ofxSmartText(text, ofxSmartFont::add("data/Raleway-Thin.ttf", 14, "raleway-thin")));
-			if (titleIn.length() > 0) {
-				setTitle(ofxSmartText(titleIn, ofxSmartFont::add("data/Raleway-Italic.ttf", 18, "raleway-italic")));
-			}
-			if (y == 0) {
-				set(maxWidth, title.getHeight() * 3); // default
-			}
-			else {
-				set(maxWidth, y); // assume height is set else where
-			}
-#endif // 0
-
 		};
 
 		// enables easy lay out of paragraphs
@@ -120,13 +59,6 @@ namespace Software2552 {
 				titleY = title.getHeight();//this is wrong bugbug
 
 			title.draw(titleX, titleY);
-		}
-		void setTitle(const ofxParagraph & titleIn) {
-			title = titleIn;
-		}
-		void setText(ofxSmartText & text) {
-			ofxParagraph::setText(text.getText());
-			ofxParagraph::setFont(text.getFont());
 		}
 
 	private:
@@ -382,10 +314,10 @@ namespace Software2552 {
 		Text() :Graphic() {}
 		bool read(const Json::Value &data);
 
-		void setup() {};
-		void update(){};
 		void draw() {
-			text.draw(x,y);
+			if (okToDraw()) {
+				text.draw(x, y);
+			}
 		};
 
 #if _DEBUG
@@ -478,16 +410,20 @@ namespace Software2552 {
 	public:
 		Scene() {}
 		Scene(const string& key) : Timeline() {
-			keyname = key;
+			init(key);
 		}
 		Scene(const Settings& defaults, shared_ptr<Tools> tools, const string& key) : Timeline(defaults, tools) {
-			keyname = key;
+			init(key);
+		}
+		Scene(const Settings& defaults, shared_ptr<Tools> tools) : Timeline(defaults, tools) {
+			init("");
 		}
 
 		bool operator==(const Scene& rhs) { 
 			return rhs.keyname == keyname; 
 		}
 
+		bool read(const Json::Value &data);
 		void setup();
 		void update();
 		void draw();
@@ -508,16 +444,22 @@ namespace Software2552 {
 
 #endif // _DEBUG
 
-		bool read(const Json::Value &data);
-
 	protected:
 		vector <Audio> audios; // join with ofaudio
 		vector <Video> videos; // join wiht ofvideo
 		vector <Character> characters; // join with vector <Model3D> models;
 		vector <Image> images; //bugbug join with ofImage vector <ofImage> images;
 		vector <Graphic> graphics; // tie to ofX
-		vector <Text>  texts; //bugbug join Text and Paragraph vector<Paragraph> paragraphs;
+		vector <Text>  texts; 
 		string keyname; // each item is unqiue
+		bool skip;  // true to skip
+		bool block; // wait for this scene before starting the next, false to merge scenes
+	private:
+		void init(const string& key) {
+			keyname = key;
+			skip = false;
+			block = true;
+		}
 	};
 
 	class Scenes : public Timeline {
