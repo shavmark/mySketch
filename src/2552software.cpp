@@ -69,7 +69,11 @@ namespace Software2552 {
 		ofLog(OF_LOG_NOTICE, text);
 	}
 	void Trace2552::logTraceBasic(const string& message) {
+#if _DEBUG
+		ofLog(OF_LOG_VERBOSE, message); // could dump a lot but in debug thats what we want?
+#else
 		ofLog(OF_LOG_NOTICE, message);
+#endif
 	}
 	void Trace2552::logTrace2(const string& message,  char*file, int line) {
 		if (ofGetLogLevel() >= OF_LOG_NOTICE) {

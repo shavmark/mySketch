@@ -139,28 +139,29 @@ namespace Software2552 {
 	};
 
 	//  settings
+#define defaultFontSize 14
+#define defaultFontFile "fonts/Raleway-Thin.ttf"
+#define defaultFontName "Raleway-Thin"
+
 	class Settings {
 	public:
 		Settings() {
-			addFont(defaultFontFile, defaultFontSize, defaultFontName);
+			initFont(defaultFontFile, defaultFontSize, defaultFontName);
 		}
 		Settings(const string& nameIn) {
-			addFont(defaultFontFile, defaultFontSize, defaultFontName);
+			initFont(defaultFontFile, defaultFontSize, defaultFontName);
 			name = nameIn;
 			foregroundColor.set(0, 0, 255);
 			backgroundColor.set(255, 255, 0);
 		}
-		const int    defaultFontSize = 14;
-		const string defaultFontFile = "fonts/Raleway-Thin.ttf";
-		const string defaultFontName = "Raleway-Thin";
 
 		// only add if its not already there
-		void addFont(const string& file, int size, const string& name) {
+		void addFont(const string& file, int size=defaultFontSize, const string& name="default") {
 			if (!fontExists(file, size)) {
 				font = ofxSmartFont::add(file, size, name);;
 			}
 		}
-		bool fontExists(const string& name, int size) {
+		bool fontExists(const string& name, int size = defaultFontSize) {
 			return ofxSmartFont::get(name, size) != nullptr;
 		}
 		void operator=(const Settings& rhs) { 
@@ -209,6 +210,14 @@ namespace Software2552 {
 		float duration;
 
 	private:
+		void initFont(const string& file, int size = defaultFontSize, const string& name = "default") {
+			if (!fontExists(file, size)) {
+				font = ofxSmartFont::add(file, size, name);
+			}
+			else {
+				font = ofxSmartFont::get(file, size);
+			}
+		}
 	};
 
 	// drawing tools etc, shared across objects
@@ -306,9 +315,10 @@ namespace Software2552 {
 	// basic graphic like SUN etc to add flavor
 	class Graphic : public ReferencedItem {
 	public:
-		Graphic() {
-			x = y = z = -1; // off by default bugbug build the UPPER-LEFT-CENTER thing
-			duration = 0; // infinite by default
+		Graphic() : ReferencedItem(){
+			x = y = z = -1; // off by default, data input for x,y is a percent re-calced in update, z is true value
+			duration = 0; // infinite by default, time is in milliseconds
+			//bugbug add a pause where time is suspended
 			start = 0; // force reset to be called to make sure timing is right
 			delay = 0;
 			started = false;
@@ -369,7 +379,14 @@ namespace Software2552 {
 
 	class Text : public Graphic {
 	public:
+		Text() :Graphic() {}
 		bool read(const Json::Value &data);
+
+		void setup() {};
+		void update(){};
+		void draw() {
+			text.draw(x,y);
+		};
 
 #if _DEBUG
 		// echo object (debug only)
@@ -380,7 +397,7 @@ namespace Software2552 {
 		}
 #endif // _DEBUG
 	protected:
-		ofxParagraph ofParagraph;
+		ofxParagraph text;
 	};
 
 

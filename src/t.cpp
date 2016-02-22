@@ -304,46 +304,46 @@ namespace Software2552 {
 			string paragraph; // read in text
 			READ(paragraph, data);
 			if (paragraph.size() > 0){
-				ofParagraph.setText(paragraph);
-				ofParagraph.setFont(font); // use current font
-				ofParagraph.setColor(foregroundColor);
+				text.setText(paragraph);
+				text.setFont(font); // use current font
+				text.setColor(foregroundColor);
 				int indent=-1;
 				READ(indent, data);
 				if (indent > -1) {
-					ofParagraph.setIndent(indent);
+					text.setIndent(indent);
 				}
 				int leading = -1;
 				READ(leading, data);
 				if (leading > -1) {
-					ofParagraph.setLeading(leading);
+					text.setLeading(leading);
 				}
 				int spacing = -1;
 				READ(spacing, data);
 				if (spacing > -1) {
-					ofParagraph.setSpacing(spacing);
+					text.setSpacing(spacing);
 				}
 				string alignment;
 				READ(alignment, data);
 				if (alignment == "left") { //bugbug ignore case
-					ofParagraph.setAlignment(ofxParagraph::ALIGN_LEFT);
+					text.setAlignment(ofxParagraph::ALIGN_LEFT);
 				}
 				else if (alignment == "center") { //bugbug ignore case
-					ofParagraph.setAlignment(ofxParagraph::ALIGN_CENTER);
+					text.setAlignment(ofxParagraph::ALIGN_CENTER);
 				}
 				else if (alignment == "right") { //bugbug ignore case
-					ofParagraph.setAlignment(ofxParagraph::ALIGN_RIGHT);
+					text.setAlignment(ofxParagraph::ALIGN_RIGHT);
 				}
 				int width = -1;
 				READ(width, data);
 				if (width > -1) {
-					ofParagraph.setWidth(width);
+					text.setWidth(width);
 				}
-				// read in base class
+				// read in base class, read in as percent  (Assumed updated in update())
 				if (x > -1) {
-					ofParagraph.x = x;
+					text.x = x; 
 				}
 				if (y > -1) {
-					ofParagraph.x = y;
+					text.x = y;
 				}
 			}
 			// add more here like indent as we learn more
