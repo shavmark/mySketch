@@ -42,6 +42,7 @@ namespace Software2552 {
 			}
 		}
 		static void logTraceBasic(const string& message, char *name);
+		static void logTraceBasic(const string& message);
 		static void logTrace2(const string& message, char*file, int line);
 		static void logError2(HRESULT hResult, const string&  message, char*file, int line);
 		static bool CheckHresult2(HRESULT hResult, const string& message, char*file, int line);
@@ -59,6 +60,8 @@ namespace Software2552 {
 #define hresultFails(p1, p2) Trace2552::CheckHresult2(p1, p2, __FILE__, __LINE__)
 #define basicTrace(p) Trace2552::logTraceBasic(p, #p)
 #endif
+		// simple text log, even w/o debug
+#define echo(p) Trace2552::logTraceBasic(p)
 	};
 
 	template<class Interface> void SafeRelease(Interface *& pInterfaceToRelease)

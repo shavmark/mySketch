@@ -10,6 +10,9 @@
 
 namespace Software2552 {
 	// helpers
+	void echoValue(const Json::Value &data);
+	bool echoJSONTree(const string& functionname, const Json::Value &root);
+#define ECHOAll(data) echoJSONTree(__FUNCTION__, data);
 
 	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data); 
 
@@ -22,23 +25,12 @@ namespace Software2552 {
 	template<typename T> void drawVector(T& vec);
 
 	// set only if value in json
-	inline void set(string &value, const Json::Value& data) {
-		if (!data.empty()) { 
-			value = data.asString();
-		}
-	}
-	inline void set(float &value, const Json::Value &data) {
-		if (!data.empty()) { // not an  array and there is data
-			value = data.asFloat();
-		}
-	}
-	inline void set(int &value, const Json::Value &data) {
-		if (!data.empty()) { // not an  array and there is data
-			value = data.asInt();
-		}
-	}
+	bool set(string &value, const Json::Value& data);
+	bool set(float &value, const Json::Value &data);
+	bool set(int &value, const Json::Value &data);
 
 // will only set vars if there is a string to set, ok to preserve existing values
+// always use this macro or the set function to be sure errors are handled consitantly
 #define READ(var, data) set(var, data[#var])
 
 
@@ -150,13 +142,26 @@ namespace Software2552 {
 	class Settings {
 	public:
 		Settings() {
-			font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);;
+			addFont(defaultFontFile, defaultFontSize, defaultFontName);
 		}
 		Settings(const string& nameIn) {
-			font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);;
+			addFont(defaultFontFile, defaultFontSize, defaultFontName);
 			name = nameIn;
 			foregroundColor.set(0, 0, 255);
 			backgroundColor.set(255, 255, 0);
+		}
+		const int    defaultFontSize = 14;
+		const string defaultFontFile = "fonts/Raleway-Thin.ttf";
+		const string defaultFontName = "Raleway-Thin";
+
+		// only add if its not already there
+		void addFont(const string& file, int size, const string& name) {
+			if (!fontExists(file, size)) {
+				font = ofxSmartFont::add(file, size, name);;
+			}
+		}
+		bool fontExists(const string& name, int size) {
+			return ofxSmartFont::get(name, size) != nullptr;
 		}
 		void operator=(const Settings& rhs) { 
 			font = rhs.font;
@@ -169,10 +174,6 @@ namespace Software2552 {
 			backgroundColor = rhs.backgroundColor;
 			duration = rhs.duration;
 		}
-
-		const int    defaultFontSize = 14;
-		const string defaultFontFile = "fonts/Raleway-Thin.ttf";
-		const string defaultFontName = "Raleway-Thin";
 
 		bool read(const Json::Value &data);
 
@@ -233,16 +234,16 @@ namespace Software2552 {
 			sharedTools = tools;
 			settings = defaultsIn;
 		}
+		Timeline(const Settings& defaultsIn, shared_ptr<Tools> tools) {
+			sharedTools = tools;
+			settings = defaultsIn;
+		}
 		bool operator==(const Timeline& rhs) { return rhs.title == title; }
 		string &getTitle() { return title; }
 
 		// read in my defaults and title
-		bool read(const Json::Value &data) {
-			settings.read(data);
-			READ(title, data);
-			return true;
-		}
-		// combine my and my parents defaults
+		bool read(const Json::Value &data);
+
 		Settings& getSettings() {
 			return settings;
 		}
@@ -458,8 +459,17 @@ namespace Software2552 {
 
 	class Scene : public Timeline {
 	public:
-		Scene(const string& title) : Timeline(title) {}
-		Scene(const Settings& defaults, shared_ptr<Tools> tools, const string& title) : Timeline(defaults, tools, title) {}
+		Scene() {}
+		Scene(const string& key) : Timeline() {
+			keyname = key;
+		}
+		Scene(const Settings& defaults, shared_ptr<Tools> tools, const string& key) : Timeline(defaults, tools) {
+			keyname = key;
+		}
+
+		bool operator==(const Scene& rhs) { 
+			return rhs.keyname == keyname; 
+		}
 
 		void setup();
 		void update();
@@ -469,6 +479,7 @@ namespace Software2552 {
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			basicTrace(STRINGIFY(Scene));
+			basicTrace(keyname);
 
 			traceVector(audios);
 			traceVector(videos);
@@ -489,7 +500,7 @@ namespace Software2552 {
 		vector <Image> images; //bugbug join with ofImage vector <ofImage> images;
 		vector <Graphic> graphics; // tie to ofX
 		vector <Text>  texts; //bugbug join Text and Paragraph vector<Paragraph> paragraphs;
-
+		string keyname; // each item is unqiue
 	};
 
 	class Scenes : public Timeline {
@@ -499,30 +510,22 @@ namespace Software2552 {
 		// read a deck from json (you can also just build one in code)
 		bool read(const string& fileName = "json.json");
 
-		void setup() {
-			setupVector(scenes);
-		}
-		void update() {
-			updateVector(scenes);
-		}
-		void draw() {
-			setupVector(scenes);
-		}
+		void setup();
+		void update();
+		void draw();
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			basicTrace(STRINGIFY(Scenes));
-			for (auto& scene : scenes) {
-				scene.trace();
-			}
+			traceVector(scenes);
 		}
 #endif
-		void add(const Scene &s) {
-			scenes.push_back(s);
+		void add(const Scene &scene) {
+			scenes.push_back(scene);
 		}
-		void remove(const Scene &slide) {
+		void remove(const Scene &scene) {
 			// remove by name
-			scenes.erase(std::remove(scenes.begin(), scenes.end(), slide), scenes.end());
+			scenes.erase(std::remove(scenes.begin(), scenes.end(), scene), scenes.end());
 		}
 		vector <Scene>& getScenes() { return scenes; }
 
@@ -545,25 +548,13 @@ namespace Software2552 {
 		void Story::trace();
 #endif
 
-		void setup() {
-			read();
-			setupVector(story);
-		};
-		void update() {
-			updateVector(story);
-		}
-		void draw() {
-			drawVector(story);
-		}
+		void setup();
+		void update();
+		void draw();
 
 	private:
 		vector<Scenes> story;
-		void read() {
-			Scenes scenes(getSettings(), getSharedTools(), "main deck");
-			// code in the list of items to make into the story here. 
-			scenes.read("json.json");
-			story.push_back(scenes);
-		}
+		void read();
 
 	};
 }

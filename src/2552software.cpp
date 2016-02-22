@@ -68,6 +68,9 @@ namespace Software2552 {
 		text += " " + message + ";"; // dirty dump bugbug maybe clean up some day
 		ofLog(OF_LOG_NOTICE, text);
 	}
+	void Trace2552::logTraceBasic(const string& message) {
+		ofLog(OF_LOG_NOTICE, message);
+	}
 	void Trace2552::logTrace2(const string& message,  char*file, int line) {
 		if (ofGetLogLevel() >= OF_LOG_NOTICE) {
 			ofLog(OF_LOG_NOTICE, buildString(message, file, line));
