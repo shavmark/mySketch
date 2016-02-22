@@ -150,37 +150,72 @@ namespace Software2552 {
 	class Settings {
 	public:
 		Settings() {
-			font = nullptr;
+			font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);;
 		}
-		Settings(const Settings&In) {
-			font = In.font;
+		Settings(const string& nameIn) {
+			font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);;
+			name = nameIn;
+			foregroundColor.set(0, 0, 255);
+			backgroundColor.set(255, 255, 0);
 		}
-		const int defaultFontSize = 14;
+		void operator=(const Settings& rhs) { 
+			font = rhs.font;
+			timelineDate = rhs.timelineDate; // date item existed
+			lastUpdateDate = rhs.lastUpdateDate; // last time object was updated
+			name = rhs.name; // any object can have a name, note, date, reference, duration
+			notes = rhs.notes;
+			date = rhs.date; // bugbug make this a date data type
+			foregroundColor = rhs.foregroundColor;
+			backgroundColor = rhs.backgroundColor;
+			duration = rhs.duration;
+		}
+
+		const int    defaultFontSize = 14;
+		const string defaultFontFile = "fonts/Raleway-Thin.ttf";
+		const string defaultFontName = "Raleway-Thin";
 
 		bool read(const Json::Value &data);
 
 		shared_ptr<ofxSmartFont> getFont() {
-			if (font == nullptr) {
-				font = make_shared<ofxSmartFont>();
-				font->add("fonts/Raleway-Thin.ttf", defaultFontSize, "Raleway-Thin");
-			}
 			return font;
 		}
+		bool operator==(const Settings& rhs) { return rhs.name == name; }
+		string &getName() { return name; }
+		const ofColor& getForeground(){ return foregroundColor; }
+		const ofColor& getBackground() { return backgroundColor; }
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Settings));
+			basicTrace(date);
+			basicTrace(timelineDate);
+			basicTrace(lastUpdateDate);
+			basicTrace(name);
+			basicTrace(notes);
+			basicTrace(ofToString(duration));
+		}
+#endif
+
 	protected:
 		shared_ptr<ofxSmartFont> font;
+		string timelineDate; // date item existed
+		string lastUpdateDate; // last time object was updated
+		string name; // any object can have a name, note, date, reference, duration
+		string notes;
+		string date; // bugbug make this a date data type
+		ofColor foregroundColor;
+		ofColor backgroundColor;
+		float duration;
+
 	private:
 	};
 
+	// drawing tools etc, shared across objects
 	class Tools {
 	public:
 		Tools() {
 		}
 		ofLight & getLight() { return light; }
-#if _DEBUGDefaultTools
-		// echo object (debug only)
-		void trace() {
-		}
-#endif
 	protected:
 		ofLight	 light;
 		ofCamera camera;
@@ -195,8 +230,8 @@ namespace Software2552 {
 		}
 		Timeline(const Settings& defaultsIn, shared_ptr<Tools> tools, const string& titleIn) {
 			title = titleIn;
-			settings = defaultsIn; // start with common defaults for example
 			sharedTools = tools;
+			settings = defaultsIn;
 		}
 		bool operator==(const Timeline& rhs) { return rhs.title == title; }
 		string &getTitle() { return title; }
@@ -221,38 +256,8 @@ namespace Software2552 {
 		string title; // title of deck, slide etc. Must be unique
 	};
 
-	class CommonData  {
-	public:
-		CommonData() {
-		}
-		CommonData(const string&nameIn) {
-			name = nameIn;
-		}
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			basicTrace(STRINGIFY(CommonData));
-			basicTrace(date);
-			basicTrace(timelineDate);
-			basicTrace(lastUpdateDate);
-			basicTrace(name);
-			basicTrace(notes);
-		}
-#endif
-		bool operator==(const CommonData& rhs) { return rhs.name == name; }
-		string &getName() { return name; }
-		bool read(const Json::Value &data);
-
-	protected:
-		string timelineDate; // date item existed
-		string lastUpdateDate; // last time object was updated
-		string name; // any object can have a name, note, date, reference, duration
-		string notes;
-		string date; // bugbug make this a date data type
-	};
-
 	// reference to a cited item
-	class Reference : public CommonData {
+	class Reference : public Settings {
 	public:
 		bool read(const Json::Value &data);
 
@@ -260,7 +265,7 @@ namespace Software2552 {
 #if _DEBUG
 		void trace() {
 			basicTrace(STRINGIFY(Reference));
-			CommonData::trace();
+			Settings::trace();
 			basicTrace(url);
 			basicTrace(location);
 			basicTrace(source);
@@ -273,15 +278,15 @@ namespace Software2552 {
 	};
 
 	// true for all time based items
-	class TimeLineBaseClass : public CommonData {
+	class ReferencedItem : public Settings {
 	public:
-		TimeLineBaseClass() : CommonData() {};
-		TimeLineBaseClass(const string &name) :CommonData(name) {};
+		ReferencedItem() : Settings() {};
+		ReferencedItem(const string &name) :Settings(name) {};
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(TimeLineBaseClass));
-			CommonData::trace();
+			basicTrace(STRINGIFY(ReferencedItem));
+			Settings::trace();
 			
 			for (auto& ref : references) {
 				ref.trace();
@@ -291,15 +296,17 @@ namespace Software2552 {
 #endif // _DEBUG
 
 		bool read(const Json::Value &data);
+
+	protected:
 		vector <Reference> references;
 		
 	};
 
 	// basic graphic like SUN etc to add flavor
-	class Graphic : public TimeLineBaseClass {
+	class Graphic : public ReferencedItem {
 	public:
 		Graphic() {
-			x = y = z = 0;
+			x = y = z = -1; // off by default bugbug build the UPPER-LEFT-CENTER thing
 			duration = 0; // infinite by default
 			start = 0; // force reset to be called to make sure timing is right
 			delay = 0;
@@ -340,26 +347,23 @@ namespace Software2552 {
 		// echo object (debug only)
 		void trace() {
 			basicTrace(STRINGIFY(Graphic));
-			TimeLineBaseClass::trace();
+			ReferencedItem::trace();
 			basicTrace(type);
-			basicTrace(ofToString(duration));
 			basicTrace(ofToString(delay));
 			basicTrace(ofToString(x));
 			basicTrace(ofToString(y));
 			basicTrace(ofToString(z));
-			basicTrace(foreground);
-			basicTrace(background);
 		}
 #endif // _DEBUG
 	protected:
 		int    x, y, z;
 		string type; // 2d, 3d, other
-		string foreground;
-		string background;
-		float duration;
 		float start;
 		float delay; // start+delay is the true start
 		bool started;
+
+		int width; //bugbug todo
+		int height;//bugbug todo
 	};
 
 	class Text : public Graphic {
@@ -375,7 +379,7 @@ namespace Software2552 {
 		}
 #endif // _DEBUG
 	protected:
-		ofxParagraph paragraph;
+		ofxParagraph ofParagraph;
 	};
 
 
