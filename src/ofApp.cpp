@@ -89,12 +89,12 @@ void ofStoryTellerApp::setup(){
 		// be be indepent of the app fps
 	bFrameIndependent = true;
 
-	// this will set the speed to play 
-	// the animation back we set the
+	// this will readJsonValue the speed to play 
+	// the animation back we readJsonValue the
 	// default to 24fps
 	sequenceFPS = 24;
 
-	// set the app fps 
+	// readJsonValue the app fps 
 	appFPS = 18;
 	ofSetFrameRate(appFPS);
 
@@ -197,7 +197,7 @@ void ofStoryTellerApp::update(){
 		//low y in camera is +ve y in world
 		float worldHeadY = ofMap(cameraHeadY, 0, video.getHeight(), windowTopLeft.y, windowBottomLeft.y);
 
-		//set position in a pretty arbitrary way
+		//readJsonValue position in a pretty arbitrary way
 		headPosition = ofVec3f(worldHeadX, worldHeadY, viewerDistance);
 	}
 	else {
@@ -360,7 +360,7 @@ void ofStoryTellerApp::draw(){
 		frameIndex = (int)(ofGetElapsedTimef() * sequenceFPS) % images.size();
 	}
 	else {
-		// set the frame index based on the app frame
+		// readJsonValue the frame index based on the app frame
 		// count. then mod to wrap.
 		frameIndex = ofGetFrameNum() % images.size();
 	}

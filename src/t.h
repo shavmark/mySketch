@@ -25,19 +25,19 @@ namespace Software2552 {
 	template<typename T> void updateVector(T& vec);
 	template<typename T> void drawVector(T& vec);
 
-	// set only if value in json, set does not support string due to templatle issues
-	template<typename T> bool set(T &value, const Json::Value& data);
+	// readJsonValue only if value in json, readJsonValue does not support string due to templatle issues
+	template<typename T> bool readJsonValue(T &value, const Json::Value& data);
 	void setString(string &value, const Json::Value& data);
 
-// will only set vars if there is a string to set, ok to preserve existing values
-// always use this macro or the set function to be sure errors are handled consitantly
-#define READFLOAT(var, data) set(var, data[#var])
-#define READINT(var, data) set(var, data[#var])
-#define READBOOL(var, data) set(var, data[#var])
+// will only readJsonValue vars if there is a string to readJsonValue, ok to preserve existing values
+// always use this macro or the readJsonValue function to be sure errors are handled consitantly
+#define READFLOAT(var, data) readJsonValue(var, data[#var])
+#define READINT(var, data) readJsonValue(var, data[#var])
+#define READBOOL(var, data) readJsonValue(var, data[#var])
 #define READSTRING(var, data) setString(var, data[#var])
 #define READDATE(var, data) setString(var, data[#var])
 
-	// set defaults bugbug get to our tracing base class
+	// readJsonValue defaults bugbug get to our tracing base class
 	class Paragraph : public ofxParagraph {
 	public:
 		
@@ -80,13 +80,11 @@ namespace Software2552 {
 	class Settings {
 	public:
 		Settings() {
-			initFont(defaultFontFile, defaultFontSize, defaultFontName);
+			init(defaultFontFile, defaultFontSize, defaultFontName);
 		}
 		Settings(const string& nameIn) {
-			initFont(defaultFontFile, defaultFontSize, defaultFontName);
+			init(defaultFontFile, defaultFontSize, defaultFontName);
 			name = nameIn;
-			foregroundColor.set(0, 0, 255);
-			backgroundColor.set(255, 255, 0);
 		}
 
 		// only add if its not already there
@@ -99,17 +97,9 @@ namespace Software2552 {
 			return ofxSmartFont::get(name, size) != nullptr;
 		}
 		void operator=(const Settings& rhs) { 
-			font = rhs.font;
-			timelineDate = rhs.timelineDate; // date item existed
-			lastUpdateDate = rhs.lastUpdateDate; // last time object was updated
-			name = rhs.name; // any object can have a name, note, date, reference, duration
-			notes = rhs.notes;
-			date = rhs.date; // bugbug make this a date data type
-			foregroundColor = rhs.foregroundColor;
-			backgroundColor = rhs.backgroundColor;
-			duration = rhs.duration;
+			setSettings(rhs);
 		}
-
+		void setSettings(const Settings& rhs);
 		bool read(const Json::Value &data);
 
 		shared_ptr<ofxSmartFont> getFont() {
@@ -141,16 +131,19 @@ namespace Software2552 {
 		string date; // bugbug make this a date data type
 		ofColor foregroundColor;
 		ofColor backgroundColor;
-		float duration; // all items have this duration
+		float duration; 
 
 	private:
-		void initFont(const string& file, int size = defaultFontSize, const string& name = "default") {
+		void init(const string& file, int size = defaultFontSize, const string& name = "default") {
 			if (!fontExists(file, size)) {
 				font = ofxSmartFont::add(file, size, name);
 			}
 			else {
 				font = ofxSmartFont::get(file, size);
 			}
+			duration = 0;
+			foregroundColor.set(0, 0, 255);
+			backgroundColor.set(255, 255, 0);
 		}
 	};
 
@@ -182,6 +175,12 @@ namespace Software2552 {
 			settings = defaultsIn;
 		}
 		bool operator==(const Timeline& rhs) { return rhs.title == title; }
+		void operator=(const Settings& rhs) {
+			settings = rhs;
+		}
+		void setDefaults(const Settings& rhs) {
+			settings = rhs;
+		}
 		string &getTitle() { return title; }
 
 		// read in my defaults and title
@@ -271,17 +270,7 @@ namespace Software2552 {
 		}
 		void update() {
 		}
-		bool okToDraw() {
-			if (duration == 0) {
-				return true; // always draw
-			}
-			if (start <= 0) {
-				return false; // not started yet
-			}
-			// still going??
-			float f = ofGetElapsedTimef();
-			return start+delay+duration > ofGetElapsedTimef();
-		}
+		bool okToDraw();
 		void draw() {
 		}
 #if _DEBUG
@@ -309,6 +298,7 @@ namespace Software2552 {
 	class Text : public Graphic {
 	public:
 		Text() :Graphic() {}
+
 		bool read(const Json::Value &data);
 
 		void draw() {
@@ -434,6 +424,7 @@ namespace Software2552 {
 		}
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		bool read(const Json::Value &data);
+		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data);
 		string &getKey() { return keyname; }
 		void setup();
 		void update();
@@ -444,15 +435,8 @@ namespace Software2552 {
 			return dataAvailable() && wait;
 		}
 
-		bool dataAvailable() { 
-			// wait for all items to be drawn
-			return audios.size() > 0 ||
-				videos.size() > 0 ||
-				texts.size() > 0 ||
-				images.size() > 0 ||
-				graphics.size() > 0 ||
-				characters.size() > 0;
-		} 
+		bool dataAvailable();
+
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
@@ -497,15 +481,7 @@ namespace Software2552 {
 			traceVector(scenes);
 		}
 #endif
-		bool dataAvailable() {
-			// see if any scenes have any data
-			for (auto& scene : scenes) {
-				if (scene.dataAvailable()) {
-					return true;
-				}
-			}
-			return false;
-		}
+		bool dataAvailable();
 		void add(const Scene &scene) {
 			scenes.push_back(scene);
 		}
@@ -524,7 +500,7 @@ namespace Software2552 {
 	// an app can run many Stories
 	class Story :public Timeline {
 	public:
-		// set our own defaults
+		// readJsonValue our own defaults
 		Story(const Settings& defaults, shared_ptr<Tools> tools, const string& title) : Timeline(defaults, tools, title) {}
 
 		// get defaults later

@@ -350,7 +350,7 @@ namespace Software2552 {
 							return;
 						}
 
-						setTrackingID(count, trackingId); //bugbug if this fails should we just set an error and return?
+						setTrackingID(count, trackingId); //bugbug if this fails should we just readJsonValue an error and return?
 
 						if (usingAudio()) {
 							// see if any audio there

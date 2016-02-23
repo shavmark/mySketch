@@ -103,7 +103,7 @@ namespace Software2552 {
 			}
 			ofxAssimpModelLoader::update();
 		}
-		// low level set of annimation from another model, called before Load time
+		// low level readJsonValue of annimation from another model, called before Load time
 		void setAnimations(const Model3D& model)	{
 			//bugbug clear existing animations
 			for (int i = 0; i<model.scene->mNumAnimations; i++) {

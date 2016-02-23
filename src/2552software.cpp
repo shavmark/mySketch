@@ -133,7 +133,7 @@ namespace Software2552 {
 			hr = SpFindBestToken(SPCAT_RECOGNIZERS, L"language=409", NULL, &cpRecognizerToken);
 		}
 
-		// Create the in-process recognizer and immediately set its state to inactive.
+		// Create the in-process recognizer and immediately readJsonValue its state to inactive.
 		CComPtr<ISpRecognizer> cpRecognizer;
 
 		if (SUCCEEDED(hr))		{
@@ -177,7 +177,7 @@ namespace Software2552 {
 			}
 		}
 
-		// Initialize an audio object to use the default audio input of the system and set the recognizer to use it.
+		// Initialize an audio object to use the default audio input of the system and readJsonValue the recognizer to use it.
 		CComPtr<ISpAudio> cpAudioIn;
 
 		if (SUCCEEDED(hr))		{
@@ -321,7 +321,7 @@ namespace Software2552 {
 				&cpStream, &cAudioFmt.FormatId(), cAudioFmt.WaveFormatExPtr());
 		}
 
-		//set the output to cpStream so that the output audio data will be stored in cpStream
+		//readJsonValue the output to cpStream so that the output audio data will be stored in cpStream
 		if (SUCCEEDED(hr))		{
 			hr = cpVoice->SetOutput(cpStream, TRUE);
 		}
@@ -363,8 +363,8 @@ namespace Software2552 {
 		</rule>
 		*/
 
-		// Create set of peer phrases, each containing complete phrase.
-		// Note: the word delimiter is set as " ", so that the text we
+		// Create readJsonValue of peer phrases, each containing complete phrase.
+		// Note: the word delimiter is readJsonValue as " ", so that the text we
 		// attach to the transition can be multiple words (for example,
 		// "fly to Seattle" is implicitly "fly" + "to" + "Seattle"):
 		if (SUCCEEDED(hr))		{
@@ -392,7 +392,7 @@ namespace Software2552 {
 			hr = SpFindBestToken(SPCAT_RECOGNIZERS, L"language=409", NULL, &cpRecognizerToken);
 		}
 
-		// Create the in-process recognizer and immediately set its state to inactive.
+		// Create the in-process recognizer and immediately readJsonValue its state to inactive.
 		//CComPtr<ISpRecognizer> cpRecognizer;
 
 		if (SUCCEEDED(hr))		{
@@ -439,7 +439,7 @@ namespace Software2552 {
 				//hr = SPERR_UNITIALIZED;
 			}
 		}
-		// Set up an audio input stream using a .wav file and set the recognizer's input.
+		// Set up an audio input stream using a .wav file and readJsonValue the recognizer's input.
 		CComPtr<ISpStream> cpInputStream;
 
 		if (SUCCEEDED(hr))		{
@@ -467,7 +467,7 @@ namespace Software2552 {
 			hr = cpGrammar->SetRuleState(NULL, NULL, SPRS_ACTIVE);
 		}
 
-		// Finally, set the recognizer state to active to begin recognition.
+		// Finally, readJsonValue the recognizer state to active to begin recognition.
 		if (SUCCEEDED(hr))		{
 			hr = cpRecognizer->SetRecoState(SPRST_ACTIVE_ALWAYS);
 		}
@@ -480,7 +480,7 @@ namespace Software2552 {
 				hr = pEnum->GetCount(&ulCount);
 			}
 
-			// Obtain a list of available voice tokens, set
+			// Obtain a list of available voice tokens, readJsonValue
 			// the voice to the token, and call Speak.
 			while (SUCCEEDED(hr) && ulCount--)			{
 				if (pVoiceToken != nullptr) {

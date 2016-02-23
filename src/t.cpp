@@ -82,7 +82,7 @@ namespace Software2552 {
 			a.draw();
 		}
 	}
-
+	// read in list of Json values
 	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data)
 	{
 		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
@@ -91,12 +91,13 @@ namespace Software2552 {
 			vec.push_back(item);
 		}
 	}
+	// get a string from json
 	void setString(string &value, const Json::Value& data) {
-		if (set(value, data)) {
+		if (readJsonValue(value, data)) {
 			value = data.asString();
 		}
 	}
-	template<typename T> bool set(T &value, const Json::Value& data) {
+	template<typename T> bool readJsonValue(T &value, const Json::Value& data) {
 		try {
 			if (!data.empty()) {
 				switch (data.type()) {
@@ -104,7 +105,7 @@ namespace Software2552 {
 					value = data.asBool();
 					break;
 				case Json::stringValue:
-					return true; // templates get confused to set the string else where, use this to validate
+					return true; // templates get confused to readJsonValue the string else where, use this to validate
 					break;
 				case Json::intValue:
 					value = data.asInt();
@@ -126,6 +127,8 @@ namespace Software2552 {
 		}
 		return false;
 	}
+
+	// end of helpers
 
 	void Scene::setup() {
 		setupVector(audios);
@@ -149,6 +152,15 @@ namespace Software2552 {
 		updateVector(scenes); // give all abjects a change at update
 		removeExpiredScenes();
 	}
+	bool Scenes::dataAvailable() {
+		// see if any scenes have any data
+		for (auto& scene : scenes) {
+			if (scene.dataAvailable()) {
+				return true;
+			}
+		}
+		return false;
+	}
 	void Scenes::removeExpiredScenes() {
 		vector<Scene>::iterator it = scenes.begin();
 		while (it != scenes.end()) {
@@ -162,7 +174,15 @@ namespace Software2552 {
 			}
 		}
 	}
-
+	// see if any data in need of drawing is present
+	bool Scene::dataAvailable() {
+		return audios.size() > 0 ||
+			videos.size() > 0 ||
+			texts.size() > 0 ||
+			images.size() > 0 ||
+			graphics.size() > 0 ||
+			characters.size() > 0;
+	}
 	void Scenes::draw() {
 		// always play the first key onwards
 		for (auto& play : playlist.plays()) {
@@ -246,7 +266,17 @@ namespace Software2552 {
 		READSTRING(title, data);
 		return true;
 	}
-
+	bool Graphic::okToDraw() {
+		if (duration == 0) {
+			return true; // always draw
+		}
+		if (start <= 0) {
+			return false; // not started yet
+		}
+		// still going??
+		float f = ofGetElapsedTimef();
+		return start + delay + duration > ofGetElapsedTimef();
+	}
 	bool Settings::read(const Json::Value &data) {
 		// dumps too much so only enable if there is a bug: ECHOAll(data);
 		if (!data.empty()) { // ignore reference as an array or w/o data at this point
@@ -258,15 +288,15 @@ namespace Software2552 {
 			READFLOAT(duration, data);
 
 			int r=0, g = 0, b = 0;
-			set(r, data["foreground"]["r"]);
-			set(g, data["foreground"]["g"]);
-			set(b, data["foreground"]["b"]);
+			readJsonValue(r, data["foreground"]["r"]);
+			readJsonValue(g, data["foreground"]["g"]);
+			readJsonValue(b, data["foreground"]["b"]);
 			foregroundColor.set(r, g, b);
 
 			r = 0, g = 0, b = 0;
-			set(r, data["background"]["r"]);
-			set(g, data["background"]["g"]);
-			set(b, data["background"]["b"]);
+			readJsonValue(r, data["background"]["r"]);
+			readJsonValue(g, data["background"]["g"]);
+			readJsonValue(b, data["background"]["b"]);
 			backgroundColor.set(r, g, b);
 
 			string name;
@@ -275,7 +305,7 @@ namespace Software2552 {
 
 			setString(name, data["font"]["name"]);
 			setString(name, data["font"]["file"]);
-			set(size, data["font"]["size"]);
+			readJsonValue(size, data["font"]["size"]);
 
 			if (filename.size() != 0) {
 				if (!fontExists(filename, size)) {
@@ -380,17 +410,38 @@ namespace Software2552 {
 		}
 		return false;
 	}
+	template<typename T, typename T2> void Scene::createTimeLineItems(T2& vec, const Json::Value &data)
+	{
+		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
+			T item;
+			item.setSettings(getSettings());
+			item.read(data[j]);
+			vec.push_back(item);
+		}
+	}
+	void Settings::setSettings(const Settings& rhs) {
+		font = rhs.font;
+		timelineDate = rhs.timelineDate; // date item existed
+		lastUpdateDate = rhs.lastUpdateDate; // last time object was updated
+		name = rhs.name; // any object can have a name, note, date, reference, duration
+		notes = rhs.notes;
+		date = rhs.date; // bugbug make this a date data type
+		foregroundColor = rhs.foregroundColor;
+		backgroundColor = rhs.backgroundColor;
+		duration = rhs.duration;
+	}
+
 	bool Scene::read(const Json::Value &data) {
 		ECHOAll(data);
 
 		if (Timeline::read(data)) {
 			READSTRING(keyname, data);
 			READBOOL(wait, data);
-			parse<Audio>(audios, data["audio"]);
-			parse<Video>(videos, data["video"]);
-			parse<Text>(texts, data["text"]);
-			parse<Image>(images, data["images"]);
-			parse<Graphic>(graphics, data["graphics"]);
+			createTimeLineItems<Audio>(audios, data["audio"]);
+			createTimeLineItems<Video>(videos, data["video"]);
+			createTimeLineItems<Text>(texts, data["text"]);
+			createTimeLineItems<Image>(images, data["images"]);
+			createTimeLineItems<Graphic>(graphics, data["graphics"]);
 			return true;
 		}
 		return false;
