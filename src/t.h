@@ -197,7 +197,7 @@ namespace Software2552 {
 	private:
 		Settings settings; // every object can have its own  defaults that derives from this object
 		shared_ptr<Tools> sharedTools; 
-		string title; // title of deck, slide etc. Must be unique
+		string title; // title of deck, slide etc. 
 	};
 
 	// reference to a cited item
@@ -402,46 +402,61 @@ namespace Software2552 {
 
 #endif // _DEBUG
 	};
-
+	// item in a play list
+	class Play {
+	public:
+		Play() {}
+		Play(const string&keynameIn) { keyname = keynameIn; }
+		bool read(const Json::Value &data);
+		bool operator==(const Play& rhs) { return rhs.keyname == keyname; }
+		string &getKeyName() {return keyname;}
+	private:
+		string keyname;
+	};
+	class Playlist  {
+	public:
+		bool read(const Json::Value &data);
+		vector<Play>& plays() { return playList; }
+	private:
+		vector<Play> playList;
+	};
 	class Scene : public Timeline {
 	public:
-		Scene() {}
-		Scene(const string& key) : Timeline() {
-			init(key);
+		Scene(const string&keynameIn) : Timeline() {
+			keyname = keynameIn;
+			wait = false;
 		}
-		Scene(const Settings& defaults, shared_ptr<Tools> tools, const string& key) : Timeline(defaults, tools) {
-			init(key);
+		Scene() : Timeline() {
+			wait = false;
 		}
 		Scene(const Settings& defaults, shared_ptr<Tools> tools) : Timeline(defaults, tools) {
-			init("");
+			wait = false;
 		}
-
-		bool operator==(const Scene& rhs) { 
-			return rhs.keyname == keyname; 
-		}
-
+		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		bool read(const Json::Value &data);
+		string &getKey() { return keyname; }
 		void setup();
 		void update();
 		void draw();
-		// wait until done drawing
-		bool wait() { 
-			if (block) {
-				// wait for all items to be drawn
-				return audios.size() > 0 ||
-					videos.size() > 0 ||
-					texts.size() > 0 ||
-					images.size() > 0 ||
-					graphics.size() > 0 ||
-					characters.size() > 0;
-			}
-			return false;
+
+		// should we wait on this sceen?
+		bool waitOnScene() {
+			return dataAvailable() && wait;
+		}
+
+		bool dataAvailable() { 
+			// wait for all items to be drawn
+			return audios.size() > 0 ||
+				videos.size() > 0 ||
+				texts.size() > 0 ||
+				images.size() > 0 ||
+				graphics.size() > 0 ||
+				characters.size() > 0;
 		} 
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			basicTrace(STRINGIFY(Scene));
-			basicTrace(keyname);
 
 			traceVector(audios);
 			traceVector(videos);
@@ -460,15 +475,9 @@ namespace Software2552 {
 		vector <Image> images; //bugbug join with ofImage vector <ofImage> images;
 		vector <Graphic> graphics; // tie to ofX
 		vector <Text>  texts; 
-		string keyname; // each item is unqiue
-		bool skip;  // true to skip
-		bool block; // wait for this scene before starting the next, false to merge scenes
+		string keyname;
+		bool   wait;
 	private:
-		void init(const string& key) {
-			keyname = key;
-			skip = false;
-			block = true;
-		}
 	};
 
 	class Scenes : public Timeline {
@@ -488,9 +497,19 @@ namespace Software2552 {
 			traceVector(scenes);
 		}
 #endif
+		bool dataAvailable() {
+			// see if any scenes have any data
+			for (auto& scene : scenes) {
+				if (scene.dataAvailable()) {
+					return true;
+				}
+			}
+			return false;
+		}
 		void add(const Scene &scene) {
 			scenes.push_back(scene);
 		}
+		void removeExpiredScenes();
 		void remove(const Scene &scene) {
 			// remove by name
 			scenes.erase(std::remove(scenes.begin(), scenes.end(), scene), scenes.end());
@@ -499,7 +518,7 @@ namespace Software2552 {
 
 	private:
 		vector <Scene> scenes;
-		
+		Playlist playlist;
 	};
 	
 	// an app can run many Stories

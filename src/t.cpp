@@ -146,13 +146,33 @@ namespace Software2552 {
 		setupVector(scenes);
 	}
 	void Scenes::update() {
-		updateVector(scenes);
+		updateVector(scenes); // give all abjects a change at update
+		removeExpiredScenes();
 	}
+	void Scenes::removeExpiredScenes() {
+		vector<Scene>::iterator it = scenes.begin();
+		while (it != scenes.end()) {
+			if (!it->dataAvailable()) {
+				Play play(it->getKey());
+				playlist.plays().erase(std::remove(playlist.plays().begin(), playlist.plays().end(), play), playlist.plays().end());
+				it = scenes.erase(it);
+			}
+			else {
+				++it;
+			}
+		}
+	}
+
 	void Scenes::draw() {
-		for (auto& scene : scenes) {
-			scene.draw();
-			if (scene.wait()) {
-				break; // only draw one time if blocking, do  not go on to the next one yet
+		// always play the first key onwards
+		for (auto& play : playlist.plays()) {
+			Scene lookupscene(play.getKeyName());
+			std::vector<Scene>::iterator scene = find(getScenes().begin(), getScenes().end(), lookupscene);
+			if (scene != getScenes().end()) {
+				scene->draw();
+				if (scene->waitOnScene()) {
+					break; // only draw one time if blocking, do  not go on to the next one yet
+				}
 			}
 		}
 	}
@@ -189,6 +209,7 @@ namespace Software2552 {
 		updateVector(images);
 		updateVector(graphics);
 		updateVector(characters);
+
 	}
 	void Scene::draw() {
 		drawVector(audios);
@@ -364,8 +385,7 @@ namespace Software2552 {
 
 		if (Timeline::read(data)) {
 			READSTRING(keyname, data);
-			READBOOL(skip, data);
-			READBOOL(block, data);
+			READBOOL(wait, data);
 			parse<Audio>(audios, data["audio"]);
 			parse<Video>(videos, data["video"]);
 			parse<Text>(texts, data["text"]);
@@ -374,6 +394,14 @@ namespace Software2552 {
 			return true;
 		}
 		return false;
+	}
+	bool Play::read(const Json::Value &data) {
+		READSTRING(keyname, data);
+		return true;
+	}
+	bool Playlist::read(const Json::Value &data) {
+		parse<Play>(playList, data["playList"]);
+		return true;
 	}
 	bool Audio::read(const Json::Value &data) {
 		ECHOAll(data);
@@ -398,25 +426,12 @@ namespace Software2552 {
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
 			Timeline::read(json);
-
-			// build order and list of slide scenes
-			for (Json::ArrayIndex i = 0; i < json["playList"].size(); ++i) {
-				// scenes stored in order they should be run
-				string keyname;
-				setString(keyname, json["playList"][i]["keyname"]);
-				Scene scene(getSettings(), getSharedTools(), keyname);
-				add(scene);
-			}
+			playlist.read(json);
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
-				Scene lookupscene(json["scenes"][i]["keyname"].asString());
-				// read into matching slide
-				std::vector<Scene>::iterator it = find(getScenes().begin(), getScenes().end(), lookupscene);
-				if (it != getScenes().end()) {
-					// Settings can appear here too
-					logTrace("parse settings json[scenes][" + ofToString(i) + "][keyname]");
-					it->read(json["scenes"][i]); // update slide in place
-				}
+				Scene scene;
+				scene.read(json["scenes"][i]);
+				add(scene);
 			}
 		}
 		catch (std::exception e) {
