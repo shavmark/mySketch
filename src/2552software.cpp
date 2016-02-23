@@ -70,7 +70,7 @@ namespace Software2552 {
 	}
 	void Trace2552::logTraceBasic(const string& message) {
 #if _DEBUG
-		ofLog(OF_LOG_VERBOSE, message); // could dump a lot but in debug thats what we want?
+		ofLog(OF_LOG_VERBOSE, message); //OF_LOG_VERBOSE could dump a lot but in debug thats what we want?
 #else
 		ofLog(OF_LOG_NOTICE, message);
 #endif

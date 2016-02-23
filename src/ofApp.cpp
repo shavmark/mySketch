@@ -8,7 +8,7 @@
 
 //--------------------------------------------------------------
 void ofStoryTellerApp::setup(){
-	ofSetLogLevel(OF_LOG_VERBOSE);
+	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
 	decks.setup(); // create time line
 	decks.trace();
 	//paragraphs.build(ofGetWidth());

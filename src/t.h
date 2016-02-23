@@ -25,13 +25,17 @@ namespace Software2552 {
 	template<typename T> void updateVector(T& vec);
 	template<typename T> void drawVector(T& vec);
 
-	// set only if value in json
+	// set only if value in json, set does not support string due to templatle issues
 	template<typename T> bool set(T &value, const Json::Value& data);
-
+	void setString(string &value, const Json::Value& data);
 
 // will only set vars if there is a string to set, ok to preserve existing values
 // always use this macro or the set function to be sure errors are handled consitantly
-#define READ(var, data) set(var, data[#var])
+#define READFLOAT(var, data) set(var, data[#var])
+#define READINT(var, data) set(var, data[#var])
+#define READBOOL(var, data) set(var, data[#var])
+#define READSTRING(var, data) setString(var, data[#var])
+#define READDATE(var, data) setString(var, data[#var])
 
 	// set defaults bugbug get to our tracing base class
 	class Paragraph : public ofxParagraph {
@@ -137,7 +141,7 @@ namespace Software2552 {
 		string date; // bugbug make this a date data type
 		ofColor foregroundColor;
 		ofColor backgroundColor;
-		float duration;
+		float duration; // all items have this duration
 
 	private:
 		void initFont(const string& file, int size = defaultFontSize, const string& name = "default") {
@@ -247,25 +251,23 @@ namespace Software2552 {
 	public:
 		Graphic() : ReferencedItem(){
 			x = y = z = -1; // off by default, data input for x,y is a percent re-calced in update, z is true value
-			duration = 0; // infinite by default, time is in milliseconds
 			//bugbug add a pause where time is suspended
-			start = 0; // force reset to be called to make sure timing is right
+			start = 0; // force reset to be called to make sure timing is right, 0 means not started
 			delay = 0;
-			started = false;
 		}
 		
 		static bool okToRemove(const Graphic& s) {
-			if (!s.duration || !s.started) {
+			if (!s.duration || s.start < 0) {
 				return false; // no time out ever, or we have not started yet
 			}
-			return (ofGetElapsedTimef() - (s.start+ s.delay)) > (s.duration + s.delay);
+			//bugbug delay not coded in
+			return (ofGetElapsedTimef() - (s.start)) > (s.duration);
 		};
 		
 		bool read(const Json::Value &data);
 
 		void setup() {
 			start = ofGetElapsedTimef();
-			start += delay;
 		}
 		void update() {
 		}
@@ -276,11 +278,9 @@ namespace Software2552 {
 			if (start <= 0) {
 				return false; // not started yet
 			}
-			if (start + delay < ofGetElapsedTimef()) {
-				return false; // not started yet
-			}
 			// still going??
-			return start+delay+duration < ofGetElapsedTimef();
+			float f = ofGetElapsedTimef();
+			return start+delay+duration > ofGetElapsedTimef();
 		}
 		void draw() {
 		}
@@ -301,7 +301,6 @@ namespace Software2552 {
 		string type; // 2d, 3d, other
 		float start;
 		float delay; // start+delay is the true start
-		bool started;
 
 		int width; //bugbug todo
 		int height;//bugbug todo
@@ -425,7 +424,19 @@ namespace Software2552 {
 		void setup();
 		void update();
 		void draw();
-
+		// wait until done drawing
+		bool wait() { 
+			if (block) {
+				// wait for all items to be drawn
+				return audios.size() > 0 ||
+					videos.size() > 0 ||
+					texts.size() > 0 ||
+					images.size() > 0 ||
+					graphics.size() > 0 ||
+					characters.size() > 0;
+			}
+			return false;
+		} 
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {

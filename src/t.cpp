@@ -91,9 +91,10 @@ namespace Software2552 {
 			vec.push_back(item);
 		}
 	}
-	// avoid template confusion by assigning string here, but only when we are pretty sure its a string
-	void getstring(string &s, const Json::Value& data) {
-		s = data.asString();
+	void setString(string &value, const Json::Value& data) {
+		if (set(value, data)) {
+			value = data.asString();
+		}
 	}
 	template<typename T> bool set(T &value, const Json::Value& data) {
 		try {
@@ -103,7 +104,7 @@ namespace Software2552 {
 					value = data.asBool();
 					break;
 				case Json::stringValue:
-					getstring(ofToString(value), data);
+					return true; // templates get confused to set the string else where, use this to validate
 					break;
 				case Json::intValue:
 					value = data.asInt();
@@ -148,7 +149,12 @@ namespace Software2552 {
 		updateVector(scenes);
 	}
 	void Scenes::draw() {
-		drawVector(scenes);
+		for (auto& scene : scenes) {
+			scene.draw();
+			if (scene.wait()) {
+				break; // only draw one time if blocking, do  not go on to the next one yet
+			}
+		}
 	}
 	void Story::setup() {
 		read();
@@ -208,27 +214,27 @@ namespace Software2552 {
 		ECHOAll(data);
 
 		if (Graphic::read(data)) {
-			READ(url, data);
+			READSTRING(url, data);
 			return true;
 		}
 		return false;
 	}
 	bool Timeline::read(const Json::Value &data) {
-		ECHOAll(data);
+		// dumps too much so only enable if there is a bug: ECHOAll(data);
 		settings.read(data);
-		READ(title, data);
+		READSTRING(title, data);
 		return true;
 	}
 
 	bool Settings::read(const Json::Value &data) {
-		ECHOAll(data);
+		// dumps too much so only enable if there is a bug: ECHOAll(data);
 		if (!data.empty()) { // ignore reference as an array or w/o data at this point
-			READ(timelineDate, data);
-			READ(date, data);
-			READ(lastUpdateDate, data);
-			READ(name, data);
-			READ(notes, data);
-			READ(duration, data);
+			READDATE(timelineDate, data);
+			READDATE(date, data);
+			READDATE(lastUpdateDate, data);
+			READSTRING(name, data);
+			READSTRING(notes, data);
+			READFLOAT(duration, data);
 
 			int r=0, g = 0, b = 0;
 			set(r, data["foreground"]["r"]);
@@ -246,8 +252,8 @@ namespace Software2552 {
 			int size = defaultFontSize;
 			string filename;
 
-			set(name, data["font"]["name"]);
-			set(name, data["font"]["file"]);
+			setString(name, data["font"]["name"]);
+			setString(name, data["font"]["file"]);
 			set(size, data["font"]["size"]);
 
 			if (filename.size() != 0) {
@@ -267,9 +273,9 @@ namespace Software2552 {
 
 		if (Settings::read(data)) { // ignore reference as an array or w/o data at this point
 			// no base class so it repeats some data in base class ReferencedItem
-			READ(url, data);
-			READ(location, data);
-			READ(source, data);
+			READSTRING(url, data);
+			READSTRING(location, data);
+			READSTRING(source, data);
 			return true;
 		}
 		return false;
@@ -287,12 +293,12 @@ namespace Software2552 {
 		ECHOAll(data);
 
 		if (ReferencedItem::read(data)) {
-			READ(type, data);
-			READ(duration, data);
-			READ(delay, data);
-			READ(x, data);
-			READ(y, data);
-			READ(z, data);
+			READSTRING(type, data);
+			READFLOAT(duration, data);
+			READFLOAT(delay, data);
+			READINT(x, data);
+			READINT(y, data);
+			READINT(z, data);
 
 			return true;
 		}
@@ -304,28 +310,28 @@ namespace Software2552 {
 
 		if (Graphic::read(data)) {
 			string paragraph; // read in text
-			READ(paragraph, data);
+			READSTRING(paragraph, data);
 			if (paragraph.size() > 0){
 				text.setText(paragraph);
 				text.setFont(font); // use current font
 				text.setColor(foregroundColor);
 				int indent=-1;
-				READ(indent, data);
+				READINT(indent, data);
 				if (indent > -1) {
 					text.setIndent(indent);
 				}
 				int leading = -1;
-				READ(leading, data);
+				READINT(leading, data);
 				if (leading > -1) {
 					text.setLeading(leading);
 				}
 				int spacing = -1;
-				READ(spacing, data);
+				READINT(spacing, data);
 				if (spacing > -1) {
 					text.setSpacing(spacing);
 				}
 				string alignment;
-				READ(alignment, data);
+				READSTRING(alignment, data);
 				if (alignment == "left") { //bugbug ignore case
 					text.setAlignment(ofxParagraph::ALIGN_LEFT);
 				}
@@ -336,7 +342,7 @@ namespace Software2552 {
 					text.setAlignment(ofxParagraph::ALIGN_RIGHT);
 				}
 				int width = -1;
-				READ(width, data);
+				READINT(width, data);
 				if (width > -1) {
 					text.setWidth(width);
 				}
@@ -357,9 +363,9 @@ namespace Software2552 {
 		ECHOAll(data);
 
 		if (Timeline::read(data)) {
-			READ(keyname, data);
-			READ(skip, data);
-			READ(block, data);
+			READSTRING(keyname, data);
+			READBOOL(skip, data);
+			READBOOL(block, data);
 			parse<Audio>(audios, data["audio"]);
 			parse<Video>(videos, data["video"]);
 			parse<Text>(texts, data["text"]);
@@ -373,7 +379,7 @@ namespace Software2552 {
 		ECHOAll(data);
 
 		if (Image::read(data)) {
-			READ(volume, data);
+			READINT(volume, data);
 			return true;
 		}
 		return false;
@@ -396,13 +402,11 @@ namespace Software2552 {
 			// build order and list of slide scenes
 			for (Json::ArrayIndex i = 0; i < json["playList"].size(); ++i) {
 				// scenes stored in order they should be run
-				Scene scene(getSettings(), getSharedTools());
-				scene.read(json["playList"][i]);
+				string keyname;
+				setString(keyname, json["playList"][i]["keyname"]);
+				Scene scene(getSettings(), getSharedTools(), keyname);
 				add(scene);
 			}
-			return;
-#if 0
-			make sure all this read above
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				Scene lookupscene(json["scenes"][i]["keyname"].asString());
@@ -414,8 +418,6 @@ namespace Software2552 {
 					it->read(json["scenes"][i]); // update slide in place
 				}
 			}
-
-#endif // 0
 		}
 		catch (std::exception e) {
 			logErrorString(e.what());
