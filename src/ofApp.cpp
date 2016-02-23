@@ -8,6 +8,7 @@
 
 //--------------------------------------------------------------
 void ofStoryTellerApp::setup(){
+	ofSetLogLevel(OF_LOG_VERBOSE);
 	decks.setup(); // create time line
 	decks.trace();
 	//paragraphs.build(ofGetWidth());
@@ -15,7 +16,7 @@ void ofStoryTellerApp::setup(){
 	//ofSetFullscreen(true);
 	//ofSetFrameRate(60);
 	//ofBackgroundHex(0x00000);
-	ofSetLogLevel(OF_LOG_NOTICE);//ofSetLogLevel(OF_LOG_VERBOSE);
+	//ofSetLogLevel(OF_LOG_NOTICE);//ofSetLogLevel(OF_LOG_VERBOSE);
 	
 	// we add this listener before setting up so the initial circle resolution is correct
 #if 0

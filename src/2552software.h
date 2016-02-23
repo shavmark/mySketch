@@ -62,6 +62,8 @@ namespace Software2552 {
 #endif
 		// simple text log, even w/o debug
 #define echo(p) Trace2552::logTraceBasic(p)
+#define echoError(p) Trace2552::logErrorString(p)
+#define tracer(p, isError) (isError ? echoError(p) : echo(p))
 	};
 
 	template<class Interface> void SafeRelease(Interface *& pInterfaceToRelease)

@@ -6,29 +6,29 @@ namespace Software2552 {
 
 
 	//bugbug todo weave into errors, even on release mode as anyone can break a json file
-	void echoValue(const Json::Value &data) {
+	void echoValue(const Json::Value &data, bool isError) {
 		//Json::Value::Members m = data.getMemberNames();
 		try {
 			if (data.isString()) {
-				echo("type=string, value=\""+ data.asString() + "\">");
+				tracer("type=string, value=\""+ data.asString() + "\">", isError);
 			}
 			else if (data.isBool()) {
-				echo("type=bool, value=" + ofToString(data.asBool()) + ">");
+				tracer("type=bool, value=" + ofToString(data.asBool()) + ">", isError);
 			}
 			else if (data.isInt()) {
-				echo("type=int, value=" + ofToString(data.asInt()) + ">");
+				tracer("type=int, value=" + ofToString(data.asInt()) + ">", isError);
 			}
 			else if (data.isDouble()) {
-				echo("type=float, value=" + ofToString(data.asDouble()) + ">");
+				tracer("type=float, value=" + ofToString(data.asDouble()) + ">", isError);
 			}
 			else if (data.isArray()) {
-				echo("type=array>");
+				tracer("type=array>", isError);
 			}
 			else if (data.isObject()) {
-				echo("type=objectvalue(name/value pair), value=" + ofToString(data.asString()) + ">");
+				tracer("type=objectvalue(name/value pair), value=" + ofToString(data.asString()) + ">", isError);
 			}
 			else  {
-				echo("type=unsupported, type is "+ ofToString(data.type()) + ">");
+				tracer("type=unsupported, type is "+ ofToString(data.type()) + ">", isError);
 			}
 		}
 		catch (std::exception e) {
@@ -37,25 +37,25 @@ namespace Software2552 {
 
 		
 	}
-	bool echoJSONTree(const string& functionname, const Json::Value &root)
+	bool echoJSONTree(const string& functionname, const Json::Value &root, bool isError)
 	{
-		echo("<Parse name=\"" + functionname + "\">"); // kick it back as xml, easier to read by a human? 
+		tracer("<Parse name=\"" + functionname + "\">", isError); // kick it back as xml, easier to read by a human? 
 
 		if (root.size() > 0) {
 
 			for (Json::ValueIterator itr = root.begin(); itr != root.end(); itr++) {
 				string member = itr.memberName();
-				echo("<subvalue name=\""+ member +"\">");
+				tracer("<subvalue name=\""+ member +"\">", isError);
 				echoValue(itr.key());
-				echo("</subvalue>");
-				echoJSONTree(functionname, *itr);
+				tracer("</subvalue>", isError);
+				echoJSONTree(functionname, *itr, isError);
 			}
 			return true;
 		}
 		else {
 			echoValue(root);
 		}
-		echo("</Parse>");
+		tracer("</Parse>", isError);
 		return true;
 	}
 
@@ -91,52 +91,36 @@ namespace Software2552 {
 			vec.push_back(item);
 		}
 	}
-	// set only if value in json
-	bool set(string &value, const Json::Value& data) {
+	// avoid template confusion by assigning string here, but only when we are pretty sure its a string
+	void getstring(string &s, const Json::Value& data) {
+		s = data.asString();
+	}
+	template<typename T> bool set(T &value, const Json::Value& data) {
 		try {
 			if (!data.empty()) {
-				value = data.asString();
+				switch (data.type()) {
+				case Json::booleanValue:
+					value = data.asBool();
+					break;
+				case Json::stringValue:
+					getstring(ofToString(value), data);
+					break;
+				case Json::intValue:
+					value = data.asInt();
+					break;
+				case Json::realValue:
+					value = data.asFloat();
+					break;
+				default:
+					// ignore?
+					logTrace("value not found");
+					break;
+				}
 				return true;
 			}
 		}
 		catch (std::exception e) {
-			logErrorString(e.what());
-		}
-		return false;
-	}
-	bool set(float &value, const Json::Value &data) {
-		try {
-			if (!data.empty()) { // not an  array and there is data
-				value = data.asFloat();
-				return true;
-			}
-		}
-		catch (std::exception e) {
-			logErrorString(e.what());
-		}
-		return false;
-	}
-	bool set(bool &value, const Json::Value &data) {
-		try {
-			if (!data.empty()) { // not an  array and there is data
-				value = data.asBool();
-				return true;
-			}
-		}
-		catch (std::exception e) {
-			logErrorString(e.what());
-		}
-		return false;
-	}
-	
-	bool set(int &value, const Json::Value &data) {
-		try {
-			if (!data.empty()) { 
-				value = data.asInt();
-				return true;
-			}
-		}
-		catch (std::exception e) {
+			echoJSONTree(__FUNCTION__, data, true);
 			logErrorString(e.what());
 		}
 		return false;
@@ -416,6 +400,9 @@ namespace Software2552 {
 				scene.read(json["playList"][i]);
 				add(scene);
 			}
+			return;
+#if 0
+			make sure all this read above
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				Scene lookupscene(json["scenes"][i]["keyname"].asString());
@@ -427,6 +414,8 @@ namespace Software2552 {
 					it->read(json["scenes"][i]); // update slide in place
 				}
 			}
+
+#endif // 0
 		}
 		catch (std::exception e) {
 			logErrorString(e.what());

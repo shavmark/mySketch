@@ -10,9 +10,10 @@
 
 namespace Software2552 {
 	// helpers
-	void echoValue(const Json::Value &data);
-	bool echoJSONTree(const string& functionname, const Json::Value &root);
+	void echoValue(const Json::Value &data, bool isError = false);
+	bool echoJSONTree(const string& functionname, const Json::Value &root, bool isError=false);
 #define ECHOAll(data) echoJSONTree(__FUNCTION__, data);
+#define ERROR_ECHOAll(data) echoJSONTree(__FUNCTION__, data, true);
 
 	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data); 
 
@@ -25,10 +26,7 @@ namespace Software2552 {
 	template<typename T> void drawVector(T& vec);
 
 	// set only if value in json
-	bool set(string &value, const Json::Value& data);
-	bool set(float &value, const Json::Value &data);
-	bool set(int &value, const Json::Value &data);
-	bool set(bool &value, const Json::Value &data);
+	template<typename T> bool set(T &value, const Json::Value& data);
 
 
 // will only set vars if there is a string to set, ok to preserve existing values
