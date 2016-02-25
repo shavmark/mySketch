@@ -5,6 +5,11 @@
 #include "ofxJSON.h"
 #include "kinect2552.h"
 #include "ofxParagraph.h"
+#include "Poco/Foundation.h"
+#include "Poco/DateTime.h"
+#include "Poco/LocalDateTime.h"
+#include "Poco/DateTimeParser.h"
+#include "Poco/DateTimeFormatter.h"
 
 // timeline software, json based
 
@@ -27,7 +32,7 @@ namespace Software2552 {
 
 	// readJsonValue only if value in json, readJsonValue does not support string due to templatle issues
 	template<typename T> bool readJsonValue(T &value, const Json::Value& data);
-	void setString(string &value, const Json::Value& data);
+	bool setString(string &value, const Json::Value& data);
 
 // will only readJsonValue vars if there is a string to readJsonValue, ok to preserve existing values
 // always use this macro or the readJsonValue function to be sure errors are handled consitantly
@@ -66,20 +71,86 @@ namespace Software2552 {
 
 	};
 
-	class Font  {
+	//http://pocoproject.org/slides/070-DateAndTime.pdf
+	class DateAndTime {
 	public:
+		DateAndTime() {
+			timeZoneDifferential = 0;
+			bc = 0;
+		}
+		void operator=(const DateAndTime& rhs) {
+			timeZoneDifferential = rhs.timeZoneDifferential;
+			datetime = rhs.datetime;
+			bc = rhs.bc;
+		}
+		string getDate() {
+
+		}
 		bool read(const Json::Value &data);
+		const string format = "%dd %H:%M:%S.%i";
+		Poco::DateTime datetime;
+		int timeZoneDifferential; 
+		int bc; // non zero if its a bc date
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(RGB));
-			basicTrace(ofToString(r));
-			basicTrace(ofToString(g));
-			basicTrace(ofToString(b));
+			basicTrace(STRINGIFY(DateAndTime));
+			if (bc) {
+				basicTrace("BC");
+				basicTrace(ofToString(bc));
+			}
+			else {
+				basicTrace(Poco::DateTimeFormatter::format(datetime, format));
+				basicTrace(ofToString(timeZoneDifferential));
+			}
 		}
 #endif // _DEBUG
-	private:
-		shared_ptr<ofxSmartFont> font;
+	};
+
+	// simple helper to read in font data from json 
+#define defaultFontSize 14
+#define defaultFontFile "fonts/Raleway-Thin.ttf"
+#define defaultFontName "Raleway-Thin"
+
+	class Font  {
+	public:
+		Font() {
+			// always install the default foint
+			if (!fontExists(defaultFontFile, defaultFontSize)) {
+				font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);
+			}
+			else {
+				font = ofxSmartFont::get(defaultFontFile, defaultFontSize);
+			}
+		}
+		// only add if its not already there
+		void addFont(const string& file, int size = defaultFontSize, const string& name = "default") {
+			if (!fontExists(file, size)) {
+				font = ofxSmartFont::add(file, size, name);;
+			}
+		}
+
+		bool read(const Json::Value &data);
+		shared_ptr<ofxSmartFont> font; // no need to re-wrap
+		bool fontExists(const string& name, int size = defaultFontSize) {
+			return ofxSmartFont::get(name, size) != nullptr;
+		}
+
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Font));
+			if (font != nullptr) {
+				basicTrace(font->name());
+				basicTrace(font->file());
+				basicTrace(ofToString(font->size()));
+			}
+			else {
+				basicTrace("no font");
+			}
+		}
+#endif // _DEBUG
+
 	};
 	// readJsonValue defaults bugbug get to our tracing base class
 	class Paragraph : public ofxParagraph {
@@ -117,29 +188,17 @@ namespace Software2552 {
 	};
 
 	//  settings
-#define defaultFontSize 14
-#define defaultFontFile "fonts/Raleway-Thin.ttf"
-#define defaultFontName "Raleway-Thin"
 
 	class Settings {
 	public:
 		Settings() {
-			init(defaultFontFile, defaultFontSize, defaultFontName);
+			init();
 		}
 		Settings(const string& nameIn) {
-			init(defaultFontFile, defaultFontSize, defaultFontName);
+			init();
 			name = nameIn;
 		}
 		const string JsonName = "settings";
-		// only add if its not already there
-		void addFont(const string& file, int size=defaultFontSize, const string& name="default") {
-			if (!fontExists(file, size)) {
-				font = ofxSmartFont::add(file, size, name);;
-			}
-		}
-		bool fontExists(const string& name, int size = defaultFontSize) {
-			return ofxSmartFont::get(name, size) != nullptr;
-		}
 		void operator=(const Settings& rhs) { 
 			setSettings(rhs);
 		}
@@ -149,7 +208,7 @@ namespace Software2552 {
 		Point3D& getStartingPoint() {	return startingPoint;	}
 
 		shared_ptr<ofxSmartFont> getFont() {
-			return font;
+			return font.font; 
 		}
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
@@ -162,10 +221,11 @@ namespace Software2552 {
 			foregroundColor.trace();
 			backgroundColor.trace();
 			startingPoint.trace();
+			font.trace();
+			timelineDate.trace(); // date item existed
+			lastUpdateDate.trace(); // last time object was updated
+			date.trace();
 
-			basicTrace(date);
-			basicTrace(timelineDate);
-			basicTrace(lastUpdateDate);
 			basicTrace(name);
 			basicTrace(notes);
 			basicTrace(ofToString(duration));
@@ -173,24 +233,20 @@ namespace Software2552 {
 #endif
 
 	protected:
-		shared_ptr<ofxSmartFont> font;
-		string timelineDate; // date item existed
-		string lastUpdateDate; // last time object was updated
+		Font   font;
+		// when read build date class bugbug
+		DateAndTime timelineDate; // date item existed
+		DateAndTime lastUpdateDate; // last time object was updated
+		DateAndTime date; // bugbug make this a date data type
 		string name; // any object can have a name, note, date, reference, duration
 		string notes;
-		string date; // bugbug make this a date data type
-		Color foregroundColor;
-		Color backgroundColor;
-		float duration; 
+		Color  foregroundColor;
+		Color  backgroundColor;
+		float  duration; 
 		Point3D startingPoint;
 	private:
-		void init(const string& file, int size = defaultFontSize, const string& name = "default") {
-			if (!fontExists(file, size)) {
-				font = ofxSmartFont::add(file, size, name);
-			}
-			else {
-				font = ofxSmartFont::get(file, size);
-			}
+		void init() {
+			Poco::Timespan totalTime = 1 * 1000 * 1000;
 			duration = 0;
 			foregroundColor.set(0, 0, 255);
 			backgroundColor.set(255, 255, 0);

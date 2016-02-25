@@ -95,10 +95,12 @@ namespace Software2552 {
 		}
 	}
 	// get a string from json
-	void setString(string &value, const Json::Value& data) {
+	bool setString(string &value, const Json::Value& data) {
 		if (readJsonValue(value, data)) {
 			value = data.asString();
+			return true;
 		}
+		return false;
 	}
 	template<typename T> bool readJsonValue(T &value, const Json::Value& data) {
 		try {
@@ -269,6 +271,25 @@ namespace Software2552 {
 		READSTRING(title, data);
 		return true;
 	}
+	bool Font::read(const Json::Value &data) {
+		ECHOAll(data);
+
+		string name;
+		int size = defaultFontSize;
+		string filename;
+
+		setString(name, data["font"]["name"]);
+		setString(name, data["font"]["file"]);
+		readJsonValue(size, data["font"]["size"]);
+
+		if (filename.size() != 0) {
+			if (!fontExists(filename, size)) {
+				// name is not unqiue, just a helper of some kind I guess
+				font = ofxSmartFont::add(filename, size, name);
+			}
+		}
+		return true;
+	}
 	bool Graphic::okToDraw() {
 		if (duration == 0) {
 			return true; // always draw
@@ -283,30 +304,16 @@ namespace Software2552 {
 	bool Settings::read(const Json::Value &data) {
 		// dumps too much so only enable if there is a bug: ECHOAll(data);
 		if (!data.empty()) { // ignore reference as an array or w/o data at this point
-			READDATE(timelineDate, data);
-			READDATE(date, data);
-			READDATE(lastUpdateDate, data);
 			READSTRING(name, data);
 			READSTRING(notes, data);
 			READFLOAT(duration, data);
+			timelineDate.read(data["timelineDate"]); // date item existed
+			lastUpdateDate.read(data["lastUpdateDate"]); // last time object was updated
+			date.read(data["date"]);
 			startingPoint.read(data["startingPoint"]);
 			foregroundColor.read(data["foreground"]);
 			backgroundColor.read(data["background"]);
-
-			string name;
-			int size = defaultFontSize;
-			string filename;
-
-			setString(name, data["font"]["name"]);
-			setString(name, data["font"]["file"]);
-			readJsonValue(size, data["font"]["size"]);
-
-			if (filename.size() != 0) {
-				if (!fontExists(filename, size)) {
-					// name is not unqiue, just a helper of some kind I guess
-					font = ofxSmartFont::add(filename, size, name);
-				}
-			}
+			font.read(data["font"]);
 			return true;
 		}
 
@@ -347,6 +354,22 @@ namespace Software2552 {
 		READFLOAT(z, data);
 		return true;
 	}
+	bool DateAndTime::read(const Json::Value &data) {
+		ECHOAll(data);
+		string date; // scratch varible
+
+		READINT(bc, data);
+
+		if (READSTRING(date, data)) {
+			if (!Poco::DateTimeParser::tryParse(date, datetime, timeZoneDifferential)) {
+				logErrorString("invalid date");
+				return false;
+			}
+			datetime.makeUTC(timeZoneDifferential);
+		}
+
+		return true;
+	}
 	bool Graphic::read(const Json::Value &data) {
 		ECHOAll(data);
 
@@ -367,7 +390,7 @@ namespace Software2552 {
 			READSTRING(paragraph, data);
 			if (paragraph.size() > 0){
 				text.setText(paragraph);
-				text.setFont(font); // use current font
+				text.setFont(getFont()); // use current font
 				text.setColor(foregroundColor);
 				int indent=-1;
 				READINT(indent, data);
