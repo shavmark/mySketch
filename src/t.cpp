@@ -361,14 +361,13 @@ namespace Software2552 {
 			return true;
 		}
 
-		string ad; // scratch varible
-
-		if (READSTRING(ad, data)) {
-			if (!Poco::DateTimeParser::tryParse(ad, datetime, timeZoneDifferential)) {
-				logErrorString("invalid AD date " + ad);
+		string str; // scratch varible, enables either string or ints to pull a date
+		if (READSTRING(str, data)) {
+			if (!Poco::DateTimeParser::tryParse(str, *this, timeZoneDifferential)) {
+				logErrorString("invalid AD date " + str);
 				return false;
 			}
-			datetime.makeUTC(timeZoneDifferential);
+			makeUTC(timeZoneDifferential);
 		}
 
 		return true;

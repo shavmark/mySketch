@@ -72,25 +72,26 @@ namespace Software2552 {
 	};
 
 	//http://pocoproject.org/slides/070-DateAndTime.pdf
-	class DateAndTime {
+	class DateAndTime : public Poco::DateTime {
 	public:
-		DateAndTime() {
+		// default to no no date to avoid the current date being set for bad data
+		DateAndTime() : Poco::DateTime(0,1,1){
 			timeZoneDifferential = 0;
 			bc = 0;
 		}
 		void operator=(const DateAndTime& rhs) {
 			timeZoneDifferential = rhs.timeZoneDifferential;
-			datetime = rhs.datetime;
 			bc = rhs.bc;
+			assign(rhs.year(), rhs.month(), rhs.day(), rhs.hour(), rhs.minute(), rhs.second(), rhs.microsecond(), rhs.microsecond());
 		}
+		const string format = "%dd %H:%M:%S.%i";
 		string getDate() {
-
+			return Poco::DateTimeFormatter::format(timestamp(), format);
 		}
 		bool read(const Json::Value &data);
-		const string format = "%dd %H:%M:%S.%i";
-		Poco::DateTime datetime;
 		int timeZoneDifferential; 
 		int bc; // non zero if its a bc date
+
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -100,8 +101,11 @@ namespace Software2552 {
 				basicTrace(ofToString(bc));
 			}
 			else {
-				basicTrace(Poco::DateTimeFormatter::format(datetime, format));
+				basicTrace(getDate());
 				basicTrace(ofToString(timeZoneDifferential));
+				if (year() == 0){
+					logErrorString("invalid date");
+				}
 			}
 		}
 #endif // _DEBUG
@@ -152,43 +156,8 @@ namespace Software2552 {
 #endif // _DEBUG
 
 	};
-	// readJsonValue defaults bugbug get to our tracing base class
-	class Paragraph : public ofxParagraph {
-	public:
-		
-		//align right blows up on at least short strings
-		Paragraph(string titleIn, string text, int maxWidth, int y = 0, Alignment align = ALIGN_LEFT) : ofxParagraph(text, 0, align) {
-			// fonts are shared via static bugbug maybe ask before calling to avoid log on it?
-		};
-
-		// enables easy lay out of paragraphs
-		int nextRow() {
-			return y + title.getHeight() + getHeight();
-		}
-
-		void draw() {
-			ofxParagraph::draw();
-			int titleX = x + (getWidth() / 2 - title.getWidth() / 2);
-			if (titleX < 0)
-				titleX = title.getWidth() / 2;//this is wrong bugbug
-			int titleY = title.getHeight(); // create some sort of offset
-			if (titleY < 0)
-				titleY = title.getHeight();//this is wrong bugbug
-
-			title.draw(titleX, titleY);
-		}
-
-	private:
-		void set(int maxWidth, int yIn) {
-			setWidth((2 * maxWidth) / 3);
-			x = maxWidth / 2 - getWidth() / 2;
-			y = yIn;
-		}
-		ofxParagraph title; // font for the title bugbug not sure where to delete this yet
-	};
 
 	//  settings
-
 	class Settings {
 	public:
 		Settings() {
@@ -234,16 +203,15 @@ namespace Software2552 {
 
 	protected:
 		Font   font;
-		// when read build date class bugbug
 		DateAndTime timelineDate; // date item existed
 		DateAndTime lastUpdateDate; // last time object was updated
 		DateAndTime itemDate; // date of reference vs the date of the referenced item 
 		string name; // any object can have a name, note, date, reference, duration
-		string notes;
+		string notes;// unstructured string of info, can be shown to the user
 		Color  foregroundColor;
 		Color  backgroundColor;
-		float  duration; 
-		Point3D startingPoint;
+		float  duration; // life time of object, 0 means forever
+		Point3D startingPoint; // starting point of object for drawing
 	private:
 		void init() {
 			Poco::Timespan totalTime = 1 * 1000 * 1000;
