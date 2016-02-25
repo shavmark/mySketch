@@ -37,6 +37,50 @@ namespace Software2552 {
 #define READSTRING(var, data) setString(var, data[#var])
 #define READDATE(var, data) setString(var, data[#var])
 
+	class Point3D : public ofVec3f {
+	public:
+		bool read(const Json::Value &data);
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Point3D));
+			basicTrace(ofToString(x));
+			basicTrace(ofToString(y));
+			basicTrace(ofToString(z));
+		}
+#endif // _DEBUG
+
+	};
+	class Color : public ofColor {
+	public:
+		bool read(const Json::Value &data);
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(RGB));
+			basicTrace(ofToString(r));
+			basicTrace(ofToString(g));
+			basicTrace(ofToString(b));
+		}
+#endif // _DEBUG
+
+	};
+
+	class Font  {
+	public:
+		bool read(const Json::Value &data);
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(RGB));
+			basicTrace(ofToString(r));
+			basicTrace(ofToString(g));
+			basicTrace(ofToString(b));
+		}
+#endif // _DEBUG
+	private:
+		shared_ptr<ofxSmartFont> font;
+	};
 	// readJsonValue defaults bugbug get to our tracing base class
 	class Paragraph : public ofxParagraph {
 	public:
@@ -86,7 +130,7 @@ namespace Software2552 {
 			init(defaultFontFile, defaultFontSize, defaultFontName);
 			name = nameIn;
 		}
-
+		const string JsonName = "settings";
 		// only add if its not already there
 		void addFont(const string& file, int size=defaultFontSize, const string& name="default") {
 			if (!fontExists(file, size)) {
@@ -102,6 +146,8 @@ namespace Software2552 {
 		void setSettings(const Settings& rhs);
 		bool read(const Json::Value &data);
 
+		Point3D& getStartingPoint() {	return startingPoint;	}
+
 		shared_ptr<ofxSmartFont> getFont() {
 			return font;
 		}
@@ -113,6 +159,10 @@ namespace Software2552 {
 		// echo object (debug only)
 		void trace() {
 			basicTrace(STRINGIFY(Settings));
+			foregroundColor.trace();
+			backgroundColor.trace();
+			startingPoint.trace();
+
 			basicTrace(date);
 			basicTrace(timelineDate);
 			basicTrace(lastUpdateDate);
@@ -129,10 +179,10 @@ namespace Software2552 {
 		string name; // any object can have a name, note, date, reference, duration
 		string notes;
 		string date; // bugbug make this a date data type
-		ofColor foregroundColor;
-		ofColor backgroundColor;
+		Color foregroundColor;
+		Color backgroundColor;
 		float duration; 
-
+		Point3D startingPoint;
 	private:
 		void init(const string& file, int size = defaultFontSize, const string& name = "default") {
 			if (!fontExists(file, size)) {
@@ -157,6 +207,8 @@ namespace Software2552 {
 		ofLight	 light;
 		ofCamera camera;
 	};
+
+	
 
 	class Timeline {
 	public:
@@ -249,12 +301,10 @@ namespace Software2552 {
 	class Graphic : public ReferencedItem {
 	public:
 		Graphic() : ReferencedItem(){
-			x = y = z = -1; // off by default, data input for x,y is a percent re-calced in update, z is true value
-			//bugbug add a pause where time is suspended
+			//bugbug add a pause where time is suspended, add in rew, play, stop etc also
 			start = 0; // force reset to be called to make sure timing is right, 0 means not started
 			delay = 0;
 		}
-		
 		static bool okToRemove(const Graphic& s) {
 			if (!s.duration || s.start < 0) {
 				return false; // no time out ever, or we have not started yet
@@ -280,17 +330,12 @@ namespace Software2552 {
 			ReferencedItem::trace();
 			basicTrace(type);
 			basicTrace(ofToString(delay));
-			basicTrace(ofToString(x));
-			basicTrace(ofToString(y));
-			basicTrace(ofToString(z));
 		}
 #endif // _DEBUG
 	protected:
-		int    x, y, z;
 		string type; // 2d, 3d, other
 		float start;
 		float delay; // start+delay is the true start
-
 		int width; //bugbug todo
 		int height;//bugbug todo
 	};
@@ -303,7 +348,7 @@ namespace Software2552 {
 
 		void draw() {
 			if (okToDraw()) {
-				text.draw(x, y);
+				text.draw(getStartingPoint().x, getStartingPoint().y);
 			}
 		};
 
@@ -393,12 +438,12 @@ namespace Software2552 {
 #endif // _DEBUG
 	};
 	// item in a play list
-	class Play {
+	class PlayItem {
 	public:
-		Play() {}
-		Play(const string&keynameIn) { keyname = keynameIn; }
+		PlayItem() {}
+		PlayItem(const string&keynameIn) { keyname = keynameIn; }
 		bool read(const Json::Value &data);
-		bool operator==(const Play& rhs) { return rhs.keyname == keyname; }
+		bool operator==(const PlayItem& rhs) { return rhs.keyname == keyname; }
 		string &getKeyName() {return keyname;}
 	private:
 		string keyname;
@@ -406,9 +451,9 @@ namespace Software2552 {
 	class Playlist  {
 	public:
 		bool read(const Json::Value &data);
-		vector<Play>& plays() { return playList; }
+		vector<PlayItem>& plays() { return playList; }
 	private:
-		vector<Play> playList;
+		vector<PlayItem> playList;
 	};
 	class Scene : public Timeline {
 	public:

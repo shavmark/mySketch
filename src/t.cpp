@@ -27,6 +27,9 @@ namespace Software2552 {
 			else if (data.isObject()) {
 				tracer("type=objectvalue(name/value pair), value=" + ofToString(data.asString()) + ">", isError);
 			}
+			else if (data.isNull()) {
+				tracer("type=null>", isError);
+			}
 			else  {
 				tracer("type=unsupported, type is "+ ofToString(data.type()) + ">", isError);
 			}
@@ -135,7 +138,7 @@ namespace Software2552 {
 		setupVector(videos);
 		setupVector(texts);
 		setupVector(images);
-		setupVector(graphics);
+		setupVector(graphics); //bugbug create built in graphics like those in the book ("Smoke")
 		setupVector(characters);
 	}
 #if _DEBUG
@@ -165,7 +168,7 @@ namespace Software2552 {
 		vector<Scene>::iterator it = scenes.begin();
 		while (it != scenes.end()) {
 			if (!it->dataAvailable()) {
-				Play play(it->getKey());
+				PlayItem play(it->getKey());
 				playlist.plays().erase(std::remove(playlist.plays().begin(), playlist.plays().end(), play), playlist.plays().end());
 				it = scenes.erase(it);
 			}
@@ -244,7 +247,7 @@ namespace Software2552 {
 	bool ReferencedItem::read(const Json::Value &data) {
 		ECHOAll(data);
 
-		if (Settings::read(data)) {
+		if (Settings::read(data[Settings::JsonName])) {
 
 			parse<Reference>(references, data["references"]);
 			return true;
@@ -262,7 +265,7 @@ namespace Software2552 {
 	}
 	bool Timeline::read(const Json::Value &data) {
 		// dumps too much so only enable if there is a bug: ECHOAll(data);
-		settings.read(data);
+		settings.read(data[settings.JsonName]);
 		READSTRING(title, data);
 		return true;
 	}
@@ -286,18 +289,9 @@ namespace Software2552 {
 			READSTRING(name, data);
 			READSTRING(notes, data);
 			READFLOAT(duration, data);
-
-			int r=0, g = 0, b = 0;
-			readJsonValue(r, data["foreground"]["r"]);
-			readJsonValue(g, data["foreground"]["g"]);
-			readJsonValue(b, data["foreground"]["b"]);
-			foregroundColor.set(r, g, b);
-
-			r = 0, g = 0, b = 0;
-			readJsonValue(r, data["background"]["r"]);
-			readJsonValue(g, data["background"]["g"]);
-			readJsonValue(b, data["background"]["b"]);
-			backgroundColor.set(r, g, b);
+			startingPoint.read(data["startingPoint"]);
+			foregroundColor.read(data["foreground"]);
+			backgroundColor.read(data["background"]);
 
 			string name;
 			int size = defaultFontSize;
@@ -322,11 +316,11 @@ namespace Software2552 {
 	bool Reference::read(const Json::Value &data) {
 		ECHOAll(data);
 
-		if (Settings::read(data)) { // ignore reference as an array or w/o data at this point
+		if (Settings::read(data[Settings::JsonName])) { // ignore reference as an array or w/o data at this point
 			// no base class so it repeats some data in base class ReferencedItem
-			READSTRING(url, data);
-			READSTRING(location, data);
-			READSTRING(source, data);
+			READSTRING(url, data[STRINGIFY(Reference)]);
+			READSTRING(location, data[STRINGIFY(Reference)]);
+			READSTRING(source, data[STRINGIFY(Reference)]);
 			return true;
 		}
 		return false;
@@ -339,7 +333,20 @@ namespace Software2552 {
 		}
 		return false;
 	}
-
+	bool Color::read(const Json::Value &data) {
+		ECHOAll(data);
+		READINT(r, data);
+		READINT(g, data);
+		READINT(b, data);
+		return true;
+	}
+	bool Point3D::read(const Json::Value &data) {
+		ECHOAll(data);
+		READFLOAT(x, data);
+		READFLOAT(y, data);
+		READFLOAT(z, data);
+		return true;
+	}
 	bool Graphic::read(const Json::Value &data) {
 		ECHOAll(data);
 
@@ -347,10 +354,6 @@ namespace Software2552 {
 			READSTRING(type, data);
 			READFLOAT(duration, data);
 			READFLOAT(delay, data);
-			READINT(x, data);
-			READINT(y, data);
-			READINT(z, data);
-
 			return true;
 		}
 		return false;
@@ -397,13 +400,6 @@ namespace Software2552 {
 				if (width > -1) {
 					text.setWidth(width);
 				}
-				// read in base class, read in as percent  (Assumed updated in update())
-				if (x > -1) {
-					text.x = x; 
-				}
-				if (y > -1) {
-					text.x = y;
-				}
 			}
 			// add more here like indent as we learn more
 			return true;
@@ -446,12 +442,12 @@ namespace Software2552 {
 		}
 		return false;
 	}
-	bool Play::read(const Json::Value &data) {
+	bool PlayItem::read(const Json::Value &data) {
 		READSTRING(keyname, data);
 		return true;
 	}
 	bool Playlist::read(const Json::Value &data) {
-		parse<Play>(playList, data["playList"]);
+		parse<PlayItem>(playList, data["playList"]);
 		return true;
 	}
 	bool Audio::read(const Json::Value &data) {
@@ -476,8 +472,9 @@ namespace Software2552 {
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
-			Timeline::read(json);
+			Timeline::read(json); // read base class
 			playlist.read(json);
+
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				Scene scene;
