@@ -309,7 +309,7 @@ namespace Software2552 {
 			READFLOAT(duration, data);
 			timelineDate.read(data["timelineDate"]); // date item existed
 			lastUpdateDate.read(data["lastUpdateDate"]); // last time object was updated
-			date.read(data["date"]);
+			itemDate.read(data["itemDate"]);
 			startingPoint.read(data["startingPoint"]);
 			foregroundColor.read(data["foreground"]);
 			backgroundColor.read(data["background"]);
@@ -356,13 +356,16 @@ namespace Software2552 {
 	}
 	bool DateAndTime::read(const Json::Value &data) {
 		ECHOAll(data);
-		string date; // scratch varible
 
-		READINT(bc, data);
+		if (READINT(bc, data)) {
+			return true;
+		}
 
-		if (READSTRING(date, data)) {
-			if (!Poco::DateTimeParser::tryParse(date, datetime, timeZoneDifferential)) {
-				logErrorString("invalid date");
+		string ad; // scratch varible
+
+		if (READSTRING(ad, data)) {
+			if (!Poco::DateTimeParser::tryParse(ad, datetime, timeZoneDifferential)) {
+				logErrorString("invalid AD date " + ad);
 				return false;
 			}
 			datetime.makeUTC(timeZoneDifferential);
@@ -444,7 +447,7 @@ namespace Software2552 {
 		lastUpdateDate = rhs.lastUpdateDate; // last time object was updated
 		name = rhs.name; // any object can have a name, note, date, reference, duration
 		notes = rhs.notes;
-		date = rhs.date; // bugbug make this a date data type
+		itemDate = rhs.itemDate; 
 		foregroundColor = rhs.foregroundColor;
 		backgroundColor = rhs.backgroundColor;
 		duration = rhs.duration;

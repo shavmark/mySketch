@@ -224,7 +224,7 @@ namespace Software2552 {
 			font.trace();
 			timelineDate.trace(); // date item existed
 			lastUpdateDate.trace(); // last time object was updated
-			date.trace();
+			itemDate.trace();
 
 			basicTrace(name);
 			basicTrace(notes);
@@ -237,7 +237,7 @@ namespace Software2552 {
 		// when read build date class bugbug
 		DateAndTime timelineDate; // date item existed
 		DateAndTime lastUpdateDate; // last time object was updated
-		DateAndTime date; // bugbug make this a date data type
+		DateAndTime itemDate; // date of reference vs the date of the referenced item 
 		string name; // any object can have a name, note, date, reference, duration
 		string notes;
 		Color  foregroundColor;
