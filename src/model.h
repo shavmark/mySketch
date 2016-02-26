@@ -318,8 +318,16 @@ namespace Software2552 {
 			Graphic::trace();
 			// ofxParagraph does not expose a bunch of stuff that we can echo here, not a big deal
 		}
+		int getWidth() { return width; }
+		int getIndent() { return indent; }
+		int getLeading() { return leading; }
+		int getSpacing() { return spacing; }
+		string& getText() { return text; }
+		ofColor& getColor() { return color; }
+		string &getAlignment() { return alignment; };
+
 #endif // _DEBUG
-	
+	private:
 		int width;
 		int indent;
 		int leading;

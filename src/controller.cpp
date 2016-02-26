@@ -68,8 +68,16 @@ namespace Software2552 {
 		// setup is called in Story for each object, calls here do updates for DrawingTools etc
 		for (auto& a : scene.getText()) {
 			a.setup();
-			drawingTools.setupText(a.id(), a.text, a.getFont(), a.getStartingPoint().x, 
-				a.getStartingPoint().y, a.width, a.getForeground(), a.alignment, a.indent, a.leading, a.spacing);
+			ofxParagraph::Alignment align = ofxParagraph::ALIGN_LEFT;
+			if (a.getAlignment() == "center") { //bugbug ignore case
+				align = ofxParagraph::ALIGN_CENTER;
+			}
+			else if (a.getAlignment() == "right") { //bugbug ignore case
+				align = ofxParagraph::ALIGN_RIGHT;
+			}
+
+			drawingTools.setupText(a.id(), a.getText(), a.getFont(), a.getStartingPoint().x, 
+				a.getStartingPoint().y, a.getWidth(), a.getForeground(), align, a.getIndent(), a.getLeading(), a.getSpacing());
 		}
 
 		for (auto& a : scene.getAudio()) {

@@ -61,20 +61,16 @@ namespace Software2552 {
 		
 
 	// its ok also if Controller passes in an object such as a paragraph to copy in
-	void DrawingTools::setupText(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, int width, const ofColor& color, const string& alignment, int indent, int leading, int spacing) {
+	void DrawingTools::setupText(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, int width, const ofColor& color, 
+									ofxParagraph::Alignment align, int indent, int leading, int spacing) {
 		Wrapper<ofxParagraph> newparagraph(ID);
-		if (alignment == "left") { //bugbug ignore case
-			newparagraph.setAlignment(ofxParagraph::ALIGN_LEFT);
-		}
-		else if (alignment == "center") { //bugbug ignore case
-			newparagraph.setAlignment(ofxParagraph::ALIGN_CENTER);
-		}
-		else if (alignment == "right") { //bugbug ignore case
-			newparagraph.setAlignment(ofxParagraph::ALIGN_RIGHT);
-		}
+		newparagraph.setAlignment(align);
 		newparagraph.setText(text);
 		newparagraph.setFont(font); // use current font
 		newparagraph.setColor(color);
+		newparagraph.setIndent(indent);
+		newparagraph.setLeading(leading);
+		newparagraph.setSpacing(spacing);
 		newparagraph.x = x;
 		newparagraph.y = y;
 		textPlayers.push_back(newparagraph);

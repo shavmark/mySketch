@@ -33,7 +33,7 @@ namespace Software2552 {
 		// text is a special case is its a 3rd party too
 		void removeTextPlayers(GraphicID ID);
 		void updateText(GraphicID ID) {		}
-		void setupText(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, int width=620, const ofColor& color=ofColor(0,0,0), const string& align= "left", int indent= 40, int leading= 16, int spacing=6);
+		void setupText(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, int width=620, const ofColor& color=ofColor(0,0,0), ofxParagraph::Alignment align= ofxParagraph::ALIGN_LEFT, int indent= 40, int leading= 16, int spacing=6);
 		void drawText(GraphicID ID);
 		void drawText(GraphicID ID, const ofVec2f& point);
 
