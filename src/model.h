@@ -485,7 +485,7 @@ namespace Software2552 {
 		}
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		bool read(const Json::Value &data);
-		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data);
+		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
 		void setup();
 		void update();

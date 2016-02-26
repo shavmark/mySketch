@@ -101,6 +101,9 @@ namespace Software2552 {
 		try {
 			if (!data.empty()) {
 				switch (data.type()) {
+				case Json::nullValue:
+					logTrace("nullValue");
+					break;
 				case Json::booleanValue:
 					value = data.asBool();
 					break;
@@ -113,9 +116,15 @@ namespace Software2552 {
 				case Json::realValue:
 					value = data.asFloat();
 					break;
+				case Json::objectValue:
+					logErrorString("objectValue called at wrong time");
+					break;
+				case Json::arrayValue:
+					logErrorString("arrayValue called at wrong time");
+					break;
 				default:
 					// ignore?
-					logTrace("value not found");
+					logErrorString("value not found");
 					break;
 				}
 				return true;
@@ -366,7 +375,7 @@ namespace Software2552 {
 		ECHOAll(data);
 
 		if (Graphic::read(data)) {
-			setString(str, data);
+			setString(str, data["text"]["str"]);
 			return true;
 		}
 		return false;
@@ -388,12 +397,13 @@ namespace Software2552 {
 		}
 		return false;
 	}
-	template<typename T, typename T2> void Scene::createTimeLineItems(T2& vec, const Json::Value &data)
+	template<typename T, typename T2> void Scene::createTimeLineItems(T2& vec, const Json::Value &data, const string& key)
 	{
+		logTrace("createTimeLineItems for " + key);
 		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
 			T item;
 			item.setSettings(getSettings());
-			item.read(data[j]);
+			item.read(data[key][j]);
 			vec.push_back(item);
 		}
 	}
@@ -412,18 +422,25 @@ namespace Software2552 {
 	bool Scene::read(const Json::Value &data) {
 		ECHOAll(data);
 
-		if (SettingsAndTitle::read(data)) {
-			READSTRING(keyname, data);
-			READBOOL(wait, data);
-			createTimeLineItems<Audio>(audios, data["audios"]);
-			createTimeLineItems<Video>(videos, data["videos"]);
-			createTimeLineItems<Paragraph>(paragraphs, data["paragraphs"]);
-			createTimeLineItems<Image>(images, data["images"]);
-			createTimeLineItems<Graphic>(graphics, data["graphics"]);
-			createTimeLineItems<Text>(texts, data["texts"]);
-			createTimeLineItems<Character>(characters, data["characters"]);
-			return true;
+		try {
+			if (SettingsAndTitle::read(data)) {
+				READSTRING(keyname, data);
+				READBOOL(wait, data);
+				createTimeLineItems<Audio>(audios, data, "audios");
+				createTimeLineItems<Video>(videos, data, "videos");
+				createTimeLineItems<Paragraph>(paragraphs, data, "paragraphs");
+				createTimeLineItems<Image>(images, data,"images");
+				createTimeLineItems<Graphic>(graphics, data, "graphics");
+				createTimeLineItems<Text>(texts, data, "texts");
+				createTimeLineItems<Character>(characters, data, "characters");
+				return true;
+			}
 		}
+		catch (std::exception e) {
+			logErrorString(e.what());
+			return false;
+		}
+
 		return false;
 	}
 	bool Audio::read(const Json::Value &data) {
