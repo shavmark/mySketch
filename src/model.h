@@ -310,14 +310,6 @@ namespace Software2552 {
 	public:
 		Text();
 		bool read(const Json::Value &data);
-
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			basicTrace(STRINGIFY(Text));
-			Graphic::trace();
-			// ofxParagraph does not expose a bunch of stuff that we can echo here, not a big deal
-		}
 		int getWidth() { return width; }
 		int getIndent() { return indent; }
 		int getLeading() { return leading; }
@@ -326,7 +318,16 @@ namespace Software2552 {
 		ofColor& getColor() { return color; }
 		string &getAlignment() { return alignment; };
 
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			basicTrace(STRINGIFY(Text));
+			Graphic::trace();
+			// not a lot of echo here, add if needed
+		}
 #endif // _DEBUG
+
+
 	private:
 		int width;
 		int indent;
