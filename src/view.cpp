@@ -7,11 +7,33 @@ namespace Software2552 {
 	//https://sites.google.com/site/ofauckland/examples/curly-moving-particles code this in soon to learn the cool stuff we can add bugbug
 	//https://github.com/tesseract-ocr/tesseract
 
-	void DrawingTools::removeVideoPlayers(GraphicID ID) {
-		vector<Wrapper<ofVideoPlayer>>::iterator it = videoPlayers.begin();
-		while (it != videoPlayers.end()) {
+	template<typename T> void DrawingTools::update(GraphicID ID, T& vec) {
+		for (auto& t : vec) {
+			if (t.id() == ID) {
+				t.update();
+			}
+		}
+	}
+	template<typename T> void DrawingTools::draw(GraphicID ID, T& vec, int x, int y) {
+		for (auto& t : vec) {
+			if (t.id() == ID) {
+				t.draw(x, y);
+			}
+		}
+	}
+
+	template<typename T> void DrawingTools::draw(GraphicID ID, T& vec) {
+		for (auto& t : vec) {
+			if (t.id() == ID) {
+				t.draw();
+			}
+		}
+	}
+	template<typename T> void DrawingTools::removePlayers(GraphicID ID, T& vec) {
+		T::iterator it = vec.begin();
+		while (it != vec.end()) {
 			if (!it->id() == ID) {
-				it = videoPlayers.erase(it);
+				it = vec.erase(it);
 			}
 			else {
 				++it;
@@ -19,19 +41,15 @@ namespace Software2552 {
 		}
 	}
 
+	void DrawingTools::removeVideoPlayers(GraphicID ID) {
+		removePlayers(ID, videoPlayers);
+	}
+
 	void DrawingTools::drawVideo(GraphicID ID, int x, int y) {
-		for (auto& v : videoPlayers) {
-			if (v.id() == ID) {
-				v.draw(x, y);
-			}
-		}
+		draw(ID, videoPlayers, x, y);
 	}
 	void DrawingTools::updateVideo(GraphicID ID) {
-		for (auto& v : videoPlayers) {
-			if (v.id() == ID) {
-				v.update();
-			}
-		}
+		update(ID, videoPlayers);
 	}
 	void DrawingTools::setupVideoPlayer(GraphicID ID, float vol, const string&location) {
 		Wrapper<ofVideoPlayer> player(ID);
@@ -41,32 +59,20 @@ namespace Software2552 {
 		videoPlayers.push_back(player);
 
 	}
-
-	void DrawingTools::drawParagraph(GraphicID ID) {
-		for (auto& t : paragraphPlayers) {
-			if (t.id() == ID) {
-				t.draw();
-			}
-		}
+	void DrawingTools::removePlayers(GraphicID ID) {
+		removeVideoPlayers(ID);
+		removeParagraphPlayers(ID);
+		removeTextPlayers(ID);
 	}
-	void DrawingTools::drawParagraph(GraphicID ID, const ofVec2f& point) {
-		for (auto& t : paragraphPlayers) {
-			if (t.id() == ID) {
-				t.draw(point.x, point.y);
-			}
-		}
+	void DrawingTools::drawParagraph(GraphicID ID) {
+		draw(ID, paragraphPlayers);
+	}
+	void DrawingTools::drawParagraph(GraphicID ID, int x, int y) {
+		draw(ID, paragraphPlayers, x, y);
 	}
 		
 	void DrawingTools::removeParagraphPlayers(GraphicID ID) {
-		vector<Wrapper<ofxParagraph>>::iterator it = paragraphPlayers.begin();
-		while (it != paragraphPlayers.end()) {
-			if (!it->id() == ID) {
-				it = paragraphPlayers.erase(it);
-			}
-			else {
-				++it;
-			}
-		}
+		removePlayers(ID, paragraphPlayers);
 	}
 
 	// its ok also if Controller passes in an object such as a paragraph to copy in
@@ -85,22 +91,20 @@ namespace Software2552 {
 	}
 
 	void DrawingTools::drawText(GraphicID ID) {
-		for (auto& t : textPlayers) {
-			if (t.id() == ID) {
-				ofPushStyle();
-				ofSetColor(t.color);
-				t.font->draw(t.text, t.x, t.y);
-				ofPopStyle();
-			}
-		}
+		drawText(ID, -1, -1);
 	}
-	void DrawingTools::drawText(GraphicID ID, const ofVec2f& point) {
+	void DrawingTools::drawText(GraphicID ID, int x, int y) {
 		for (auto& t : textPlayers) {
 			if (t.id() == ID) {
 				if (t.font != nullptr) {
 					ofPushStyle();
 					ofSetColor(t.color);
-					t.font->draw(t.text, t.x, t.y);
+					if (x < 0 || y < 0) {
+						t.font->draw(t.text, x, y);
+					}
+					else {
+						t.font->draw(t.text, x, y);
+					}
 					ofPopStyle();
 				}
 			}
@@ -108,15 +112,7 @@ namespace Software2552 {
 	}
 
 	void DrawingTools::removeTextPlayers(GraphicID ID) {
-		vector<Wrapper<TextToRender>>::iterator it = textPlayers.begin();
-		while (it != textPlayers.end()) {
-			if (!it->id() == ID) {
-				it = textPlayers.erase(it);
-			}
-			else {
-				++it;
-			}
-		}
+		removePlayers(ID, textPlayers);
 	}
 
 	// its ok also if Controller passes in an object such as a paragraph to copy in

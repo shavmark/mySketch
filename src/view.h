@@ -32,6 +32,12 @@ namespace Software2552 {
 	// drawing drawingTools etc, shared across objects
 	class DrawingTools {
 	public:
+		template<typename T> void update(GraphicID ID, T& vec);
+		template<typename T> void draw(GraphicID ID, T& vec);
+		template<typename T> void draw(GraphicID ID, T& vec, int x, int y);
+		template<typename T> void removePlayers(GraphicID ID, T& vec);
+
+		void removePlayers(GraphicID ID);
 		// remove item from a list
 		void removeVideoPlayers(GraphicID ID);
 		void setupVideoPlayer(GraphicID ID, float vol, const string&location);
@@ -44,13 +50,13 @@ namespace Software2552 {
 		void updateParagraph(GraphicID ID) {		}
 		void setupParagraph(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, int width=620, const ofColor& color=ofColor(0,0,0), ofxParagraph::Alignment align= ofxParagraph::ALIGN_LEFT, int indent= 40, int leading= 16, int spacing=6);
 		void drawParagraph(GraphicID ID);
-		void drawParagraph(GraphicID ID, const ofVec2f& point);
+		void drawParagraph(GraphicID ID, int x, int y);
 
 		void removeTextPlayers(GraphicID ID);
 		void updateText(GraphicID ID) {		}
 		void setupText(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, const ofColor& color = ofColor(0, 0, 0));
 		void drawText(GraphicID ID);
-		void drawText(GraphicID ID, const ofVec2f& point);
+		void drawText(GraphicID ID, int x, int y);
 
 		void start() { ofPushStyle(); } // start draw
 		void end() { ofPopStyle(); } // end draw
