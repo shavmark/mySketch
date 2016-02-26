@@ -18,6 +18,7 @@ namespace Software2552 {
 #endif
 
 		void draw();
+		void removeExpiredScenes();
 
 	private:
 		void enumerateSetup(Scene &scene);

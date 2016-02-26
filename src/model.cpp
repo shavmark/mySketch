@@ -146,7 +146,6 @@ namespace Software2552 {
 	}
 	void Scenes::update() {
 		updateVector(scenes); // give all abjects a change at update
-		removeExpiredScenes();
 	}
 	bool Scenes::dataAvailable() {
 		// see if any scenes have any data
@@ -156,19 +155,6 @@ namespace Software2552 {
 			}
 		}
 		return false;
-	}
-	void Scenes::removeExpiredScenes() {
-		vector<Scene>::iterator it = scenes.begin();
-		while (it != scenes.end()) {
-			if (!it->dataAvailable()) {
-				PlayItem play(it->getKey());
-				playlist.plays().erase(std::remove(playlist.plays().begin(), playlist.plays().end(), play), playlist.plays().end());
-				it = scenes.erase(it);
-			}
-			else {
-				++it;
-			}
-		}
 	}
 	bool PlayItem::read(const Json::Value &data) {
 		READSTRING(keyname, data);

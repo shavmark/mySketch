@@ -408,6 +408,10 @@ namespace Software2552 {
 	public:
 		bool read(const Json::Value &data);
 		vector<PlayItem>& plays() { return playList; }
+		void remove(const PlayItem &item) {
+			// remove by name
+			playList.erase(std::remove(playList.begin(), playList.end(), item), playList.end());
+		}
 	private:
 		vector<PlayItem> playList;
 	};
@@ -528,7 +532,6 @@ namespace Software2552 {
 		void add(const Scene &scene) {
 			scenes.push_back(scene);
 		}
-		void removeExpiredScenes();
 		void remove(const Scene &scene) {
 			// remove by name
 			scenes.erase(std::remove(scenes.begin(), scenes.end(), scene), scenes.end());

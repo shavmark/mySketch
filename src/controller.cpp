@@ -25,12 +25,13 @@ namespace Software2552 {
 	};
 	// enumerate and call passed function
 	void Timeline::enumerate(std::function<void(Scene&scene)>func) {
-		for (auto& scene : story.getScenes()) {
+		
+		for (auto& scenes : story.getScenes()) {
 			// always play the first key onwards
-			for (auto& play : scene.getPlayList().plays()) {
+			for (auto& play : scenes.getPlayList().plays()) {
 				Scene lookupscene(play.getKeyName());
-				std::vector<Scene>::iterator findscene = find(scene.getScenes().begin(), scene.getScenes().end(), lookupscene);
-				if (findscene != scene.getScenes().end()) {
+				std::vector<Scene>::iterator findscene = find(scenes.getScenes().begin(), scenes.getScenes().end(), lookupscene);
+				if (findscene != scenes.getScenes().end()) {
 					func(*findscene);
 					if (findscene->waitOnScene()) {
 						break; // only draw one time if blocking, do  not go on to the next one yet
@@ -65,9 +66,6 @@ namespace Software2552 {
 		
 		// setup is called in Story for each object, calls here do updates for Tools etc
 
-
-		for (auto& a : scene.getText()) {
-		}
 		for (auto& a : scene.getAudio()) {
 		}
 		for (int i = 0; i < scene.getVideo().size(); ++i) {
@@ -87,8 +85,6 @@ namespace Software2552 {
 
 		// update is called in Story for each object, calls here do updates for Tools etc
 
-		for (auto& a : scene.getText()) {
-		}
 		for (auto& a : scene.getAudio()) {
 		}
 		for (int i = 0; i < scene.getVideo().size(); ++i) {
@@ -103,5 +99,22 @@ namespace Software2552 {
 		}
 	}
 
+	void Timeline::removeExpiredScenes() {
+		//bugbug seems to be one layer too many, can one layer be removed?
+		for (auto& scenes : story.getScenes()) {
+			vector<Scene>::iterator it = scenes.getScenes().begin();
+			while (it != scenes.getScenes().end()) {
+				if (!it->dataAvailable()) {
+					PlayItem item(it->getKey());
+					scenes.getPlayList().remove(item);
+					it = scenes.getScenes().erase(it);
+					//bugbug -- remove related Tools resources, not obvious -- good time to break
+				}
+				else {
+					++it;
+				}
+			}
+		}
+	}
 
 }
