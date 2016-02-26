@@ -286,7 +286,7 @@ namespace Software2552 {
 		void update() {
 		}
 		bool okToDraw();
-		uint64_t id() { return myID; }
+		GraphicID id() { return myID; }
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -303,14 +303,13 @@ namespace Software2552 {
 		int width; //bugbug todo
 		int height;//bugbug todo
 	private:
-		uint64_t myID;// every graphic item gets a unique ID for deletion and etc
+		GraphicID myID;// every graphic item gets a unique ID for deletion and etc
 	};
 
 	class Text : public Graphic {
 	public:
-		Text() :Graphic() {}
+		Text();
 		bool read(const Json::Value &data);
-		ofxParagraph& getText() { return text; }
 
 #if _DEBUG
 		// echo object (debug only)
@@ -320,9 +319,14 @@ namespace Software2552 {
 			// ofxParagraph does not expose a bunch of stuff that we can echo here, not a big deal
 		}
 #endif // _DEBUG
-
-	protected:
-		ofxParagraph text;
+	
+		int width;
+		int indent;
+		int leading;
+		int spacing;
+		string text;
+		ofColor color;
+		string alignment; // paragraph is a data type in this usage
 	};
 
 
@@ -516,9 +520,10 @@ namespace Software2552 {
 	private:
 	};
 
-	class Scenes : public SettingsAndTitle {
+	// an Act is one json file that contains 1 or more scenes
+	class Act : public SettingsAndTitle {
 	public:
-		Scenes(const Settings& defaults, const string& title) : SettingsAndTitle(defaults, title) {}
+		Act(const Settings& defaults, const string& title) : SettingsAndTitle(defaults, title) {}
 
 		// read a deck from json (you can also just build one in code)
 		bool read(const string& fileName = "json.json");
@@ -529,7 +534,7 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
-			basicTrace(STRINGIFY(Scenes));
+			basicTrace(STRINGIFY(Act));
 			traceVector(scenes);
 		}
 #endif
@@ -551,6 +556,7 @@ namespace Software2552 {
 	};
 	
 	// an app can run many Stories
+	// a Story is a collection of acts
 	class Story :public SettingsAndTitle {
 	public:
 		// readJsonValue our own defaults
@@ -559,8 +565,8 @@ namespace Software2552 {
 		// get defaults later
 		Story() : SettingsAndTitle() {}
 
-		vector<Scenes>& getScenes() {
-			return story;
+		vector<Act>& getActs() {
+			return acts;
 		}
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
@@ -571,7 +577,7 @@ namespace Software2552 {
 		void update();
 
 	private:
-		vector<Scenes> story;
+		vector<Act> acts;
 		void read();
 
 	};

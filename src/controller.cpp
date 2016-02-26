@@ -2,15 +2,17 @@
 #include <functional>
 
 namespace Software2552 {
+	Timeline::Timeline(){
+	}
 	void Timeline::setup() { 
-		story.setup(); 
+		story.setup();
 		Scene scene;
 		// thanks to http://stackoverflow.com/questions/12662891/c-passing-member-function-as-argument
-		auto fp = std::bind(&Timeline::enumerateSetup, *this, scene);
-		enumerate(fp);
+		auto fpSetup = std::bind(&Timeline::enumerateSetup, *this, scene);
+		enumerate(fpSetup);
 	};
 	void Timeline::update() { 
-		story.update(); 
+		story.update();
 		Scene scene;
 		auto fp = std::bind(&Timeline::enumerateUpdate, *this, scene);
 		enumerate(fp);
@@ -25,12 +27,12 @@ namespace Software2552 {
 	// enumerate and call passed function
 	void Timeline::enumerate(std::function<void(Scene&scene)>func) {
 		
-		for (auto& scenes : story.getScenes()) {
+		for (auto& act : story.getActs()) {
 			// always play the first key onwards
-			for (auto& play : scenes.getPlayList().plays()) {
+			for (auto& play : act.getPlayList().plays()) {
 				Scene lookupscene(play.getKeyName());
-				std::vector<Scene>::iterator findscene = find(scenes.getScenes().begin(), scenes.getScenes().end(), lookupscene);
-				if (findscene != scenes.getScenes().end()) {
+				std::vector<Scene>::iterator findscene = find(act.getScenes().begin(), act.getScenes().end(), lookupscene);
+				if (findscene != act.getScenes().end()) {
 					func(*findscene);
 					if (findscene->waitOnScene()) {
 						break; // only draw one time if blocking, do  not go on to the next one yet
@@ -43,17 +45,17 @@ namespace Software2552 {
 		
 		for (auto& a : scene.getText()) {
 			if (a.okToDraw()) {
-				a.getText().draw(a.getStartingPoint().x, a.getStartingPoint().y);
+				drawingTools.drawText(a.id());
 			}
 		}
 		for (auto& a : scene.getAudio()) {
 		}
-
-		for (int i = 0; i < scene.getVideo().size();++i ) {
-			if (scene.getVideo()[i].okToDraw()) {
-				tools.videoPlayers[i].draw(scene.getVideo()[i].getStartingPoint().x, scene.getVideo()[i].getStartingPoint().y);
+		for (auto& a : scene.getVideo()) {
+			if (a.okToDraw()) {
+				drawingTools.drawVideo(a.id(), a.getStartingPoint().x, a.getStartingPoint().y);
 			}
 		}
+		
 		for (auto& a : scene.getCharacters()) {
 		}
 		for (auto& a : scene.getImages()) {
@@ -63,17 +65,18 @@ namespace Software2552 {
 	}
 	void Timeline::enumerateSetup(Scene &scene) {
 		
-		// setup is called in Story for each object, calls here do updates for Tools etc
+		// setup is called in Story for each object, calls here do updates for DrawingTools etc
+		for (auto& a : scene.getText()) {
+			a.setup();
+			drawingTools.setupText(a.id(), a.text, a.getFont(), a.getStartingPoint().x, 
+				a.getStartingPoint().y, a.width, a.getForeground(), a.alignment, a.indent, a.leading, a.spacing);
+		}
 
 		for (auto& a : scene.getAudio()) {
 		}
 		for (auto& a : scene.getVideo()) {
 			a.setup();
-			Wrapper<ofVideoPlayer> player(a.id());
-			player.setVolume(a.getVolume());
-			player.load(a.getLocation());
-			player.play();
-			tools.videoPlayers.push_back(player);
+			drawingTools.setupVideoPlayer(a.id(), a.getVolume(), a.getLocation());
 		}
 		for (auto& a : scene.getCharacters()) {
 		}
@@ -84,13 +87,17 @@ namespace Software2552 {
 	}
 	void Timeline::enumerateUpdate(Scene &scene) {
 
-		// update is called in Story for each object, calls here do updates for Tools etc
+		// update is called in Story for each object, calls here do updates for DrawingTools etc
 
 		for (auto& a : scene.getAudio()) {
 		}
-		for (int i = 0; i < scene.getVideo().size(); ++i) {
-			scene.getVideo()[i].update();
-			tools.videoPlayers[i].update();
+		for (auto& a : scene.getText()) {
+			a.update();
+			drawingTools.updateText(a.id());
+		}
+		for (auto& a : scene.getVideo()) {
+			a.update();
+			drawingTools.updateVideo(a.id());
 		}
 		for (auto& a : scene.getCharacters()) {
 		}
@@ -100,32 +107,42 @@ namespace Software2552 {
 		}
 	}
 
+	// remove items that have timed out
 	void Timeline::removeExpiredScenes() {
-			//bugbug seems to be one layer too many, can one layer be removed?
-			for (auto& scenes : story.getScenes()) {
-				vector<Scene>::iterator it = scenes.getScenes().begin();
-				while (it != scenes.getScenes().end()) {
-					if (!it->dataAvailable()) {
-						//tools.removeVector(it->getText(), 0);
-						for (auto& a : it->getText()) {
-							tools.removeVector(tools.videoPlayers, a.id());
-						}
-
-						//deleteVector(it->getAudio());
-						//deleteVector(it->getVideo());
-						//deleteVector(it->getCharacters());
-						//deleteVector(it->getImages());
-						//deleteVector(it->getGraphics());
-
-						PlayItem item(it->getKey());
-						scenes.getPlayList().remove(item);
-						it = scenes.getScenes().erase(it);
-						//bugbug -- remove related Tools resources, not obvious -- good time to break
+		drawingTools.start(); // start draw
+		for (auto& act : story.getActs()) {
+			// remove scenes
+			vector<Scene>::iterator it = act.getScenes().begin();
+			while (it != act.getScenes().end()) {
+				// the data is timed out
+				if (!it->dataAvailable()) {
+					//drawingTools.removeVector(it->getText(), 0);
+					for (auto& a : it->getVideo()) {
+						drawingTools.removeVideoPlayers(a.id());
 					}
-					else {
-						++it;
+					for (auto& a : it->getText()) {
+						drawingTools.removeTextPlayers(a.id());
 					}
+						
+					//lef off here for (auto& a : it->getAudio()) {
+						//drawingTools.remove(drawingTools.audioPlayers, a.id());
+				//	}
+
+					//deleteVector(it->getAudio());
+					//deleteVector(it->getVideo());
+					//deleteVector(it->getCharacters());
+					//deleteVector(it->getImages());
+					//deleteVector(it->getGraphics());
+
+					PlayItem item(it->getKey());
+					act.getPlayList().remove(item);
+					it = act.getScenes().erase(it);
+				}
+				else {
+					++it;
 				}
 			}
 		}
+		drawingTools.end(); // end draw
+	}
 }

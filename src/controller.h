@@ -8,8 +8,7 @@
 namespace Software2552 {
 	class Timeline {
 	public:
-		Timeline() {
-		}
+		Timeline();
 		void setup();
 		void update();
 #if _DEBUG
@@ -22,8 +21,9 @@ namespace Software2552 {
 		void enumerateUpdate(Scene &scene);
 		void enumerateDraw(Scene &scene);
 		void enumerate(std::function<void(Scene&scene)>);
-		Tools tools;
+		DrawingTools drawingTools;
 		Story story;
+		
 	};
 
 

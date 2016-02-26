@@ -1,5 +1,7 @@
 #include "model.h"
 
+// this is the data model module, it should not contain drawing objects
+
 namespace Software2552 {
 	// helpers
 
@@ -138,16 +140,16 @@ namespace Software2552 {
 	// echo object (debug only) bugbug make debug only
 	void Story::trace() {
 		basicTrace(STRINGIFY(Story));
-		traceVector(story);
+		traceVector(acts);
 	}
 #endif
-	void Scenes::setup() {
+	void Act::setup() {
 		setupVector(scenes);
 	}
-	void Scenes::update() {
+	void Act::update() {
 		updateVector(scenes); // give all abjects a change at update
 	}
-	bool Scenes::dataAvailable() {
+	bool Act::dataAvailable() {
 		// see if any scenes have any data
 		for (auto& scene : scenes) {
 			if (scene.dataAvailable()) {
@@ -176,18 +178,18 @@ namespace Software2552 {
 	}
 	void Story::setup() {
 		read();
-		setupVector(story);
+		setupVector(acts);
 	};
 	void Story::update() {
-		updateVector(story);
+		updateVector(acts);
 	}
 	void Story::read() {
 		echo("read a story");
 
-		Scenes scenes(getSettings(),"main deck");
+		Act scenes(getSettings(),"main deck");
 		// code in the list of items to make into the story here. 
 		scenes.read("json.json");
-		story.push_back(scenes);
+		acts.push_back(scenes);
 	}
 
 	void Scene::update() {
@@ -339,6 +341,13 @@ namespace Software2552 {
 		}
 		return false;
 	}
+	Text::Text() :Graphic() {
+		width = 0;
+		indent = 40;
+		leading = 16;
+		spacing = 6;
+		alignment = "left"; // json key
+	}
 
 	bool Text::read(const Json::Value &data) {
 		ECHOAll(data);
@@ -347,42 +356,13 @@ namespace Software2552 {
 			string paragraph; // read in text
 			READSTRING(paragraph, data);
 			if (paragraph.size() > 0){
-				text.setText(paragraph);
-				text.setFont(getFont()); // use current font
-				text.setColor(foregroundColor);
-				int indent=-1;
-				READINT(indent, data);
-				if (indent > -1) {
-					text.setIndent(indent);
-				}
-				int leading = -1;
-				READINT(leading, data);
-				if (leading > -1) {
-					text.setLeading(leading);
-				}
-				int spacing = -1;
-				READINT(spacing, data);
-				if (spacing > -1) {
-					text.setSpacing(spacing);
-				}
-				string alignment;
-				READSTRING(alignment, data);
-				if (alignment == "left") { //bugbug ignore case
-					text.setAlignment(ofxParagraph::ALIGN_LEFT);
-				}
-				else if (alignment == "center") { //bugbug ignore case
-					text.setAlignment(ofxParagraph::ALIGN_CENTER);
-				}
-				else if (alignment == "right") { //bugbug ignore case
-					text.setAlignment(ofxParagraph::ALIGN_RIGHT);
-				}
-				int width = -1;
 				READINT(width, data);
-				if (width > -1) {
-					text.setWidth(width);
-				}
+				READINT(indent, data);
+				READINT(leading, data);
+				READINT(spacing, data);
+				READSTRING(alignment, data);
 			}
-			// add more here like indent as we learn more
+			
 			return true;
 		}
 		return false;
@@ -434,7 +414,7 @@ namespace Software2552 {
 	
 	}
 	// read as many jason files as needed, each becomes a deck
-	bool Scenes::read(const string& fileName) {
+	bool Act::read(const string& fileName) {
 		
 		ofxJSON json;
 
