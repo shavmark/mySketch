@@ -2,7 +2,6 @@
 #include <functional>
 
 namespace Software2552 {
-
 	void Timeline::setup() { 
 		story.setup(); 
 		Scene scene;
@@ -68,11 +67,13 @@ namespace Software2552 {
 
 		for (auto& a : scene.getAudio()) {
 		}
-		for (int i = 0; i < scene.getVideo().size(); ++i) {
-			scene.getVideo()[i].setup();
-			tools.videoPlayers[i].loadMovie(scene.getVideo()[i].getLocation());
-			tools.videoPlayers[i].setVolume(scene.getVideo()[i].getVolume());
-			tools.videoPlayers[i].play();
+		for (auto& a : scene.getVideo()) {
+			a.setup();
+			Wrapper<ofVideoPlayer> player(a.id());
+			player.setVolume(a.getVolume());
+			player.load(a.getLocation());
+			player.play();
+			tools.videoPlayers.push_back(player);
 		}
 		for (auto& a : scene.getCharacters()) {
 		}
@@ -100,21 +101,31 @@ namespace Software2552 {
 	}
 
 	void Timeline::removeExpiredScenes() {
-		//bugbug seems to be one layer too many, can one layer be removed?
-		for (auto& scenes : story.getScenes()) {
-			vector<Scene>::iterator it = scenes.getScenes().begin();
-			while (it != scenes.getScenes().end()) {
-				if (!it->dataAvailable()) {
-					PlayItem item(it->getKey());
-					scenes.getPlayList().remove(item);
-					it = scenes.getScenes().erase(it);
-					//bugbug -- remove related Tools resources, not obvious -- good time to break
-				}
-				else {
-					++it;
+			//bugbug seems to be one layer too many, can one layer be removed?
+			for (auto& scenes : story.getScenes()) {
+				vector<Scene>::iterator it = scenes.getScenes().begin();
+				while (it != scenes.getScenes().end()) {
+					if (!it->dataAvailable()) {
+						//tools.removeVector(it->getText(), 0);
+						for (auto& a : it->getText()) {
+							tools.removeVector(tools.videoPlayers, a.id());
+						}
+
+						//deleteVector(it->getAudio());
+						//deleteVector(it->getVideo());
+						//deleteVector(it->getCharacters());
+						//deleteVector(it->getImages());
+						//deleteVector(it->getGraphics());
+
+						PlayItem item(it->getKey());
+						scenes.getPlayList().remove(item);
+						it = scenes.getScenes().erase(it);
+						//bugbug -- remove related Tools resources, not obvious -- good time to break
+					}
+					else {
+						++it;
+					}
 				}
 			}
 		}
-	}
-
 }

@@ -267,6 +267,8 @@ namespace Software2552 {
 			//bugbug add a pause where time is suspended, add in rew, play, stop etc also
 			start = 0; // force reset to be called to make sure timing is right, 0 means not started
 			delay = 0;
+			myID = ofGetSystemTimeMicros();
+
 		}
 		static bool okToRemove(const Graphic& s) {
 			if (!s.duration || s.start < 0) {
@@ -284,6 +286,7 @@ namespace Software2552 {
 		void update() {
 		}
 		bool okToDraw();
+		uint64_t id() { return myID; }
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -299,6 +302,8 @@ namespace Software2552 {
 		float delay; // start+delay is the true start
 		int width; //bugbug todo
 		int height;//bugbug todo
+	private:
+		uint64_t myID;// every graphic item gets a unique ID for deletion and etc
 	};
 
 	class Text : public Graphic {

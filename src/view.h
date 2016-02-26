@@ -5,14 +5,44 @@
 
 namespace Software2552 {
 
+	template <class T>
+	class Wrapper : public  T {
+	public:
+		// wrap an Openframeworks or other such object so we can easily delete, track, test, debug  etc
+		Wrapper(uint64_t id) { myID = id; }
+		bool operator==(const Wrapper &rhs) {
+			return myID == rhs.myID;
+		}
+		uint64_t id() { return myID; }
+	private:
+		uint64_t myID;
+	};
+	//template <class T>
+	//class Wrapper : public  T, public Wrap {
+	//public:
+		//Wrapper(uint64_t id) :Wrap(id), T() {}
+	//};
+
 	// drawing tools etc, shared across objects
 	class Tools {
 	public:
 		Tools() {
 		}
+		template<typename T> void removeVector(vector<Wrapper<T>>& vec, uint64_t myID) {
+			vector<Wrapper<T>>::iterator it = vec.begin();
+			while (it != vec.end()) {
+				if (!it->id() == myID) {
+					it = vec.erase(it);
+				}
+				else {
+					++it;
+				}
+			}
+		}
+
 		ofLight	 light;
 		ofCamera camera;
-		vector<ofVideoPlayer> videoPlayers;
+		vector<Wrapper<ofVideoPlayer>> videoPlayers;
 	};
 
 	// drawing related items start here
