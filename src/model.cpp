@@ -131,10 +131,11 @@ namespace Software2552 {
 	void Scene::setup() {
 		setupVector(audios);
 		setupVector(videos);
-		setupVector(texts);
+		setupVector(paragraphs);
 		setupVector(images);
 		setupVector(graphics); //bugbug create built in graphics like those in the book ("Smoke")
 		setupVector(characters);
+		setupVector(texts);
 	}
 #if _DEBUG
 	// echo object (debug only) bugbug make debug only
@@ -171,7 +172,7 @@ namespace Software2552 {
 	bool Scene::dataAvailable() {
 		return audios.size() > 0 ||
 			videos.size() > 0 ||
-			texts.size() > 0 ||
+			paragraphs.size() > 0 ||
 			images.size() > 0 ||
 			graphics.size() > 0 ||
 			characters.size() > 0;
@@ -199,13 +200,15 @@ namespace Software2552 {
 		characters.erase(std::remove_if(characters.begin(), characters.end(), Graphic::okToRemove), characters.end());
 		images.erase(std::remove_if(images.begin(), images.end(), Graphic::okToRemove), images.end());
 		graphics.erase(std::remove_if(graphics.begin(), graphics.end(), Graphic::okToRemove), graphics.end());
+		paragraphs.erase(std::remove_if(paragraphs.begin(), paragraphs.end(), Graphic::okToRemove), paragraphs.end());
 		texts.erase(std::remove_if(texts.begin(), texts.end(), Graphic::okToRemove), texts.end());
 		updateVector(audios);
 		updateVector(videos);
-		updateVector(texts);
+		updateVector(paragraphs);
 		updateVector(images);
 		updateVector(graphics);
 		updateVector(characters);
+		updateVector(texts);
 
 	}
 
@@ -353,20 +356,28 @@ namespace Software2552 {
 		}
 		return false;
 	}
-	Text::Text() :Graphic() {
+	Paragraph::Paragraph() :Text() {
 		indent = 40;
 		leading = 16;
 		spacing = 6;
 		alignment = "left"; // json key
 	}
-
 	bool Text::read(const Json::Value &data) {
 		ECHOAll(data);
 
 		if (Graphic::read(data)) {
-			string paragraph; // read in text
-			READSTRING(paragraph, data);
-			if (paragraph.size() > 0){
+			setString(str, data);
+			return true;
+		}
+		return false;
+	}
+	bool Paragraph::read(const Json::Value &data) {
+		ECHOAll(data);
+
+		if (Text::read(data)) {
+			string row; // read in text
+			READSTRING(row, data);
+			if (row.size() > 0){
 				READINT(indent, data);
 				READINT(leading, data);
 				READINT(spacing, data);
@@ -404,11 +415,13 @@ namespace Software2552 {
 		if (SettingsAndTitle::read(data)) {
 			READSTRING(keyname, data);
 			READBOOL(wait, data);
-			createTimeLineItems<Audio>(audios, data["audio"]);
-			createTimeLineItems<Video>(videos, data["video"]);
-			createTimeLineItems<Text>(texts, data["text"]);
+			createTimeLineItems<Audio>(audios, data["audios"]);
+			createTimeLineItems<Video>(videos, data["videos"]);
+			createTimeLineItems<Paragraph>(paragraphs, data["paragraphs"]);
 			createTimeLineItems<Image>(images, data["images"]);
 			createTimeLineItems<Graphic>(graphics, data["graphics"]);
+			createTimeLineItems<Text>(texts, data["texts"]);
+			createTimeLineItems<Character>(characters, data["characters"]);
 			return true;
 		}
 		return false;

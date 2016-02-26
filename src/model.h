@@ -302,21 +302,30 @@ namespace Software2552 {
 	private:
 		GraphicID myID;// every graphic item gets a unique ID for deletion and etc
 	};
-
+	// with or w/o font
 	class Text : public Graphic {
 	public:
-		Text();
+		Text() : Graphic() {  }
+		Text(const string&textIn): Graphic() { str = textIn; }
+		bool read(const Json::Value &data);
+		string& getText() { return str; }
+	private:
+		string str;
+	};
+	class Paragraph : public Text {
+	public:
+		Paragraph();
 		bool read(const Json::Value &data);
 		int getIndent() { return indent; }
 		int getLeading() { return leading; }
 		int getSpacing() { return spacing; }
-		string& getText() { return text; }
+		
 		string &getAlignment() { return alignment; };
 
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Text));
+			basicTrace(STRINGIFY(Paragraph));
 			Graphic::trace();
 			// not a lot of echo here, add if needed
 		}
@@ -327,7 +336,6 @@ namespace Software2552 {
 		int indent;
 		int leading;
 		int spacing;
-		string text;
 		string alignment; // paragraph is a data type in this usage
 	};
 
@@ -486,7 +494,8 @@ namespace Software2552 {
 		bool waitOnScene() {
 			return dataAvailable() && wait;
 		}
-		vector <Text>& getText() {	return texts;}
+		vector <Paragraph>& getParagraphs() {	return paragraphs;}
+		vector <Text>& getTexts() { return texts; }
 		vector <Audio>& getAudio() { return audios; }
 		vector <Video>& getVideo() { return videos; }
 		vector <Character>& getCharacters() { return characters; }
@@ -500,9 +509,10 @@ namespace Software2552 {
 		void trace() {
 			basicTrace(STRINGIFY(Scene));
 
+			traceVector(texts);
 			traceVector(audios);
 			traceVector(videos);
-			traceVector(texts);
+			traceVector(paragraphs);
 			traceVector(images);
 			traceVector(graphics);
 			traceVector(characters);
@@ -516,7 +526,8 @@ namespace Software2552 {
 		vector <Character> characters; // join with vector <Model3D> models;
 		vector <Image> images; //bugbug join with ofImage vector <ofImage> images;
 		vector <Graphic> graphics; // tie to ofX
-		vector <Text>  texts; 
+		vector <Paragraph>  paragraphs; 
+		vector <Text>  texts;
 		string keyname;
 		bool   wait;
 	private:
