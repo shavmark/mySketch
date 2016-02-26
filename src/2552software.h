@@ -3,8 +3,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream>
-
-
+#include <memory>
 // Microsoft Speech Platform SDK 11
 #include <sapi.h>
 #include <sphelper.h> // SpFindBestToken()
@@ -15,25 +14,36 @@
 #include "ofMain.h"
 #include "ofFileUtils.h"
 #include "ole2.h"
-#include "ofxAssimpModelLoader.h"
+
 // !!keep all MS files above ofmain.h https://forum.openframeworks.cc/t/how-to-include-atl-in-vs2012-project/14672/2
 #include "ofMain.h"
+
+#include "ofxAssimpModelLoader.h"
+#include "ofxSmartFont.h"
+#include "ofxJSON.h"
+#include "ofxParagraph.h"
+#include "Poco/Foundation.h"
+#include "Poco/DateTime.h"
+#include "Poco/LocalDateTime.h"
+#include "Poco/DateTimeParser.h"
+#include "Poco/DateTimeFormatter.h"
+
 
 #define STRINGIFY(p) #p
 
 namespace Software2552 {
 
 	// root class, basic and small but items every object needs.  Try to avoid adding data to keep it small
-	class BaseClass2552 {
+	class BaseClass {
 	public:
 	private:
 	};
 
 	// can be, but does not need to be, a base class as its all static and can just be called, could not even be a class I suppose
-	class Trace2552 : public BaseClass2552 {
+	class Trace : public BaseClass {
 	public:
 		static bool checkPointer2(IUnknown *p, const string&  message, char*file = __FILE__, int line = __LINE__);
-		static bool checkPointer2(BaseClass2552 *p, const string&  message, char*file = __FILE__, int line = __LINE__);
+		static bool checkPointer2(BaseClass *p, const string&  message, char*file = __FILE__, int line = __LINE__);
 
 		static void logError2(const string& error, char*file, int line);
 		static void logVerbose2(const string& message, char*file, int line) {
@@ -51,20 +61,21 @@ namespace Software2552 {
 
 		// get the right line number bugbug add DEBUG ONLY
 #if _DEBUG
-#define logError(p1, p2) Trace2552::logError2(p1, p2, __FILE__, __LINE__)
-#define logErrorString(p1) Trace2552::logError2(p1, __FILE__, __LINE__)
-#define logVerbose(p1) Trace2552::logVerbose2(p1, __FILE__, __LINE__)
-#define logTrace(p1) Trace2552::logTrace2(p1, __FILE__, __LINE__)
-#define checkPointer(p1, p2) Trace2552::checkPointer2(p1, p2, __FILE__, __LINE__)
-#define checkPointer(p1, p2) Trace2552::checkPointer2(p1, p2, __FILE__, __LINE__)
-#define hresultFails(p1, p2) Trace2552::CheckHresult2(p1, p2, __FILE__, __LINE__)
-#define basicTrace(p) Trace2552::logTraceBasic(p, #p)
+#define logError(p1, p2) Trace::logError2(p1, p2, __FILE__, __LINE__)
+#define logErrorString(p1) Trace::logError2(p1, __FILE__, __LINE__)
+#define logVerbose(p1) Trace::logVerbose2(p1, __FILE__, __LINE__)
+#define logTrace(p1) Trace::logTrace2(p1, __FILE__, __LINE__)
+#define checkPointer(p1, p2) Trace::checkPointer2(p1, p2, __FILE__, __LINE__)
+#define checkPointer(p1, p2) Trace::checkPointer2(p1, p2, __FILE__, __LINE__)
+#define hresultFails(p1, p2) Trace::CheckHresult2(p1, p2, __FILE__, __LINE__)
+#define basicTrace(p) Trace::logTraceBasic(p, #p)
 #endif
 		// simple text log, even w/o debug
-#define echo(p) Trace2552::logTraceBasic(p)
-#define echoError(p) Trace2552::logErrorString(p)
+#define echo(p) Trace::logTraceBasic(p)
+#define echoError(p) Trace::logErrorString(p)
 #define tracer(p, isError) (isError ? echoError(p) : echo(p))
 	};
+
 
 	template<class Interface> void SafeRelease(Interface *& pInterfaceToRelease)
 	{
@@ -74,15 +85,9 @@ namespace Software2552 {
 		}
 	}
 
-	class Graphics2552 : public Trace2552 {
-	public:
-		static void rotateToNormal(ofVec3f normal);
-
-	};
-
 	
 	// 3d model
-	class Model3D : public ofxAssimpModelLoader, public Trace2552 {
+	class Model3D : public ofxAssimpModelLoader, public Trace {
 	public: 
 		void setup(const string& name) {
 			loadModel(name, false);
@@ -159,23 +164,6 @@ namespace Software2552 {
 		}
 	private:
 		ofMesh mesh;
-	};
-
-	// drawing related items start here
-	class BaseClass2552WithDrawing: public Trace2552 {
-	public: 
-		BaseClass2552WithDrawing() { valid = false; }
-
-		bool objectValid() { return valid; } // data is in a good state
-		void setValid(bool b = true) { valid = b; };
-
-	private:
-		bool valid; // true when data is valid and ready to draw
-	};
-
-	class Sound {
-	public:
-		void test();
 	};
 }
 

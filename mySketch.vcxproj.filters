@@ -302,7 +302,16 @@
     <ClCompile Include="..\..\..\addons\ofxJson\libs\jsoncpp\src\jsoncpp.cpp">
       <Filter>addons\ofxJson\libs\jsoncpp\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\t.cpp">
+    <ClCompile Include="src\model.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\trialcode.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\view.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\controller.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -930,7 +939,13 @@
     <ClInclude Include="..\..\..\addons\ofxJson\libs\jsoncpp\include\json\json.h">
       <Filter>addons\ofxJson\libs\jsoncpp\include\json</Filter>
     </ClInclude>
-    <ClInclude Include="src\t.h">
+    <ClInclude Include="src\model.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\view.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\controller.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,8 +9,8 @@
 //--------------------------------------------------------------
 void ofStoryTellerApp::setup(){
 	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
-	decks.setup(); // create time line
-	decks.trace();
+	timeline.setup();
+	timeline.trace();
 	//paragraphs.build(ofGetWidth());
 	
 	//ofSetFullscreen(true);
@@ -157,7 +157,7 @@ void ofStoryTellerApp::setup(){
 
 //--------------------------------------------------------------
 void ofStoryTellerApp::update(){
-	decks.update();
+	timeline.update();
 	return;
 	if (years < 12000) {
 		for (int i = 0; i < 10; i++) {
@@ -292,7 +292,7 @@ void ofStoryTellerApp::update(){
 }
 //--------------------------------------------------------------
 void ofStoryTellerApp::draw(){
-	decks.draw();
+	timeline.draw();
 	return;
 	//for (int i = 0; i< paragraphs.get().size(); i++) {
 	//	paragraphs.get(i).draw();

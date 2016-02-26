@@ -13,7 +13,7 @@
 
 #include "2552software.h"
 #include "kinect2552.h"
-#include "t.h"
+#include "controller.h"
 
 
 class ofStoryTellerApp : public ofBaseApp{
@@ -42,7 +42,7 @@ class ofStoryTellerApp : public ofBaseApp{
 		Software2552::KinectAudio audio;
 		Software2552::Kinect2552 myKinect;
 
-		Software2552::Story decks;
+		Software2552::Timeline timeline;
 
 		void ofStoryTellerApp::drawScene(bool isPreview){
 	

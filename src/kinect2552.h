@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "Kinect.Face.h"
 #include "2552software.h"
+#include "view.h"
 
 //https://github.com/Vangos, http://www.cs.princeton.edu/~edwardz/tutorials/kinect2/kinect0_sdl.html, https://github.com/UnaNancyOwen
 //http://www.pointclouds.org/

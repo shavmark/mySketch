@@ -810,17 +810,17 @@ void KinectAudio::getAudioCommands() {
 							const SPPHRASEPROPERTY* pSemantic = pPhrase->pProperties->pFirstChild;
 							switch (pSemantic->Confidence) {
 							case SP_LOW_CONFIDENCE:
-								logTrace("SP_LOW_CONFIDENCE: " + Trace2552::wstrtostr(pSemantic->pszValue));
+								logTrace("SP_LOW_CONFIDENCE: " + Trace::wstrtostr(pSemantic->pszValue));
 								break;
 							case SP_NORMAL_CONFIDENCE:
-								logTrace("SP_NORMAL_CONFIDENCE: " + Trace2552::wstrtostr(pSemantic->pszValue));
+								logTrace("SP_NORMAL_CONFIDENCE: " + Trace::wstrtostr(pSemantic->pszValue));
 								break;
 							case SP_HIGH_CONFIDENCE:
-								logTrace("SP_HIGH_CONFIDENCE: " + Trace2552::wstrtostr(pSemantic->pszValue));
+								logTrace("SP_HIGH_CONFIDENCE: " + Trace::wstrtostr(pSemantic->pszValue));
 								break;
 							}
 							if (pSemantic->SREngineConfidence > confidenceThreshold) {
-								logTrace("SREngineConfidence > confidenceThreshold: " + Trace2552::wstrtostr(pSemantic->pszValue));
+								logTrace("SREngineConfidence > confidenceThreshold: " + Trace::wstrtostr(pSemantic->pszValue));
 							}
 						}
 						CoTaskMemFree(pPhrase);
