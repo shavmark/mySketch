@@ -6,26 +6,19 @@ namespace Software2552 {
 	}
 	void Timeline::setup() { 
 		story.setup();
-		Scene scene;
-		// thanks to http://stackoverflow.com/questions/12662891/c-passing-member-function-as-argument
-		auto fpSetup = std::bind(&Timeline::enumerateSetup, *this, scene);
-		enumerate(fpSetup);
+		enumerate(Setup);
 	};
 	void Timeline::update() { 
 		story.update();
-		Scene scene;
-		auto fp = std::bind(&Timeline::enumerateUpdate, *this, scene);
-		enumerate(fp);
+		enumerate(Update);
 	};
 
 	void Timeline::draw() {
 		// Story does not draw, its just data
-		Scene scene;
-		auto fp = std::bind(&Timeline::enumerateDraw, *this, scene);
-		enumerate(fp);
+		enumerate(Draw);
 	};
 	// enumerate and call passed function
-	void Timeline::enumerate(std::function<void(Scene&scene)>func) {
+	void Timeline::enumerate(Type type) {
 		
 		for (auto& act : story.getActs()) {
 			// always play the first key onwards
@@ -33,7 +26,17 @@ namespace Software2552 {
 				Scene lookupscene(play.getKeyName());
 				std::vector<Scene>::iterator findscene = find(act.getScenes().begin(), act.getScenes().end(), lookupscene);
 				if (findscene != act.getScenes().end()) {
-					func(*findscene);
+					switch (type) {
+					case Setup:
+						enumerateSetup(*findscene);
+						break;
+					case Update:
+						enumerateUpdate(*findscene);
+						break;
+					case Draw:
+						enumerateDraw(*findscene);
+						break;
+					}
 					if (findscene->waitOnScene()) {
 						break; // only draw one time if blocking, do  not go on to the next one yet
 					}

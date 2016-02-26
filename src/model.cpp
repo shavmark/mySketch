@@ -149,7 +149,7 @@ namespace Software2552 {
 #if _DEBUG
 	// echo object (debug only) bugbug make debug only
 	void Story::trace() {
-		basicTrace(STRINGIFY(Story));
+		logVerbose(STRINGIFY(Story));
 		traceVector(acts);
 	}
 #endif
@@ -230,14 +230,14 @@ namespace Software2552 {
 			parse<Reference>(references, data["references"]);
 			return true;
 		}
-		return false;
+		return false; // some thing must be really wrong to return false as these are optional items
 	}
+	// return true if url found
 	bool Image::read(const Json::Value &data) {
 		ECHOAll(data);
 
 		if (Graphic::read(data)) {
-			READSTRING(url, data);
-			return true;
+			return READSTRING(url, data);
 		}
 		return false;
 	}
@@ -271,6 +271,7 @@ namespace Software2552 {
 		float f = ofGetElapsedTimef();
 		return start + delay + duration > ofGetElapsedTimef();
 	}
+	// always return true as these are optional items
 	bool Settings::read(const Json::Value &data) {
 		// dumps too much so only enable if there is a bug: ECHOAll(data);
 		if (!data.empty()) { // ignore reference as an array or w/o data at this point
@@ -284,10 +285,9 @@ namespace Software2552 {
 			foregroundColor.read(data["foreground"]);
 			backgroundColor.read(data["background"]);
 			font.read(data["font"]);
-			return true;
 		}
 
-		return false;
+		return true;
 	}
 	
 	bool Reference::read(const Json::Value &data) {
@@ -351,19 +351,17 @@ namespace Software2552 {
 		myID = ofGetSystemTimeMicros();
 
 	}
-
+	// always return true as these are optional items
 	bool Graphic::read(const Json::Value &data) {
 		ECHOAll(data);
 
-		if (ReferencedItem::read(data)) {
-			READSTRING(type, data);
-			READFLOAT(duration, data);
-			READFLOAT(delay, data);
-			READFLOAT(width, data);
-			READFLOAT(height, data);
-			return true;
-		}
-		return false;
+		ReferencedItem::read(data);
+		READSTRING(type, data);
+		READFLOAT(duration, data);
+		READFLOAT(delay, data);
+		READFLOAT(width, data);
+		READFLOAT(height, data);
+		return true;
 	}
 	Paragraph::Paragraph() :Text() {
 		indent = 40;
@@ -371,40 +369,38 @@ namespace Software2552 {
 		spacing = 6;
 		alignment = "left"; // json key
 	}
+	// return true if text read
 	bool Text::read(const Json::Value &data) {
 		ECHOAll(data);
 
 		if (Graphic::read(data)) {
-			setString(str, data["text"]["str"]);
-			return true;
+			// if no text string do not save the defaults
+			// so return true only if a string is found at this point
+			return setString(str, data["text"]["str"]);
 		}
-		return false;
+		return true;
 	}
+	// return true if text read in
 	bool Paragraph::read(const Json::Value &data) {
 		ECHOAll(data);
-
-		if (Text::read(data)) {
-			string row; // read in text
-			READSTRING(row, data);
-			if (row.size() > 0){
-				READINT(indent, data);
-				READINT(leading, data);
-				READINT(spacing, data);
-				READSTRING(alignment, data);
-			}
-			
-			return true;
-		}
-		return false;
+		bool textReadIn = Text::read(data);
+		READINT(indent, data);
+		READINT(leading, data);
+		READINT(spacing, data);
+		READSTRING(alignment, data);
+		return textReadIn;
 	}
 	template<typename T, typename T2> void Scene::createTimeLineItems(T2& vec, const Json::Value &data, const string& key)
 	{
 		logTrace("createTimeLineItems for " + key);
-		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
+
+		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			T item;
-			item.setSettings(getSettings());
-			item.read(data[key][j]);
-			vec.push_back(item);
+			item.setSettings(getSettings()); // copy default settings into object
+			if (item.read(data[key][j])) {
+				// only save if data was read in 
+				vec.push_back(item);
+			}
 		}
 	}
 	void Settings::setSettings(const Settings& rhs) {
@@ -425,6 +421,10 @@ namespace Software2552 {
 		try {
 			if (SettingsAndTitle::read(data)) {
 				READSTRING(keyname, data);
+				if (keyname == "ClydeBellecourt") {
+					int i = 1;
+				}
+
 				READBOOL(wait, data);
 				createTimeLineItems<Audio>(audios, data, "audios");
 				createTimeLineItems<Video>(videos, data, "videos");

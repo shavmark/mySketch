@@ -21,7 +21,7 @@ namespace Software2552 {
 			}
 		}
 	}
-
+	// draw all items that map to ID
 	template<typename T> void DrawingTools::draw(GraphicID ID, T& vec) {
 		for (auto& t : vec) {
 			if (t.id() == ID) {

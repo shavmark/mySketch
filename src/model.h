@@ -41,10 +41,10 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Point3D));
-			basicTrace(ofToString(x));
-			basicTrace(ofToString(y));
-			basicTrace(ofToString(z));
+			logVerbose(STRINGIFY(Point3D));
+			logVerbose(ofToString(x));
+			logVerbose(ofToString(y));
+			logVerbose(ofToString(z));
 		}
 #endif // _DEBUG
 
@@ -55,10 +55,10 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(RGB));
-			basicTrace(ofToString(r));
-			basicTrace(ofToString(g));
-			basicTrace(ofToString(b));
+			logVerbose(STRINGIFY(RGB));
+			logVerbose(ofToString(r));
+			logVerbose(ofToString(g));
+			logVerbose(ofToString(b));
 		}
 #endif // _DEBUG
 
@@ -88,17 +88,14 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(DateAndTime));
+			logVerbose(STRINGIFY(DateAndTime));
 			if (bc) {
-				basicTrace("BC");
-				basicTrace(ofToString(bc));
+				logVerbose("BC");
+				logVerbose(ofToString(bc));
 			}
 			else {
-				basicTrace(getDate());
-				basicTrace(ofToString(timeZoneDifferential));
-				if (year() == 0){
-					logErrorString("invalid date");
-				}
+				logVerbose(getDate());
+				logVerbose(ofToString(timeZoneDifferential));
 			}
 		}
 #endif // _DEBUG
@@ -136,11 +133,11 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Font));
+			logVerbose(STRINGIFY(Font));
 			if (font != nullptr) {
-				basicTrace(font->name());
-				basicTrace(font->file());
-				basicTrace(ofToString(font->size()));
+				logVerbose(font->name());
+				logVerbose(font->file());
+				logVerbose(ofToString(font->size()));
 			}
 			else {
 				basicTrace("no font");
@@ -179,7 +176,7 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Settings));
+			logVerbose(STRINGIFY(Settings));
 			foregroundColor.trace();
 			backgroundColor.trace();
 			startingPoint.trace();
@@ -188,9 +185,9 @@ namespace Software2552 {
 			lastUpdateDate.trace(); // last time object was updated
 			itemDate.trace();
 
-			basicTrace(name);
-			basicTrace(notes);
-			basicTrace(ofToString(duration));
+			logVerbose(name);
+			logVerbose(notes);
+			logVerbose(ofToString(duration));
 		}
 #endif
 
@@ -222,11 +219,11 @@ namespace Software2552 {
 		// echo object (debug only)
 #if _DEBUG
 		void trace() {
-			basicTrace(STRINGIFY(Reference));
+			logVerbose(STRINGIFY(Reference));
 			Settings::trace();
-			basicTrace(url);
-			basicTrace(location);
-			basicTrace(source);
+			logVerbose(url);
+			logVerbose(location);
+			logVerbose(source);
 		}
 #endif
 	protected:
@@ -243,7 +240,7 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(ReferencedItem));
+			logVerbose(STRINGIFY(ReferencedItem));
 			Settings::trace();
 			
 			for (auto& ref : references) {
@@ -287,10 +284,10 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Graphic));
+			logVerbose(STRINGIFY(Graphic));
 			ReferencedItem::trace();
-			basicTrace(type);
-			basicTrace(ofToString(delay));
+			logVerbose(type);
+			logVerbose(ofToString(delay));
 		}
 #endif // _DEBUG
 	protected:
@@ -305,7 +302,7 @@ namespace Software2552 {
 	// with or w/o font
 	class Text : public Graphic {
 	public:
-		Text() : Graphic() {  }
+		Text() : Graphic() { str = "default"; }
 		Text(const string&textIn): Graphic() { str = textIn; }
 		bool read(const Json::Value &data);
 		string& getText() { return str; }
@@ -325,7 +322,7 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Paragraph));
+			logVerbose(STRINGIFY(Paragraph));
 			Graphic::trace();
 			// not a lot of echo here, add if needed
 		}
@@ -351,7 +348,7 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Character));
+			logVerbose(STRINGIFY(Character));
 
 			Graphic::trace();
 		}
@@ -366,10 +363,10 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Image));
+			logVerbose(STRINGIFY(Image));
 
 			Graphic::trace();
-			basicTrace(url);
+			logVerbose(url);
 		}
 
 #endif // _DEBUG
@@ -389,10 +386,10 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Audio));
+			logVerbose(STRINGIFY(Audio));
 
 			Image::trace();
-			basicTrace(ofToString(volume));
+			logVerbose(ofToString(volume));
 		}
 
 #endif // _DEBUG
@@ -406,7 +403,7 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
-			basicTrace(STRINGIFY(Video));
+			logVerbose(STRINGIFY(Video));
 			Audio::trace();
 		}
 
@@ -507,7 +504,7 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
-			basicTrace(STRINGIFY(Scene));
+			logVerbose(STRINGIFY(Scene));
 
 			traceVector(texts);
 			traceVector(audios);
@@ -547,7 +544,7 @@ namespace Software2552 {
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
-			basicTrace(STRINGIFY(Act));
+			logVerbose(STRINGIFY(Act));
 			traceVector(scenes);
 		}
 #endif

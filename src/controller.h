@@ -8,6 +8,7 @@
 namespace Software2552 {
 	class Timeline {
 	public:
+		enum Type {Setup, Update, Draw};
 		Timeline();
 		void setup();
 		void update();
@@ -20,7 +21,7 @@ namespace Software2552 {
 		void enumerateSetup(Scene &scene);
 		void enumerateUpdate(Scene &scene);
 		void enumerateDraw(Scene &scene);
-		void enumerate(std::function<void(Scene&scene)>);
+		void enumerate(Type);
 		DrawingTools drawingTools;
 		Story story;
 		
