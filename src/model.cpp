@@ -330,6 +330,16 @@ namespace Software2552 {
 
 		return true;
 	}
+	Graphic::Graphic() : ReferencedItem() {
+		//bugbug add a pause where time is suspended, add in rew, play, stop etc also
+		start = 0; // force reset to be called to make sure timing is right, 0 means not started
+		delay = 0;
+		height = 0;
+		width = 0;
+		myID = ofGetSystemTimeMicros();
+
+	}
+
 	bool Graphic::read(const Json::Value &data) {
 		ECHOAll(data);
 
@@ -337,12 +347,13 @@ namespace Software2552 {
 			READSTRING(type, data);
 			READFLOAT(duration, data);
 			READFLOAT(delay, data);
+			READFLOAT(width, data);
+			READFLOAT(height, data);
 			return true;
 		}
 		return false;
 	}
 	Text::Text() :Graphic() {
-		width = 0;
 		indent = 40;
 		leading = 16;
 		spacing = 6;
@@ -356,7 +367,6 @@ namespace Software2552 {
 			string paragraph; // read in text
 			READSTRING(paragraph, data);
 			if (paragraph.size() > 0){
-				READINT(width, data);
 				READINT(indent, data);
 				READINT(leading, data);
 				READINT(spacing, data);

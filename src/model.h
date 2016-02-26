@@ -263,13 +263,7 @@ namespace Software2552 {
 	// basic graphic like SUN etc to add flavor
 	class Graphic : public ReferencedItem {
 	public:
-		Graphic() : ReferencedItem(){
-			//bugbug add a pause where time is suspended, add in rew, play, stop etc also
-			start = 0; // force reset to be called to make sure timing is right, 0 means not started
-			delay = 0;
-			myID = ofGetSystemTimeMicros();
-
-		}
+		Graphic();
 		static bool okToRemove(const Graphic& s) {
 			if (!s.duration || s.start < 0) {
 				return false; // no time out ever, or we have not started yet
@@ -287,6 +281,9 @@ namespace Software2552 {
 		}
 		bool okToDraw();
 		GraphicID id() { return myID; }
+		int getWidth() { return width; }
+		int getHeight() { return height; }
+
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -300,8 +297,8 @@ namespace Software2552 {
 		string type; // 2d, 3d, other
 		float start;
 		float delay; // start+delay is the true start
-		int width; //bugbug todo
-		int height;//bugbug todo
+		int width; 
+		int height;
 	private:
 		GraphicID myID;// every graphic item gets a unique ID for deletion and etc
 	};
@@ -310,12 +307,10 @@ namespace Software2552 {
 	public:
 		Text();
 		bool read(const Json::Value &data);
-		int getWidth() { return width; }
 		int getIndent() { return indent; }
 		int getLeading() { return leading; }
 		int getSpacing() { return spacing; }
 		string& getText() { return text; }
-		ofColor& getColor() { return color; }
 		string &getAlignment() { return alignment; };
 
 #if _DEBUG
@@ -329,12 +324,10 @@ namespace Software2552 {
 
 
 	private:
-		int width;
 		int indent;
 		int leading;
 		int spacing;
 		string text;
-		ofColor color;
 		string alignment; // paragraph is a data type in this usage
 	};
 

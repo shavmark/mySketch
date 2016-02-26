@@ -71,8 +71,7 @@ namespace Software2552 {
 		newparagraph.setIndent(indent);
 		newparagraph.setLeading(leading);
 		newparagraph.setSpacing(spacing);
-		newparagraph.x = x;
-		newparagraph.y = y;
+		newparagraph.setPosition(x, y);
 		textPlayers.push_back(newparagraph);
 	}
 
