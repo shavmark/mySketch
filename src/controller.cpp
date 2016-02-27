@@ -75,7 +75,6 @@ namespace Software2552 {
 		
 		// setup is called in Story for each object, calls here do updates for DrawingTools etc
 		for (auto& a : scene.getParagraphs()) {
-			a.setup();
 			ofxParagraph::Alignment align = ofxParagraph::ALIGN_LEFT;
 			if (a.getAlignment() == "center") { //bugbug ignore case
 				align = ofxParagraph::ALIGN_CENTER;
@@ -88,14 +87,12 @@ namespace Software2552 {
 				a.getStartingPoint().y, a.getWidth(), a.getForeground(), align, a.getIndent(), a.getLeading(), a.getSpacing());
 		}
 		for (auto& a : scene.getTexts()) {
-			a.setup();
 			drawingTools.setupText(a.id(), a.getText(), a.getFont(), a.getStartingPoint().x, a.getStartingPoint().y, a.getForeground());
 		}
 
 		for (auto& a : scene.getAudio()) {
 		}
 		for (auto& a : scene.getVideo()) {
-			a.setup();
 			drawingTools.setupVideoPlayer(a.id(), a.getVolume(), a.getLocation());
 		}
 		for (auto& a : scene.getCharacters()) {
@@ -114,11 +111,9 @@ namespace Software2552 {
 		for (auto& a : scene.getAudio()) {
 		}
 		for (auto& a : scene.getParagraphs()) {
-			a.update();
 			drawingTools.updateParagraph(a.id());
 		}
 		for (auto& a : scene.getVideo()) {
-			a.update();
 			drawingTools.updateVideo(a.id());
 		}
 		for (auto& a : scene.getCharacters()) {

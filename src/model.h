@@ -221,13 +221,13 @@ namespace Software2552 {
 		void trace() {
 			logVerbose(STRINGIFY(Reference));
 			Settings::trace();
-			logVerbose(url);
 			logVerbose(location);
+			logVerbose(locationPath);
 			logVerbose(source);
 		}
 #endif
 	protected:
-		string url; // can be local too
+		string locationPath; // can be local too
 		string location;
 		string source;
 	};
@@ -359,19 +359,19 @@ namespace Software2552 {
 	class Image : public Graphic {
 	public:
 		bool read(const Json::Value &data);
-		string &getLocation() { return url; } // not sure if url works bugbug
+		string &getLocation() { return location; } // not sure if location works bugbug
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
 			logVerbose(STRINGIFY(Image));
 
 			Graphic::trace();
-			logVerbose(url);
+			logVerbose(location);
 		}
 
 #endif // _DEBUG
 	protected:
-		string url; // remote or local bugbug maybe make a better name?  not sure
+		string location; // remote or local bugbug maybe make a better name?  not sure
 
 	};
 
@@ -585,10 +585,10 @@ namespace Software2552 {
 
 		void setup();
 		void update();
+		void read();
 
 	private:
 		vector<Act> acts;
-		void read();
 
 	};
 }

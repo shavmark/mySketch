@@ -1,4 +1,5 @@
 // store notes here
+// UN treaty info http://indianlaw.org/content/treaty-rights-and-un-declaration-rights-indigenous-peoples
 //https://github.com/google/liquidfun
 //http://www.kstrom.net/isk/maps/mn/treaties.html
 // follow this https://github.com/openframeworks/openFrameworks/wiki/oF-code-style, but let them w/o bugs cast the first flames

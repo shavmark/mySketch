@@ -7,36 +7,36 @@ namespace Software2552 {
 	//https://sites.google.com/site/ofauckland/examples/curly-moving-particles code this in soon to learn the cool stuff we can add bugbug
 	//https://github.com/tesseract-ocr/tesseract
 
-	template<typename T> void DrawingTools::update(GraphicID ID, T& vec) {
-		for (auto& t : vec) {
+	template<typename T> void DrawingTools::update(GraphicID ID, T& v) {
+		for (auto& t : v) {
 			if (t.id() == ID) {
 				t.update();
 			}
 		}
 	}
-	template<typename T> void DrawingTools::draw(GraphicID ID, T& vec, int x, int y) {
-		for (auto& t : vec) {
+	template<typename T> void DrawingTools::draw(GraphicID ID, T& v, int x, int y) {
+		for (auto& t : v) {
 			if (t.id() == ID) {
 				t.draw(x, y);
 			}
 		}
 	}
 	// draw all items that map to ID
-	template<typename T> void DrawingTools::draw(GraphicID ID, T& vec) {
-		for (auto& t : vec) {
+	template<typename T> void DrawingTools::draw(GraphicID ID, T& v) {
+		for (auto& t : v) {
 			if (t.id() == ID) {
 				t.draw();
 			}
 		}
 	}
-	template<typename T> void DrawingTools::removePlayers(GraphicID ID, T& vec) {
-		T::iterator it = vec.begin();
-		while (it != vec.end()) {
-			if (!it->id() == ID) {
-				it = vec.erase(it);
+	template<typename T> void DrawingTools::removePlayers(GraphicID ID, T& v) {
+		T::iterator i = v.begin();
+		while (i != v.end()) {
+			if (!i->id() == ID) {
+				i = v.erase(i);
 			}
 			else {
-				++it;
+				++i;
 			}
 		}
 	}
@@ -53,10 +53,14 @@ namespace Software2552 {
 	}
 	void DrawingTools::setupVideoPlayer(GraphicID ID, float vol, const string&location) {
 		Wrapper<ofVideoPlayer> player(ID);
-		player.setVolume(vol);
-		player.load(location);
-		player.play();
-		videoPlayers.push_back(player);
+		if (player.load(location)) {
+			player.setVolume(vol);
+			player.play();
+			videoPlayers.push_back(player);
+		}
+		else {
+			logErrorString(location);
+		}
 
 	}
 	void DrawingTools::removePlayers(GraphicID ID) {

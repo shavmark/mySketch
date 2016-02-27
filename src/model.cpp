@@ -183,6 +183,7 @@ namespace Software2552 {
 			videos.size() > 0 ||
 			paragraphs.size() > 0 ||
 			images.size() > 0 ||
+			texts.size() > 0 ||
 			graphics.size() > 0 ||
 			characters.size() > 0;
 	}
@@ -232,12 +233,12 @@ namespace Software2552 {
 		}
 		return false; // some thing must be really wrong to return false as these are optional items
 	}
-	// return true if url found
+	// return true if location found
 	bool Image::read(const Json::Value &data) {
 		ECHOAll(data);
 
 		if (Graphic::read(data)) {
-			return READSTRING(url, data);
+			return READSTRING(location, data);
 		}
 		return false;
 	}
@@ -295,8 +296,8 @@ namespace Software2552 {
 
 		if (Settings::read(data[Settings::JsonName])) { // ignore reference as an array or w/o data at this point
 			// no base class so it repeats some data in base class ReferencedItem
-			READSTRING(url, data[STRINGIFY(Reference)]);
 			READSTRING(location, data[STRINGIFY(Reference)]);
+			READSTRING(locationPath, data[STRINGIFY(Reference)]);
 			READSTRING(source, data[STRINGIFY(Reference)]);
 			return true;
 		}
