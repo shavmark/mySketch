@@ -15,6 +15,12 @@ namespace Software2552 {
 			drawingTools.removePlayers(a.id(), v2);
 		}
 	}
+	template<typename T> void Timeline::setupTools(T& v) {
+		for (auto& a : v) {
+			drawingTools.setup(a.getPlayer());
+		}
+	}
+
 	// if x or y are < 0 then the current x,y are used
 	template<typename T, typename T2> void Timeline::drawTools(T& v, T2 &v2) {
 		for (auto& a : v) {
@@ -83,36 +89,16 @@ namespace Software2552 {
 		}
 		
 	}
-	// helper
-	void Timeline::setupParagraph(Paragraph& p, DrawingTools& tools) {
-		ofxParagraph::Alignment align = ofxParagraph::ALIGN_LEFT;
-		if (p.getAlignment() == "center") { //bugbug ignore case
-			align = ofxParagraph::ALIGN_CENTER;
-		}
-		else if (p.getAlignment() == "right") { //bugbug ignore case
-			align = ofxParagraph::ALIGN_RIGHT;
-		}
-
-		tools.setupParagraph(p.id(), p.getText(), p.getFont(), p.getStartingPoint().x,
-			p.getStartingPoint().y, p.getWidth(), p.getForeground(), align, p.getIndent(), 
-			p.getLeading(), p.getSpacing());
-	}
-
 	void Timeline::enumerateSetup(Scene &scene) {
-		
-		// setup is called in Story for each object, calls here do updates for DrawingTools etc
-		for (auto& a : scene.getParagraphs()) {
-			setupParagraph(a, drawingTools);
-		}
+
+		setupTools(scene.getVideo());
+		setupTools(scene.getParagraphs());
+		setupTools(scene.getAudio());
+
 		for (auto& a : scene.getTexts()) {
 			drawingTools.setupText(a.id(), a.getText(), a.getFont(), a.getStartingPoint().x, a.getStartingPoint().y, a.getForeground());
 		}
 
-		for (auto& a : scene.getAudio()) {
-		}
-		for (auto& a : scene.getVideo()) {
-			drawingTools.setupVideoPlayer(a.id(), a.getVolume(), a.getLocation());
-		}
 		for (auto& a : scene.getCharacters()) {
 		}
 		for (auto& a : scene.getImages()) {

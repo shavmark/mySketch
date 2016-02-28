@@ -5,18 +5,7 @@
 
 namespace Software2552 {
 
-	template <class T>
-	class Wrapper : public  T {
-	public:
-		// wrap an Openframeworks or other such object so we can easily delete, track, test, debug  etc
-		Wrapper(GraphicID id) : T() { ID = id; }
-		bool operator==(const Wrapper &rhs) {
-			return ID == rhs.ID;
-		}
-		GraphicID id() { return ID; }
-	private:
-		GraphicID ID;
-	};
+	
 
 	class TextToRender {
 	public:
@@ -62,13 +51,22 @@ namespace Software2552 {
 			}
 		}
 
-
-		// remove item from a list
-		void setupVideoPlayer(GraphicID ID, float vol, const string&location);
-
-		// Paragraph is a special case is its a 3rd party too
-		void setupParagraph(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, int width=620, const ofColor& color=ofColor(0,0,0), ofxParagraph::Alignment align= ofxParagraph::ALIGN_LEFT, int indent= 40, int leading= 16, int spacing=6);
-
+		// add (and setup) a video player
+		void DrawingTools::setup(Wrapper<ofVideoPlayer> &player) {
+			if (player.load(player.getLocation())) {
+				player.play();
+				videoPlayers.push_back(player);
+			}
+			else {
+				logErrorString("add Player");
+			}
+		}
+		void setup(const Wrapper<ofxParagraph> &player) {
+			paragraphPlayers.push_back(player);
+		}
+		void setup(const Wrapper<ofSoundPlayer> &player) {
+			audioPlayers.push_back(player);
+		}
 		void setupText(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, const ofColor& color = ofColor(0, 0, 0));
 		void drawText(GraphicID ID, int x=0, int y = 0);
 
@@ -77,6 +75,7 @@ namespace Software2552 {
 	private:
 		ofLight	 light;
 		ofCamera camera;
+		//bugbug at some point make these shared_ptr to avoid coping data
 		vector<Wrapper<ofVideoPlayer>> videoPlayers;
 		vector<Wrapper<ofxParagraph>> paragraphPlayers;
 		vector<Wrapper<TextToRender>> textPlayers;

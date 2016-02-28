@@ -39,6 +39,8 @@ namespace Software2552 {
 	private:
 	};
 
+
+
 	// can be, but does not need to be, a base class as its all static and can just be called, could not even be a class I suppose
 	class Trace : public BaseClass {
 	public:
@@ -76,7 +78,32 @@ namespace Software2552 {
 #define tracer(p, isError) (isError ? echoError(p) : echo(p))
 	};
 
-
+	template <class T>
+	class Wrapper : public  T {
+	public:
+		// wrap an Openframeworks or other such object so we can easily delete, track, test, debug  etc
+		Wrapper(GraphicID id) : T() {
+			ID = id;
+			duration = 0; // 0 is infinte
+		}
+		Wrapper() : T() {
+			ID = ofGetSystemTimeMicros();
+			duration = 0; // 0 is infinte
+		}
+		bool operator==(const Wrapper &rhs) {
+			return ID == rhs.ID;
+		}
+		GraphicID id() { return ID; }
+		void set(GraphicID id) { ID = id; }
+		float getDuration() { return duration; }
+		void setDuration(float durationIn) { duration = durationIn; }
+		string &getLocation() { return location; }
+		void setLocation(const string& locationIn) { location = locationIn; }
+	private:
+		GraphicID ID;
+		float duration; // how long this should stay around
+		string location; // url or local path
+	};
 	template<class Interface> void SafeRelease(Interface *& pInterfaceToRelease)
 	{
 		if (pInterfaceToRelease != NULL) {

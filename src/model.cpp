@@ -306,7 +306,7 @@ namespace Software2552 {
 	bool Character::read(const Json::Value &data) {
 		ECHOAll(data);
 
-		if (Graphic::read(data)) {
+		if (Video::read(data)) {
 			return true;
 		}
 		return false;
@@ -365,10 +365,7 @@ namespace Software2552 {
 		return true;
 	}
 	Paragraph::Paragraph() :Text() {
-		indent = 40;
-		leading = 16;
-		spacing = 6;
-		alignment = "left"; // json key
+		paragraphData.set(id());
 	}
 	// return true if text read
 	bool Text::read(const Json::Value &data) {
@@ -385,10 +382,28 @@ namespace Software2552 {
 	bool Paragraph::read(const Json::Value &data) {
 		ECHOAll(data);
 		bool textReadIn = Text::read(data);
-		READINT(indent, data);
-		READINT(leading, data);
-		READINT(spacing, data);
+		int indent;
+		int leading;
+		int spacing;
+		string alignment; // paragraph is a data type in this usage
+
+		if (READINT(indent, data)) {
+			paragraphData.setIndent(indent);
+		}
+		if (READINT(leading, data)) {
+			paragraphData.setLeading(leading);
+		}
+		if (READINT(spacing, data)) {
+			paragraphData.setSpacing(leading);
+		}
 		READSTRING(alignment, data);
+		if (alignment == "center") { //bugbug ignore case
+			paragraphData.setAlignment(ofxParagraph::ALIGN_CENTER);
+		}
+		else if (alignment == "right") { //bugbug ignore case
+			paragraphData.setAlignment(ofxParagraph::ALIGN_RIGHT);
+		}
+
 		return textReadIn;
 	}
 	template<typename T, typename T2> void Scene::createTimeLineItems(T2& vec, const Json::Value &data, const string& key)

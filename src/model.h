@@ -173,6 +173,7 @@ namespace Software2552 {
 		string &getName() { return name; }
 		const ofColor& getForeground(){ return foregroundColor; }
 		const ofColor& getBackground() { return backgroundColor; }
+		float getDuration() { return duration; }
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -313,11 +314,15 @@ namespace Software2552 {
 	public:
 		Paragraph();
 		bool read(const Json::Value &data);
-		int getIndent() { return indent; }
-		int getLeading() { return leading; }
-		int getSpacing() { return spacing; }
-		
-		string &getAlignment() { return alignment; };
+		//  return a properly built player
+		Wrapper<ofxParagraph>& getPlayer() {
+			paragraphData.setDuration(getDuration());
+			paragraphData.setText(getText());
+			paragraphData.setFont(getFont());
+			paragraphData.setColor(getForeground());
+			paragraphData.setPosition(getStartingPoint().x, getStartingPoint().y);
+			return paragraphData;
+		}
 
 #if _DEBUG
 		// echo object (debug only)
@@ -330,32 +335,10 @@ namespace Software2552 {
 
 
 	private:
-		int indent;
-		int leading;
-		int spacing;
-		string alignment; // paragraph is a data type in this usage
+		Wrapper<ofxParagraph> paragraphData; 
 	};
 
 
-	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
-	class Character : public Graphic {
-	public:
-		Character() {
-			type = "2d";
-		}
-		bool read(const Json::Value &data);
-
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Character));
-
-			Graphic::trace();
-		}
-
-#endif // _DEBUG
-
-	};
 	class Image : public Graphic {
 	public:
 		bool read(const Json::Value &data);
@@ -383,6 +366,12 @@ namespace Software2552 {
 		}
 		bool read(const Json::Value &data);
 		float  getVolume() { return volume; }
+		// build the player bugbug make Wrappr a smart pointer
+		Wrapper<ofSoundPlayer> getPlayer() {
+			Wrapper<ofSoundPlayer> player(id());
+			player.setVolume(getVolume());
+			return player;
+		}
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -393,13 +382,22 @@ namespace Software2552 {
 		}
 
 #endif // _DEBUG
-
+	private:
 		float     volume;
 		
 	};
 	
 	class Video : public Audio {
 	public:
+
+		// build the player bugbug make Wrappr a smart pointer
+		Wrapper<ofVideoPlayer> getPlayer() {
+			Wrapper<ofVideoPlayer> player(id());
+			player.setVolume(getVolume());
+			player.setDuration(getDuration());
+			player.setLocation(getLocation());
+			return player;
+		}
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -408,7 +406,28 @@ namespace Software2552 {
 		}
 
 #endif // _DEBUG
+	private:
 	};
+	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
+	class Character : public Video {
+	public:
+		Character() : Video(){
+			type = "2d";
+		}
+		bool read(const Json::Value &data);
+
+#if _DEBUG
+		// echo object (debug only)
+		void trace() {
+			logVerbose(STRINGIFY(Character));
+
+			Video::trace();
+		}
+
+#endif // _DEBUG
+
+	};
+
 	// item in a play list
 	class PlayItem {
 	public:
