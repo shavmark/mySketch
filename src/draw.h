@@ -34,14 +34,7 @@ namespace Software2552 {
 	public:
 		TextToRender() {}
 		TextToRender(shared_ptr<ofxSmartFont> fontIn) { font = fontIn; }
-		void draw(int x, int y) {
-			if (font != nullptr) {
-				ofPushStyle();
-				ofSetColor(color);
-				font->draw(text, x, y);
-				ofPopStyle();
-			}
-		}
+		void draw(int x, int y);
 		void draw() {
 			draw(point.x, point.y);
 		}
