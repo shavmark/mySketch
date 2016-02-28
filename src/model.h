@@ -303,34 +303,37 @@ namespace Software2552 {
 	// with or w/o font
 	class Text : public Graphic {
 	public:
-		Text() : Graphic() { str = "default"; }
-		Text(const string&textIn): Graphic() { str = textIn; }
+		Text() : Graphic() { str = "default";  }
+		Text(const string&textIn) : Graphic() { str = textIn;  }
 		bool read(const Json::Value &data);
 
-		Wrapper<TextToRender> getPlayer() {
-			Wrapper<TextToRender> newtext(id());
-			newtext.setFont(getFont());
-			newtext.setStart(getStartingPoint());
-			newtext.setColor(getForeground());
-			newtext.setText(str);
-			return newtext;
+		shared_ptr<Wrapper<TextToRender>> getPlayer() {
+			if (shared == nullptr) {
+				shared = std::make_shared<Wrapper<TextToRender>>(id());
+			}
+			shared->setFont(getFont());
+			shared->setStart(getStartingPoint());
+			shared->setColor(getForeground());
+			shared->setText(str);
+			return shared;
 		}
 
 		string& getText() { return str; }
 	private:
 		string str;
+		shared_ptr<Wrapper<TextToRender>> shared;
 	};
 	class Paragraph : public Text {
 	public:
 		Paragraph();
 		bool read(const Json::Value &data);
 		//  return a properly built player
-		Wrapper<ofxParagraph>& getPlayer() {
-			paragraphData.setDuration(getDuration());
-			paragraphData.setText(getText());
-			paragraphData.setFont(getFont());
-			paragraphData.setColor(getForeground());
-			paragraphData.setPosition(getStartingPoint().x, getStartingPoint().y);
+		shared_ptr<Wrapper<ofxParagraph>> getPlayer() {
+			paragraphData->setDuration(getDuration());
+			paragraphData->setText(getText());
+			paragraphData->setFont(getFont());
+			paragraphData->setColor(getForeground());
+			paragraphData->setPosition(getStartingPoint().x, getStartingPoint().y);
 			return paragraphData;
 		}
 
@@ -345,7 +348,7 @@ namespace Software2552 {
 
 
 	private:
-		Wrapper<ofxParagraph> paragraphData; 
+		shared_ptr<Wrapper<ofxParagraph>> paragraphData;
 	};
 
 
@@ -377,10 +380,14 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 		float  getVolume() { return volume; }
 		// build the player bugbug make Wrappr a smart pointer
-		Wrapper<ofSoundPlayer> getPlayer() {
-			Wrapper<ofSoundPlayer> player(id());
-			player.setVolume(getVolume());
-			return player;
+		shared_ptr<Wrapper<ofSoundPlayer>> getPlayer() {
+			if (shared == nullptr) {
+				shared = std::make_shared<Wrapper<ofSoundPlayer>>(id());
+			}
+			shared->setDuration(getDuration());
+			shared->setLocation(getLocation());
+			shared->setVolume(getVolume());
+			return shared;
 		}
 #if _DEBUG
 		// echo object (debug only)
@@ -394,20 +401,24 @@ namespace Software2552 {
 #endif // _DEBUG
 	private:
 		float     volume;
-		
+		shared_ptr<Wrapper<ofSoundPlayer>> shared;
+
 	};
 	
 	class Video : public Audio {
 	public:
 
-		// build the player bugbug make Wrappr a smart pointer
-		Wrapper<ofVideoPlayer> getPlayer() {
-			Wrapper<ofVideoPlayer> player(id());
-			player.setVolume(getVolume());
-			player.setDuration(getDuration());
-			player.setLocation(getLocation());
-			return player;
+		// build the player 
+		shared_ptr<Wrapper<ofVideoPlayer>> getPlayer() {
+			if (shared == nullptr) {
+				shared = std::make_shared<Wrapper<ofVideoPlayer>>(id());
+			}
+			shared->setDuration(getDuration());
+			shared->setLocation(getLocation());
+			shared->setVolume(getVolume());
+			return shared;
 		}
+
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -417,6 +428,8 @@ namespace Software2552 {
 
 #endif // _DEBUG
 	private:
+		shared_ptr<Wrapper<ofVideoPlayer>> shared;
+
 	};
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
 	class Character : public Video {

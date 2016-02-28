@@ -41,6 +41,7 @@ namespace Software2552 {
 
 	void Timeline::draw() {
 		// Story does not draw, its just data
+		
 		enumerate(Draw);
 	};
 	// enumerate and call passed function

@@ -14,23 +14,23 @@ namespace Software2552 {
 
 		template<typename T> void DrawingTools::update(GraphicID ID, T& v) {
 			for (auto& t : v) {
-				if (t.id() == ID) {
-					t.update();
+				if (t->id() == ID) {
+					t->update();
 				}
 			}
 		}
 		// a valid x and y are required to use this helper
 		template<typename T> void DrawingTools::draw(GraphicID ID, T& v, int x, int y) {
 			for (auto& t : v) {
-				if (t.id() == ID) {
-					t.draw(x, y);
+				if (t->id() == ID) {
+					t->draw(x, y);
 				}
 			}
 		}
 		template<typename T> void DrawingTools::removePlayers(GraphicID ID, T& v) {
 			T::iterator i = v.begin();
 			while (i != v.end()) {
-				if (!i->id() == ID) {
+				if (!(*i)->id() == ID) {
 					i = v.erase(i);
 				}
 				else {
@@ -40,22 +40,28 @@ namespace Software2552 {
 		}
 
 		// add (and setup) a video player
-		void DrawingTools::setup(Wrapper<ofVideoPlayer> &player) {
-			if (player.load(player.getLocation())) {
-				player.play();
+		void DrawingTools::setup(shared_ptr<Wrapper<ofVideoPlayer>> player) {
+			if (player->load(player->getLocation())) {
+				player->play();
 				videoPlayers.push_back(player);
 			}
 			else {
-				logErrorString("add Player");
+				logErrorString("add video Player");
 			}
 		}
-		void setup(const Wrapper<ofxParagraph> &player) {
+		void setup(shared_ptr< Wrapper<ofxParagraph>> player) {
 			paragraphPlayers.push_back(player);
 		}
-		void setup(const Wrapper<ofSoundPlayer> &player) {
-			audioPlayers.push_back(player);
+		void setup(shared_ptr< Wrapper<ofSoundPlayer>> player) {
+			if (player->load(player->getLocation())) {
+				player->play();
+				audioPlayers.push_back(player);
+			}
+			else {
+				logErrorString("add sound Player");
+			}
 		}
-		void setup(const Wrapper<TextToRender> &player) {
+		void setup(shared_ptr<Wrapper<TextToRender>> player) {
 			textPlayers.push_back(player);
 		}
 
@@ -65,10 +71,10 @@ namespace Software2552 {
 		ofLight	 light;
 		ofCamera camera;
 		//bugbug at some point make these shared_ptr to avoid coping data
-		vector<Wrapper<ofVideoPlayer>> videoPlayers;
-		vector<Wrapper<ofxParagraph>> paragraphPlayers;
-		vector<Wrapper<TextToRender>> textPlayers;
-		vector<Wrapper<ofSoundPlayer>> audioPlayers;
+		vector<shared_ptr<Wrapper<ofVideoPlayer>>> videoPlayers;
+		vector<shared_ptr<Wrapper<ofxParagraph>>> paragraphPlayers;
+		vector<shared_ptr<Wrapper<TextToRender>>> textPlayers;
+		vector<shared_ptr<Wrapper<ofSoundPlayer>>> audioPlayers;
 	};
 
 	// drawing related items start here

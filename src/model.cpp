@@ -365,7 +365,7 @@ namespace Software2552 {
 		return true;
 	}
 	Paragraph::Paragraph() :Text() {
-		paragraphData.set(id());
+		paragraphData = std::make_shared<Wrapper<ofxParagraph>>(id());
 	}
 	// return true if text read
 	bool Text::read(const Json::Value &data) {
@@ -388,20 +388,20 @@ namespace Software2552 {
 		string alignment; // paragraph is a data type in this usage
 
 		if (READINT(indent, data)) {
-			paragraphData.setIndent(indent);
+			paragraphData->setIndent(indent);
 		}
 		if (READINT(leading, data)) {
-			paragraphData.setLeading(leading);
+			paragraphData->setLeading(leading);
 		}
 		if (READINT(spacing, data)) {
-			paragraphData.setSpacing(leading);
+			paragraphData->setSpacing(leading);
 		}
 		READSTRING(alignment, data);
 		if (alignment == "center") { //bugbug ignore case
-			paragraphData.setAlignment(ofxParagraph::ALIGN_CENTER);
+			paragraphData->setAlignment(ofxParagraph::ALIGN_CENTER);
 		}
 		else if (alignment == "right") { //bugbug ignore case
-			paragraphData.setAlignment(ofxParagraph::ALIGN_RIGHT);
+			paragraphData->setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
 
 		return textReadIn;
