@@ -12,7 +12,4 @@ namespace Software2552 {
 			ofPopStyle();
 		}
 	}
-
-
-
 }

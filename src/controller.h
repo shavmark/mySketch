@@ -12,10 +12,17 @@ namespace Software2552 {
 		void setup();
 		void update();
 		void draw();
+		void stop() {}
+		void pause() {}
+		void play() {}
+		void fastForward() {}
+		void skip() {}
+		void readStory(const string& path, const string& title);
 	private:
 		template<typename T> void setupTools(T& v);
 		void enumerateSetup(Scene &scene);
 		DrawingTools drawingTools;
+		float longestDelay;
 		
 	};
 

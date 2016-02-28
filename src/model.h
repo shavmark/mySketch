@@ -291,7 +291,7 @@ namespace Software2552 {
 		Text(const string&textIn) : Graphic() { str = textIn;  }
 		bool read(const Json::Value &data);
 
-		shared_ptr<Wrapper<TextToRender>> getPlayer() {
+		shared_ptr<Wrapper<TextToRender>> getPlayer(float blockTime=0) {
 			if (shared == nullptr) {
 				shared = std::make_shared<Wrapper<TextToRender>>(id());
 			}
@@ -300,6 +300,7 @@ namespace Software2552 {
 			shared->setColor(getForeground());
 			shared->setText(str);
 			shared->setDuration(getDuration());
+			shared->setWrapperDuration(blockTime);
 			return shared;
 		}
 
@@ -313,12 +314,13 @@ namespace Software2552 {
 		Paragraph();
 		bool read(const Json::Value &data);
 		//  return a properly built player
-		shared_ptr<Wrapper<ofxParagraph>> getPlayer() {
+		shared_ptr<Wrapper<ofxParagraph>> getPlayer(float blockTime=0) {
 			paragraphData->setDuration(getDuration());
 			paragraphData->setText(getText());
 			paragraphData->setFont(getFont());
 			paragraphData->setColor(getForeground());
 			paragraphData->setPosition(getStartingPoint().x, getStartingPoint().y);
+			paragraphData->setWrapperDuration(blockTime);
 			return paragraphData;
 		}
 
@@ -365,13 +367,14 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 		float  getVolume() { return volume; }
 		// build the player bugbug make Wrappr a smart pointer
-		shared_ptr<Wrapper<ofSoundPlayer>> getPlayer() {
+		shared_ptr<Wrapper<ofSoundPlayer>> getPlayer(float blockTime=0) {
 			if (shared == nullptr) {
 				shared = std::make_shared<Wrapper<ofSoundPlayer>>(id());
 			}
 			shared->setDuration(getDuration());
 			shared->setLocation(getLocation());
 			shared->setVolume(getVolume());
+			shared->setWrapperDuration(blockTime);
 			return shared;
 		}
 #if _DEBUG
@@ -394,13 +397,14 @@ namespace Software2552 {
 	public:
 
 		// build the player 
-		shared_ptr<Wrapper<ofVideoPlayer>> getPlayer() {
+		shared_ptr<Wrapper<ofVideoPlayer>> getPlayer(float blockTime=0) {
 			if (shared == nullptr) {
 				shared = std::make_shared<Wrapper<ofVideoPlayer>>(id());
 			}
 			shared->setDuration(getDuration());
 			shared->setLocation(getLocation());
 			shared->setVolume(getVolume());
+			shared->setWrapperDuration(blockTime);
 			return shared;
 		}
 
@@ -605,7 +609,7 @@ namespace Software2552 {
 		void Story::trace();
 #endif
 
-		void read();
+		void read(const string& path, const string& title="<title>");
 
 	private:
 		vector<Act> acts;

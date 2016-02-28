@@ -162,12 +162,12 @@ namespace Software2552 {
 			graphics.size() > 0 ||
 			characters.size() > 0;
 	}
-	void Story::read() {
+	void Story::read(const string& path, const string& title) {
 		echo("read a story");
 
-		Act scenes(getSettings(),"main deck");
+		Act scenes(getSettings(), title);
 		// code in the list of items to make into the story here. 
-		scenes.read("json.json");
+		scenes.read(path);
 		acts.push_back(scenes);
 	}
 
