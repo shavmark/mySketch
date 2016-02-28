@@ -20,9 +20,6 @@ namespace Software2552 {
 	template<typename T> void traceVector(T& vec);
 #endif // _DEBUG
 
-	template<typename T> void setupVector(T& vec);
-	template<typename T> void updateVector(T& vec);
-
 	// readJsonValue only if value in json, readJsonValue does not support string due to templatle issues
 	template<typename T> bool readJsonValue(T &value, const Json::Value& data);
 	bool setString(string &value, const Json::Value& data);
@@ -189,6 +186,7 @@ namespace Software2552 {
 			logVerbose(name);
 			logVerbose(notes);
 			logVerbose(ofToString(duration));
+			logVerbose(ofToString(delay));
 		}
 #endif
 
@@ -202,6 +200,7 @@ namespace Software2552 {
 		Color  foregroundColor;
 		Color  backgroundColor;
 		float  duration; // life time of object, 0 means forever
+		float  delay;
 		Point3D startingPoint; // starting point of object for drawing
 	private:
 		void init() {
@@ -262,22 +261,9 @@ namespace Software2552 {
 	class Graphic : public ReferencedItem {
 	public:
 		Graphic();
-		static bool okToRemove(const Graphic& s) {
-			if (!s.duration || s.start < 0) {
-				return false; // no time out ever, or we have not started yet
-			}
-			//bugbug delay not coded in
-			return (ofGetElapsedTimef() - (s.start)) > (s.duration);
-		};
 		
 		bool read(const Json::Value &data);
 
-		void setup() {
-			start = ofGetElapsedTimef();
-		}
-		void update() {
-		}
-		bool okToDraw();
 		GraphicID id() { return myID; }
 		int getWidth() { return width; }
 		int getHeight() { return height; }
@@ -293,8 +279,6 @@ namespace Software2552 {
 #endif // _DEBUG
 	protected:
 		string type; // 2d, 3d, other
-		float start;
-		float delay; // start+delay is the true start
 		int width; 
 		int height;
 	private:
@@ -315,6 +299,7 @@ namespace Software2552 {
 			shared->setStart(getStartingPoint());
 			shared->setColor(getForeground());
 			shared->setText(str);
+			shared->setDuration(getDuration());
 			return shared;
 		}
 
@@ -526,8 +511,6 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
-		void setup();
-		void update();
 
 		// should we wait on this sceen?
 		bool waitOnScene() {
@@ -580,9 +563,6 @@ namespace Software2552 {
 		// read a deck from json (you can also just build one in code)
 		bool read(const string& fileName = "json.json");
 
-		void setup();
-		void update();
-
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
@@ -625,8 +605,6 @@ namespace Software2552 {
 		void Story::trace();
 #endif
 
-		void setup();
-		void update();
 		void read();
 
 	private:

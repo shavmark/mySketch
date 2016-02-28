@@ -70,16 +70,6 @@ namespace Software2552 {
 	}
 #endif // _DEBUG
 
-	template<typename T> void setupVector(T& vec) {
-		for (auto& a : vec) {
-			a.setup();
-		}
-	}
-	template<typename T> void updateVector(T& vec) {
-		for (auto& a : vec) {
-			a.update();
-		}
-	}
 	// read in list of Json values
 	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data)
 	{
@@ -137,15 +127,6 @@ namespace Software2552 {
 		return false;
 	}
 
-	void Scene::setup() {
-		setupVector(audios);
-		setupVector(videos);
-		setupVector(paragraphs);
-		setupVector(images);
-		setupVector(graphics); //bugbug create built in graphics like those in the book ("Smoke")
-		setupVector(characters);
-		setupVector(texts);
-	}
 #if _DEBUG
 	// echo object (debug only) bugbug make debug only
 	void Story::trace() {
@@ -153,12 +134,6 @@ namespace Software2552 {
 		traceVector(acts);
 	}
 #endif
-	void Act::setup() {
-		setupVector(scenes);
-	}
-	void Act::update() {
-		updateVector(scenes); // give all abjects a change at update
-	}
 	bool Act::dataAvailable() {
 		// see if any scenes have any data
 		for (auto& scene : scenes) {
@@ -187,13 +162,6 @@ namespace Software2552 {
 			graphics.size() > 0 ||
 			characters.size() > 0;
 	}
-	void Story::setup() {
-		read();
-		setupVector(acts);
-	};
-	void Story::update() {
-		updateVector(acts);
-	}
 	void Story::read() {
 		echo("read a story");
 
@@ -203,24 +171,6 @@ namespace Software2552 {
 		acts.push_back(scenes);
 	}
 
-	void Scene::update() {
-		// remove all timed out items 
-		audios.erase(std::remove_if(audios.begin(), audios.end(), Graphic::okToRemove), audios.end());
-		videos.erase(std::remove_if(videos.begin(), videos.end(), Graphic::okToRemove), videos.end());
-		characters.erase(std::remove_if(characters.begin(), characters.end(), Graphic::okToRemove), characters.end());
-		images.erase(std::remove_if(images.begin(), images.end(), Graphic::okToRemove), images.end());
-		graphics.erase(std::remove_if(graphics.begin(), graphics.end(), Graphic::okToRemove), graphics.end());
-		paragraphs.erase(std::remove_if(paragraphs.begin(), paragraphs.end(), Graphic::okToRemove), paragraphs.end());
-		texts.erase(std::remove_if(texts.begin(), texts.end(), Graphic::okToRemove), texts.end());
-		updateVector(audios);
-		updateVector(videos);
-		updateVector(paragraphs);
-		updateVector(images);
-		updateVector(graphics);
-		updateVector(characters);
-		updateVector(texts);
-
-	}
 
 	// return true if there is some data 
 	bool ReferencedItem::read(const Json::Value &data) {
@@ -261,17 +211,6 @@ namespace Software2552 {
 		}
 		return true;
 	}
-	bool Graphic::okToDraw() {
-		if (duration == 0) {
-			return true; // always draw
-		}
-		if (start <= 0) {
-			return false; // not started yet
-		}
-		// still going??
-		float f = ofGetElapsedTimef();
-		return start + delay + duration > ofGetElapsedTimef();
-	}
 	// always return true as these are optional items
 	bool Settings::read(const Json::Value &data) {
 		// dumps too much so only enable if there is a bug: ECHOAll(data);
@@ -279,6 +218,7 @@ namespace Software2552 {
 			READSTRING(name, data);
 			READSTRING(notes, data);
 			READFLOAT(duration, data);
+			READFLOAT(delay, data);
 			timelineDate.read(data["timelineDate"]); // date item existed
 			lastUpdateDate.read(data["lastUpdateDate"]); // last time object was updated
 			itemDate.read(data["itemDate"]);
@@ -345,8 +285,6 @@ namespace Software2552 {
 	}
 	Graphic::Graphic() : ReferencedItem() {
 		//bugbug add a pause where time is suspended, add in rew, play, stop etc also
-		start = 0; // force reset to be called to make sure timing is right, 0 means not started
-		delay = 0;
 		height = 0;
 		width = 0;
 		myID = ofGetSystemTimeMicros();
@@ -358,8 +296,6 @@ namespace Software2552 {
 
 		ReferencedItem::read(data);
 		READSTRING(type, data);
-		READFLOAT(duration, data);
-		READFLOAT(delay, data);
 		READFLOAT(width, data);
 		READFLOAT(height, data);
 		return true;
@@ -429,6 +365,7 @@ namespace Software2552 {
 		foregroundColor = rhs.foregroundColor;
 		backgroundColor = rhs.backgroundColor;
 		duration = rhs.duration;
+		delay = 0;
 	}
 
 	bool Scene::read(const Json::Value &data) {

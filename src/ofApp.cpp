@@ -10,7 +10,6 @@
 void ofStoryTellerApp::setup(){
 	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
 	timeline.setup();
-	timeline.trace();
 	//paragraphs.build(ofGetWidth());
 	
 	//ofSetFullscreen(true);

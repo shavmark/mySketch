@@ -6,8 +6,45 @@
 namespace Software2552 {
 	//https://sites.google.com/site/ofauckland/examples/curly-moving-particles code this in soon to learn the cool stuff we can add bugbug
 	//https://github.com/tesseract-ocr/tesseract
+	void DrawingTools::cleanup() {
+		removeExpiredItems(videoPlayers); // make derived classes to do fancy things beyond the scope here
+		removeExpiredItems(paragraphPlayers);
+		removeExpiredItems(textPlayers);
+		removeExpiredItems(audioPlayers);
+	}
 
-	
+	void DrawingTools::setup(shared_ptr<Wrapper<ofVideoPlayer>> player) {
+		if (player->load(player->getLocation())) {
+			player->play();
+			videoPlayers.push_back(player);
+		}
+		else {
+			logErrorString("add video Player");
+		}
+	}
+	void DrawingTools::setup(shared_ptr< Wrapper<ofSoundPlayer>> player) {
+		if (player->load(player->getLocation())) {
+			player->play();
+			audioPlayers.push_back(player);
+		}
+		else {
+			logErrorString("add sound Player");
+		}
+	}
+	void DrawingTools::update() {
+		cleanup();
+
+		update(videoPlayers);
+		update(textPlayers);
+
+	}
+	// draw all items in need of drawing
+	void DrawingTools::draw() {
+		draw(videoPlayers); // make derived classes to do fancy things beyond the scope here
+		draw(paragraphPlayers);
+		draw(textPlayers);
+	}
+
 	// its ok also if Controller passes in an object such as a paragraph to copy in
 	// bugbug move to a text object
 	void Graphics2552::rotateToNormal(ofVec3f normal) {

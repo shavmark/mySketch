@@ -3,34 +3,35 @@
 #include "2552software.h"
 #include "draw.h"
 
-// to do  1. go to smart pointers for lists, then add in time out code in contorller
+// to do  1.  add in time out code in contorller
 
 namespace Software2552 {
 
 	// drawing drawingTools etc, shared across objects
 	class DrawingTools {
 	public:
-		friend class Timeline;
+		//friend class Timeline;
 
-		template<typename T> void DrawingTools::update(GraphicID ID, T& v) {
+		template<typename T> void update(T& v) {
 			for (auto& t : v) {
-				if (t->id() == ID) {
+				if (t->okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
 					t->update();
 				}
 			}
 		}
 		// a valid x and y are required to use this helper
-		template<typename T> void DrawingTools::draw(GraphicID ID, T& v, int x, int y) {
+		template<typename T> void draw(T& v) {
 			for (auto& t : v) {
-				if (t->id() == ID) {
-					t->draw(x, y);
+				if (t->okToDraw()) {
+					t->draw(t->point.x, t->point.y);
 				}
 			}
 		}
-		template<typename T> void DrawingTools::removePlayers(GraphicID ID, T& v) {
+		// remove items that are timed out
+		template<typename T> void removeExpiredItems(T& v) {
 			T::iterator i = v.begin();
 			while (i != v.end()) {
-				if (!(*i)->id() == ID) {
+				if ((*i)->okToRemove()) {
 					i = v.erase(i);
 				}
 				else {
@@ -38,29 +39,17 @@ namespace Software2552 {
 				}
 			}
 		}
-
+		// update all drawing tools that require an update
+		void update();
+		// draw all items in need of drawing
+		void draw();
+		void cleanup();
 		// add (and setup) a video player
-		void DrawingTools::setup(shared_ptr<Wrapper<ofVideoPlayer>> player) {
-			if (player->load(player->getLocation())) {
-				player->play();
-				videoPlayers.push_back(player);
-			}
-			else {
-				logErrorString("add video Player");
-			}
-		}
+		void setup(shared_ptr<Wrapper<ofVideoPlayer>> player);
 		void setup(shared_ptr< Wrapper<ofxParagraph>> player) {
 			paragraphPlayers.push_back(player);
 		}
-		void setup(shared_ptr< Wrapper<ofSoundPlayer>> player) {
-			if (player->load(player->getLocation())) {
-				player->play();
-				audioPlayers.push_back(player);
-			}
-			else {
-				logErrorString("add sound Player");
-			}
-		}
+		void setup(shared_ptr< Wrapper<ofSoundPlayer>> player);
 		void setup(shared_ptr<Wrapper<TextToRender>> player) {
 			textPlayers.push_back(player);
 		}
