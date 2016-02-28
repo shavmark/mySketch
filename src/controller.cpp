@@ -72,21 +72,16 @@ namespace Software2552 {
 	}
 	void Timeline::enumerateDraw(Scene &scene) {
 
-		// not every list can be done with the same template, those are broken out
 		// ofSoundPlayer does not have a draw function
 
 		drawTools(scene.getParagraphs(), drawingTools.paragraphPlayers);
 		drawTools(scene.getVideo(), drawingTools.videoPlayers);
-		
+		drawTools(scene.getTexts(), drawingTools.textPlayers);
+
 		//drawTools(scene.getCharacters(), drawingTools.characterPlayers);
 		//drawTools(scene.getImages(), drawingTools.imagePlayers);
 		//drawTools(scene.getGraphics(), drawingTools.graphicPlayers);
 
-		for (auto& a : scene.getTexts()) {
-			if (a.okToDraw()) {
-				drawingTools.drawText(a.id());
-			}
-		}
 		
 	}
 	void Timeline::enumerateSetup(Scene &scene) {
@@ -94,10 +89,7 @@ namespace Software2552 {
 		setupTools(scene.getVideo());
 		setupTools(scene.getParagraphs());
 		setupTools(scene.getAudio());
-
-		for (auto& a : scene.getTexts()) {
-			drawingTools.setupText(a.id(), a.getText(), a.getFont(), a.getStartingPoint().x, a.getStartingPoint().y, a.getForeground());
-		}
+		setupTools(scene.getTexts());
 
 		for (auto& a : scene.getCharacters()) {
 		}

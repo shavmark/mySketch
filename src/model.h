@@ -1,7 +1,7 @@
 #pragma once
 
 #include "2552software.h"
-#include "model.h"
+#include "draw.h"
 
 // timeline software, json based
 
@@ -306,6 +306,16 @@ namespace Software2552 {
 		Text() : Graphic() { str = "default"; }
 		Text(const string&textIn): Graphic() { str = textIn; }
 		bool read(const Json::Value &data);
+
+		Wrapper<TextToRender> getPlayer() {
+			Wrapper<TextToRender> newtext(id());
+			newtext.setFont(getFont());
+			newtext.setStart(getStartingPoint());
+			newtext.setColor(getForeground());
+			newtext.setText(str);
+			return newtext;
+		}
+
 		string& getText() { return str; }
 	private:
 		string str;

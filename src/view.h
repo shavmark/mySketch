@@ -1,23 +1,11 @@
 #pragma once
 
 #include "2552software.h"
-#include "view.h"
+#include "draw.h"
+
+// to do  1. go to smart pointers for lists, then add in time out code in contorller
 
 namespace Software2552 {
-
-	
-
-	class TextToRender {
-	public:
-		TextToRender() {}
-		TextToRender(shared_ptr<ofxSmartFont> fontIn) { font = fontIn; x = 0; y = 0; }
-		shared_ptr<ofxSmartFont> font;
-		int x;
-		int y;
-		ofColor color;
-		string text;
-		void update() {};
-	};
 
 	// drawing drawingTools etc, shared across objects
 	class DrawingTools {
@@ -67,8 +55,9 @@ namespace Software2552 {
 		void setup(const Wrapper<ofSoundPlayer> &player) {
 			audioPlayers.push_back(player);
 		}
-		void setupText(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, const ofColor& color = ofColor(0, 0, 0));
-		void drawText(GraphicID ID, int x=0, int y = 0);
+		void setup(const Wrapper<TextToRender> &player) {
+			textPlayers.push_back(player);
+		}
 
 		void start() { ofPushStyle(); } // start draw
 		void end() { ofPopStyle(); } // end draw
