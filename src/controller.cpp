@@ -2,8 +2,28 @@
 #include <functional>
 
 namespace Software2552 {
+
 	Timeline::Timeline(){
 	}
+	template<typename T, typename T2> void Timeline::updateTools(T& v, T2 &v2) {
+		for (auto& a : v) {
+			drawingTools.update(a.id(), v2);
+		}
+	}
+	template<typename T, typename T2> void Timeline::removeTools(T& v, T2 &v2) {
+		for (auto& a : v) {
+			drawingTools.removePlayers(a.id(), v2);
+		}
+	}
+	// if x or y are < 0 then the current x,y are used
+	template<typename T, typename T2> void Timeline::drawTools(T& v, T2 &v2) {
+		for (auto& a : v) {
+			if (a.okToDraw()) {
+				drawingTools.draw(a.id(), v2, a.getStartingPoint().x, a.getStartingPoint().y);
+			}
+		}
+	}
+
 	void Timeline::setup() { 
 		story.setup();
 		enumerate(Setup);
@@ -45,46 +65,44 @@ namespace Software2552 {
 		}
 	}
 	void Timeline::enumerateDraw(Scene &scene) {
+
+		// not every list can be done with the same template, those are broken out
+		// ofSoundPlayer does not have a draw function
+
+		drawTools(scene.getParagraphs(), drawingTools.paragraphPlayers);
+		drawTools(scene.getVideo(), drawingTools.videoPlayers);
 		
-		for (auto& a : scene.getParagraphs()) {
-			if (a.okToDraw()) {
-				drawingTools.drawParagraph(a.id());
-			}
-		}
+		//drawTools(scene.getCharacters(), drawingTools.characterPlayers);
+		//drawTools(scene.getImages(), drawingTools.imagePlayers);
+		//drawTools(scene.getGraphics(), drawingTools.graphicPlayers);
+
 		for (auto& a : scene.getTexts()) {
 			if (a.okToDraw()) {
 				drawingTools.drawText(a.id());
 			}
 		}
-		for (auto& a : scene.getAudio()) {
-		}
-		for (auto& a : scene.getVideo()) {
-			if (a.okToDraw()) {
-				drawingTools.drawVideo(a.id(), a.getStartingPoint().x, a.getStartingPoint().y);
-			}
-		}
 		
-		for (auto& a : scene.getCharacters()) {
-		}
-		for (auto& a : scene.getImages()) {
-		}
-		for (auto& a : scene.getGraphics()) {
-		}
 	}
+	// helper
+	void Timeline::setupParagraph(Paragraph& p, DrawingTools& tools) {
+		ofxParagraph::Alignment align = ofxParagraph::ALIGN_LEFT;
+		if (p.getAlignment() == "center") { //bugbug ignore case
+			align = ofxParagraph::ALIGN_CENTER;
+		}
+		else if (p.getAlignment() == "right") { //bugbug ignore case
+			align = ofxParagraph::ALIGN_RIGHT;
+		}
+
+		tools.setupParagraph(p.id(), p.getText(), p.getFont(), p.getStartingPoint().x,
+			p.getStartingPoint().y, p.getWidth(), p.getForeground(), align, p.getIndent(), 
+			p.getLeading(), p.getSpacing());
+	}
+
 	void Timeline::enumerateSetup(Scene &scene) {
 		
 		// setup is called in Story for each object, calls here do updates for DrawingTools etc
 		for (auto& a : scene.getParagraphs()) {
-			ofxParagraph::Alignment align = ofxParagraph::ALIGN_LEFT;
-			if (a.getAlignment() == "center") { //bugbug ignore case
-				align = ofxParagraph::ALIGN_CENTER;
-			}
-			else if (a.getAlignment() == "right") { //bugbug ignore case
-				align = ofxParagraph::ALIGN_RIGHT;
-			}
-
-			drawingTools.setupParagraph(a.id(), a.getText(), a.getFont(), a.getStartingPoint().x,
-				a.getStartingPoint().y, a.getWidth(), a.getForeground(), align, a.getIndent(), a.getLeading(), a.getSpacing());
+			setupParagraph(a, drawingTools);
 		}
 		for (auto& a : scene.getTexts()) {
 			drawingTools.setupText(a.id(), a.getText(), a.getFont(), a.getStartingPoint().x, a.getStartingPoint().y, a.getForeground());
@@ -102,26 +120,19 @@ namespace Software2552 {
 		for (auto& a : scene.getGraphics()) {
 		}
 	}
+	// tie data to drawing objects
 	void Timeline::enumerateUpdate(Scene &scene) {
 
 		// update is called in Story for each object, calls here do updates for DrawingTools etc
-		for (auto& a : scene.getTexts()) {
-		}
+		updateTools(scene.getTexts(), drawingTools.textPlayers);
+		updateTools(scene.getVideo(), drawingTools.videoPlayers);
 
-		for (auto& a : scene.getAudio()) {
-		}
-		for (auto& a : scene.getParagraphs()) {
-			drawingTools.updateParagraph(a.id());
-		}
-		for (auto& a : scene.getVideo()) {
-			drawingTools.updateVideo(a.id());
-		}
-		for (auto& a : scene.getCharacters()) {
-		}
-		for (auto& a : scene.getImages()) {
-		}
-		for (auto& a : scene.getGraphics()) {
-		}
+		// ofSoundPlayer ofxParagraph and do not have an update funciton
+
+		//updateTools(scene.getCharacters(), drawingTools.characterPlayers);
+		//updateTools(scene.getImages(), drawingTools.imagePlayers);
+		//updateTools(scene.getGraphics(), drawingTools.graphicPlayers);
+
 	}
 
 	// remove items that have timed out
@@ -134,24 +145,13 @@ namespace Software2552 {
 				// the data is timed out
 				if (!it->dataAvailable()) {
 					//drawingTools.removeVector(it->getParagraphs(), 0);
-					for (auto& a : it->getVideo()) {
-						drawingTools.removeVideoPlayers(a.id());
-					}
-					for (auto& a : it->getParagraphs()) {
-						drawingTools.removeParagraphPlayers(a.id());
-					}
-						
-					//lef off here for (auto& a : it->getAudio()) {
-						//drawingTools.remove(drawingTools.audioPlayers, a.id());
-				//	}
-					for (auto& a : it->getTexts()) {
-					}
-
-					//deleteVector(it->getAudio());
-					//deleteVector(it->getVideo());
-					//deleteVector(it->getCharacters());
-					//deleteVector(it->getImages());
-					//deleteVector(it->getGraphics());
+					removeTools(it->getVideo(), drawingTools.videoPlayers);
+					removeTools(it->getTexts(), drawingTools.textPlayers);
+					removeTools(it->getParagraphs(), drawingTools.paragraphPlayers);
+					removeTools(it->getAudio(), drawingTools.audioPlayers);
+					//removeTools(scene.getCharacters(), drawingTools.characterPlayers);
+					//removeTools(scene.getImages(), drawingTools.imagePlayers);
+					//removeTools(scene.getGraphics(), drawingTools.graphicPlayers);
 
 					PlayItem item(it->getKey());
 					act.getPlayList().remove(item);

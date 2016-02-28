@@ -27,36 +27,50 @@ namespace Software2552 {
 		int y;
 		ofColor color;
 		string text;
+		void update() {};
 	};
 
 	// drawing drawingTools etc, shared across objects
 	class DrawingTools {
 	public:
-		template<typename T> void update(GraphicID ID, T& vec);
-		template<typename T> void draw(GraphicID ID, T& vec);
-		template<typename T> void draw(GraphicID ID, T& vec, int x, int y);
-		template<typename T> void removePlayers(GraphicID ID, T& vec);
+		friend class Timeline;
 
-		void removePlayers(GraphicID ID);
+		template<typename T> void DrawingTools::update(GraphicID ID, T& v) {
+			for (auto& t : v) {
+				if (t.id() == ID) {
+					t.update();
+				}
+			}
+		}
+		// a valid x and y are required to use this helper
+		template<typename T> void DrawingTools::draw(GraphicID ID, T& v, int x, int y) {
+			for (auto& t : v) {
+				if (t.id() == ID) {
+					t.draw(x, y);
+				}
+			}
+		}
+		template<typename T> void DrawingTools::removePlayers(GraphicID ID, T& v) {
+			T::iterator i = v.begin();
+			while (i != v.end()) {
+				if (!i->id() == ID) {
+					i = v.erase(i);
+				}
+				else {
+					++i;
+				}
+			}
+		}
+
+
 		// remove item from a list
-		void removeVideoPlayers(GraphicID ID);
 		void setupVideoPlayer(GraphicID ID, float vol, const string&location);
-		// draw all videos with this ID
-		void drawVideo(GraphicID ID, int x, int y);
-		void updateVideo(GraphicID ID);
 
 		// Paragraph is a special case is its a 3rd party too
-		void removeParagraphPlayers(GraphicID ID);
-		void updateParagraph(GraphicID ID) {		}
 		void setupParagraph(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, int width=620, const ofColor& color=ofColor(0,0,0), ofxParagraph::Alignment align= ofxParagraph::ALIGN_LEFT, int indent= 40, int leading= 16, int spacing=6);
-		void drawParagraph(GraphicID ID);
-		void drawParagraph(GraphicID ID, int x, int y);
 
-		void removeTextPlayers(GraphicID ID);
-		void updateText(GraphicID ID) {		}
 		void setupText(GraphicID ID, const string& text, shared_ptr<ofxSmartFont> font, int x, int y, const ofColor& color = ofColor(0, 0, 0));
-		void drawText(GraphicID ID);
-		void drawText(GraphicID ID, int x, int y);
+		void drawText(GraphicID ID, int x=0, int y = 0);
 
 		void start() { ofPushStyle(); } // start draw
 		void end() { ofPopStyle(); } // end draw
@@ -66,6 +80,7 @@ namespace Software2552 {
 		vector<Wrapper<ofVideoPlayer>> videoPlayers;
 		vector<Wrapper<ofxParagraph>> paragraphPlayers;
 		vector<Wrapper<TextToRender>> textPlayers;
+		vector<Wrapper<ofSoundPlayer>> audioPlayers;
 	};
 
 	// drawing related items start here

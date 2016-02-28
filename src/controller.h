@@ -18,6 +18,10 @@ namespace Software2552 {
 		void draw();
 		void removeExpiredScenes();
 	private:
+		template<typename T, typename T2> void updateTools(T& v, T2 &v2);
+		template<typename T, typename T2> void removeTools(T& v, T2 &v2);
+		template<typename T, typename T2> void drawTools(T& v, T2 &v2);
+		void setupParagraph(Paragraph& p, DrawingTools& tools);
 		void enumerateSetup(Scene &scene);
 		void enumerateUpdate(Scene &scene);
 		void enumerateDraw(Scene &scene);
