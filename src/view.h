@@ -8,13 +8,11 @@
 
 namespace Software2552 {
 
-
-
 	// drawing drawingTools etc, shared across objects
 	class DrawingTools {
 	public:
 		DrawingTools() {
-			engines = std::make_shared<GraphicEngines>();
+			engines = nullptr;// std::make_shared<GraphicEngines>();
 		}
 		template<typename T> void update(T& v) {
 			for (auto& t : v) {
@@ -108,12 +106,15 @@ namespace Software2552 {
 		}
 		void start() { ofPushStyle(); } // start draw
 		void end() { ofPopStyle(); } // end draw
-
-		shared_ptr<GraphicEngines> engines;
+		void addEngines(shared_ptr<GraphicEngines> e) {
+			engines->add(e);
+		}
 	private:
 		ofLight	 light;
 		ofCamera camera;
-		
+
+		shared_ptr<GraphicEngines> engines;
+
 		vector<Audio> audioPlayers;
 		vector<Paragraph> paragraphPlayers;
 		vector<Text> textPlayers;

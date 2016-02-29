@@ -153,7 +153,7 @@ namespace Software2552 {
 	// see if any data in need of drawing is present
 	bool Scene::dataAvailable() {
 		return audios.size() > 0 ||
-			getEngine()->videos.get()->size() > 0 ||
+			getEngines()->videos.get()->size() > 0 ||
 			paragraphs.size() > 0 ||
 			images.size() > 0 ||
 			texts.size() > 0 ||
@@ -182,7 +182,6 @@ namespace Software2552 {
 		echo("read a story");
 
 		Act act(getSettings(), title);
-		act.setEngine(engines);
 		// code in the list of items to make into the story here. 
 		act.read(path);
 		acts.push_back(act);
@@ -415,7 +414,7 @@ namespace Software2552 {
 					item.setSettings(getSettings()); // copy default settings into object
 					if (item.read(data["videos"][j])) {
 						// only save if data was read in 
-						getEngine()->videos.add(item);
+						getEngines()->videos.add(item);
 						//videos.get().push_back(item);
 					}
 				}
@@ -453,7 +452,6 @@ namespace Software2552 {
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				Scene scene;
-				scene.setVideos(engines->videos.get());
 				scene.read(json["scenes"][i]);
 				add(scene);
 			}
