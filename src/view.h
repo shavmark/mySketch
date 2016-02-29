@@ -46,10 +46,10 @@ namespace Software2552 {
 
 		}
 
-		template<typename T> float findMaxDelay(T& v) {
+		template<typename T> float findMaxWait(T& v) {
 			float f = 0;
 			for (auto& t : v) {
-				setIfGreater(f, t->getWrapperDuration());
+				setIfGreater(f, t->getWrapperWait());
 			}
 			return f;
 		}
@@ -65,14 +65,20 @@ namespace Software2552 {
 				}
 			}
 		}
-		float getLongestDelay()	{
+		float getLongestWaitTime()	{
 			float f = 0;
 			for (auto& v : videoPlayers) {
-				setIfGreater(f, v->getDuration());
+				// wait life the the movie unless a wait time is already set, allowing json to control wait
+				if (v->getWrapperWait() > 0) {
+					setIfGreater(f, v->getWrapperWait());
+				}
+				else {
+					setIfGreater(f, v->getDuration());
+				}
 			}
-			setIfGreater(f, findMaxDelay(paragraphPlayers));
-			setIfGreater(f, findMaxDelay(textPlayers));
-			setIfGreater(f, findMaxDelay(audioPlayers));
+			setIfGreater(f, findMaxWait(paragraphPlayers));
+			setIfGreater(f, findMaxWait(textPlayers));
+			setIfGreater(f, findMaxWait(audioPlayers));
 			return f;
 		}
 		void stop() {}

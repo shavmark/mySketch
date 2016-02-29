@@ -186,7 +186,7 @@ namespace Software2552 {
 			logVerbose(name);
 			logVerbose(notes);
 			logVerbose(ofToString(duration));
-			logVerbose(ofToString(delay));
+			logVerbose(ofToString(wait));
 		}
 #endif
 
@@ -200,12 +200,13 @@ namespace Software2552 {
 		Color  foregroundColor;
 		Color  backgroundColor;
 		float  duration; // life time of object, 0 means forever
-		float  delay;
+		float  wait;     // time to wait before drawing
 		Point3D startingPoint; // starting point of object for drawing
 	private:
 		void init() {
 			Poco::Timespan totalTime = 1 * 1000 * 1000;
 			duration = 0;
+			wait = 0;
 			foregroundColor.set(0, 0, 255);
 			backgroundColor.set(255, 255, 0);
 		}
@@ -274,7 +275,6 @@ namespace Software2552 {
 			logVerbose(STRINGIFY(Graphic));
 			ReferencedItem::trace();
 			logVerbose(type);
-			logVerbose(ofToString(delay));
 		}
 #endif // _DEBUG
 	protected:
@@ -291,7 +291,7 @@ namespace Software2552 {
 		Text(const string&textIn) : Graphic() { str = textIn;  }
 		bool read(const Json::Value &data);
 
-		shared_ptr<Wrapper<TextToRender>> getPlayer(float blockTime=0) {
+		shared_ptr<Wrapper<TextToRender>> getPlayer(float wait=0) {
 			if (shared == nullptr) {
 				shared = std::make_shared<Wrapper<TextToRender>>(id());
 			}
@@ -300,7 +300,7 @@ namespace Software2552 {
 			shared->setColor(getForeground());
 			shared->setText(str);
 			shared->setDuration(getDuration());
-			shared->setWrapperDuration(blockTime);
+			shared->setWaitTime(wait);
 			return shared;
 		}
 
@@ -314,13 +314,13 @@ namespace Software2552 {
 		Paragraph();
 		bool read(const Json::Value &data);
 		//  return a properly built player
-		shared_ptr<Wrapper<ofxParagraph>> getPlayer(float blockTime=0) {
+		shared_ptr<Wrapper<ofxParagraph>> getPlayer(float wait =0) {
 			paragraphData->setDuration(getDuration());
 			paragraphData->setText(getText());
 			paragraphData->setFont(getFont());
 			paragraphData->setColor(getForeground());
 			paragraphData->setPosition(getStartingPoint().x, getStartingPoint().y);
-			paragraphData->setWrapperDuration(blockTime);
+			paragraphData->setWaitTime(wait);
 			return paragraphData;
 		}
 
@@ -367,14 +367,14 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 		float  getVolume() { return volume; }
 		// build the player bugbug make Wrappr a smart pointer
-		shared_ptr<Wrapper<ofSoundPlayer>> getPlayer(float blockTime=0) {
+		shared_ptr<Wrapper<ofSoundPlayer>> getPlayer(float wait =0) {
 			if (shared == nullptr) {
 				shared = std::make_shared<Wrapper<ofSoundPlayer>>(id());
 			}
 			shared->setDuration(getDuration());
 			shared->setLocation(getLocation());
 			shared->setVolume(getVolume());
-			shared->setWrapperDuration(blockTime);
+			shared->setWaitTime(wait);
 			return shared;
 		}
 #if _DEBUG
@@ -397,14 +397,14 @@ namespace Software2552 {
 	public:
 
 		// build the player 
-		shared_ptr<Wrapper<ofVideoPlayer>> getPlayer(float blockTime=0) {
+		shared_ptr<Wrapper<ofVideoPlayer>> getPlayer(float wait =0) {
 			if (shared == nullptr) {
 				shared = std::make_shared<Wrapper<ofVideoPlayer>>(id());
 			}
 			shared->setDuration(getDuration());
 			shared->setLocation(getLocation());
 			shared->setVolume(getVolume());
-			shared->setWrapperDuration(blockTime);
+			shared->setWaitTime(wait);
 			return shared;
 		}
 
@@ -503,23 +503,16 @@ namespace Software2552 {
 	public:
 		Scene(const string&keynameIn) : SettingsAndTitle() {
 			keyname = keynameIn;
-			wait = false;
 		}
 		Scene() : SettingsAndTitle() {
-			wait = false;
 		}
 		Scene(const Settings& defaults) : SettingsAndTitle(defaults) {
-			wait = false;
 		}
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		bool read(const Json::Value &data);
 		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
 
-		// should we wait on this sceen?
-		bool waitOnScene() {
-			return dataAvailable() && wait;
-		}
 		vector <Paragraph>& getParagraphs() {	return paragraphs;}
 		vector <Text>& getTexts() { return texts; }
 		vector <Audio>& getAudio() { return audios; }
@@ -555,7 +548,6 @@ namespace Software2552 {
 		vector <Paragraph>  paragraphs; 
 		vector <Text>  texts;
 		string keyname;
-		bool   wait;
 	private:
 	};
 

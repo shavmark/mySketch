@@ -218,7 +218,7 @@ namespace Software2552 {
 			READSTRING(name, data);
 			READSTRING(notes, data);
 			READFLOAT(duration, data);
-			READFLOAT(delay, data);
+			READFLOAT(wait, data);
 			timelineDate.read(data["timelineDate"]); // date item existed
 			lastUpdateDate.read(data["lastUpdateDate"]); // last time object was updated
 			itemDate.read(data["itemDate"]);
@@ -365,7 +365,7 @@ namespace Software2552 {
 		foregroundColor = rhs.foregroundColor;
 		backgroundColor = rhs.backgroundColor;
 		duration = rhs.duration;
-		delay = 0;
+		wait = rhs.wait;
 	}
 
 	bool Scene::read(const Json::Value &data) {
@@ -378,7 +378,6 @@ namespace Software2552 {
 					int i = 1;
 				}
 
-				READBOOL(wait, data);
 				createTimeLineItems<Audio>(audios, data, "audios");
 				createTimeLineItems<Video>(videos, data, "videos");
 				createTimeLineItems<Paragraph>(paragraphs, data, "paragraphs");

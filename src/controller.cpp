@@ -4,12 +4,12 @@
 namespace Software2552 {
 	template<typename T> void Timeline::setupTools(T& v) {
 		for (auto& a : v) {
-			drawingTools.setup(a.getPlayer(-longestDelay));
+			drawingTools.setup(a.getPlayer(longestWaitTime));
 		}
 	}
 
 	Timeline::Timeline(){
-		longestDelay = 0;
+		longestWaitTime = 0;
 	}
 	void Timeline::enumerateSetup(Scene &scene) {
 
@@ -26,7 +26,7 @@ namespace Software2552 {
 		}
 
 		// find the longest duration to be added to the next scene (duration of 0 does not block)
-		longestDelay += drawingTools.getLongestDelay(); // add it to subsequent items
+		longestWaitTime += drawingTools.getLongestWaitTime(); // add it to subsequent items
 	}
 	void Timeline::readStory(const string& path, const string& title) {
 		// read in story then let those objects go free as they are set in enumerate(Setup)

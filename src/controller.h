@@ -22,7 +22,7 @@ namespace Software2552 {
 		template<typename T> void setupTools(T& v);
 		void enumerateSetup(Scene &scene);
 		DrawingTools drawingTools;
-		float longestDelay;
+		float longestWaitTime;
 		
 	};
 
