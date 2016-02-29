@@ -20,7 +20,7 @@ namespace Software2552 {
 		}
 		template<typename T> void startReadHead(T& v) {
 			for (auto& t : v) {
-				t->startReadHead();
+				t->wrapperPlay();
 			}
 		}
 		// a valid x and y are required to use this helper
@@ -44,6 +44,11 @@ namespace Software2552 {
 				}
 			}
 
+		}
+		template<typename T> void pause(T& v) {
+			for (auto& player : v) {
+				player->wrapperPause();
+			}
 		}
 
 		template<typename T> float findMaxWait(T& v) {
@@ -81,11 +86,8 @@ namespace Software2552 {
 			setIfGreater(f, findMaxWait(audioPlayers));
 			return f;
 		}
-		void stop() {}
-		void pause() {}
+		void pause();
 		void play();
-		void skip() {}
-		void fastForward() {}
 
 		// update all drawing tools that require an update
 		void update();

@@ -44,11 +44,39 @@ namespace Software2552 {
 		draw(paragraphPlayers);
 		draw(textPlayers);
 	}
+	void DrawingTools::pause() {
+		pause(videoPlayers);
+		pause(paragraphPlayers);
+		pause(textPlayers);
+		pause(audioPlayers);
+		for (auto& player : videoPlayers) {
+			if (!player->isPlaying()) {
+				player->setPaused(true);
+			}
+		}
+		for (auto& player : audioPlayers) {
+			if (!player->isPlaying()) {
+				player->setPaused(true);
+			}
+		}
+	}
+
 	void DrawingTools::play() {
 		startReadHead(videoPlayers);
 		startReadHead(paragraphPlayers);
 		startReadHead(textPlayers);
 		startReadHead(audioPlayers);
+		for (auto& player : videoPlayers) {
+			if (player->isPlaying()) {
+				player->setPaused(false);
+			}
+		}
+		for (auto& player : audioPlayers) {
+			if (player->isPlaying()) {
+				player->setPaused(false);
+			}
+		}
+
 	}
 
 	// its ok also if Controller passes in an object such as a paragraph to copy in

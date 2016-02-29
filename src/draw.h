@@ -11,12 +11,14 @@ namespace Software2552 {
 			duration = 0; // 0 is infinte
 			start = 0; // force reset to be called to make sure timing is right, 0 means not started
 			waitTime = 0;
+			paused = false;
 		}
 		Wrapper() : T() {
 			ID = ofGetSystemTimeMicros();
 			duration = 0; // 0 is infinte
 			start = 0; // force reset to be called to make sure timing is right, 0 means not started
 			waitTime = 0;
+			paused = false;
 		}
 		bool operator==(const Wrapper &rhs) {
 			return ID == rhs.ID;
@@ -33,7 +35,23 @@ namespace Software2552 {
 			// example: ElapsedTime = 500, start = 50, wait = 100, duration 10 is (500-(50-100) > 60 is true 
 			return (ofGetElapsedTimef() - (start - waitTime)) > start+duration;
 		}
+		void wrapperPause() {
+			float elapsed = ofGetElapsedTimef();
+			// if beyond wait time 
+			// else hold wait time even after pause
+			if (elapsed - (start + waitTime) > 0) {
+				waitTime = 0; // ignore wait time upon return
+			}
+			paused = true;
+		}
+		void wrapperPlay() {
+			paused = false;
+			startReadHead();
+		}
 		bool okToDraw() {
+			if (paused) {
+				return false;
+			}
 			float elapsed = ofGetElapsedTimef();
 			// example: ElapsedTime = 100, start = 50, wait = 100, duration 10
 			if (elapsed - (start+waitTime) > 0) {
@@ -63,6 +81,7 @@ namespace Software2552 {
 		string location; // url or local path, optional
 		float start;//bugbug this moves to the controller
 		float waitTime; // wait time before drawing starts
+		bool paused;
 	};
 
 
