@@ -9,10 +9,10 @@ namespace Software2552 {
 
 	void DrawingTools::cleanup() {
 		//removeExpiredItems(videoPlayers); // make derived classes to do fancy things beyond the scope here
-		vector<Video>::iterator i = videoPlayers.begin();
-		while (i != videoPlayers.end()) {
+		vector<Video>::iterator i = engines->videos.get()->begin();
+		while (i != engines->videos.get()->end()) {
 			if (i->okToRemove()) {
-				i = videoPlayers.erase(i);
+				i = engines->videos.get()->erase(i);
 			}
 			else {
 				++i;
@@ -24,14 +24,6 @@ namespace Software2552 {
 		removeExpiredItems(audioPlayers);
 	}
 
-	void DrawingTools::setup(Video& video) {
-		if (video.getPlayer().load(video.getLocation())) {
-			videoPlayers.push_back(video);
-		}
-		else {
-			logErrorString("add video Player");
-		}
-	}
 	void DrawingTools::setup(Audio& sound) {
 		if (sound.getPlayer().load(sound.getLocation())) {
 			audioPlayers.push_back(sound);
@@ -43,23 +35,23 @@ namespace Software2552 {
 	void DrawingTools::update() {
 		cleanup();
 
-		start(videoPlayers);// start if needed
+		start(*engines->videos.get());// start if needed
 		start(audioPlayers); // start if needed
 
-		update(videoPlayers);
+		update(*engines->videos.get());
 		update(textPlayers);
 
 	}
 	// draw all items in need of drawing
 	void DrawingTools::draw() {
-		draw(videoPlayers); // make derived classes to do fancy things beyond the scope here
+		draw(*engines->videos.get()); // make derived classes to do fancy things beyond the scope here
 		draw(paragraphPlayers);
 		draw(textPlayers);
 	}
 	void DrawingTools::pause() {
 		pause(paragraphPlayers);
 		pause(textPlayers);
-		for (auto& v : videoPlayers) {
+		for (auto& v : *engines->videos.get()) {
 			if (!v.getPlayer().isPlaying()) {
 				v.pause();
 				v.getPlayer().setPaused(true);
@@ -76,7 +68,7 @@ namespace Software2552 {
 	void DrawingTools::play() {
 		startReadHead(paragraphPlayers);
 		startReadHead(textPlayers);
-		for (auto& v : videoPlayers) {
+		for (auto& v : *engines->videos.get()) {
 			if (v.getPlayer().isPlaying()) {
 				v.startReadHead();
 				v.getPlayer().setPaused(false);

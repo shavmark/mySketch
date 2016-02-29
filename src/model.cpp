@@ -153,20 +153,39 @@ namespace Software2552 {
 	// see if any data in need of drawing is present
 	bool Scene::dataAvailable() {
 		return audios.size() > 0 ||
-			videos.size() > 0 ||
+			getEngine()->videos.get()->size() > 0 ||
 			paragraphs.size() > 0 ||
 			images.size() > 0 ||
 			texts.size() > 0 ||
 			graphics.size() > 0 ||
 			characters.size() > 0;
 	}
+	void VideoEngine::setup(float wait) {
+		for (auto& v : *get()) {
+			v.addWait(wait);
+			if (!v.getPlayer().load(v.getLocation())) {
+				logErrorString("setup video Player");
+			}
+		}
+	}
+	void VideoEngine::add(Video& video, float wait) {
+		video.addWait(wait);
+		if (video.getPlayer().load(video.getLocation())) {
+			get()->push_back(video);
+		}
+		else {
+			logErrorString("add video Player");
+		}
+	}
+
 	void Story::read(const string& path, const string& title) {
 		echo("read a story");
 
-		Act scenes(getSettings(), title);
+		Act act(getSettings(), title);
+		act.setEngine(engines);
 		// code in the list of items to make into the story here. 
-		scenes.read(path);
-		acts.push_back(scenes);
+		act.read(path);
+		acts.push_back(act);
 	}
 
 
@@ -290,7 +309,7 @@ namespace Software2552 {
 		READSTRING(type, data);
 		READFLOAT(width, data);
 		READFLOAT(height, data);
-		READSTRING(location, data);
+		READSTRING(locationPath, data);
 		READFLOAT(volume, data);
 		return true;
 	}
@@ -390,8 +409,17 @@ namespace Software2552 {
 					int i = 1;
 				}
 
+				//createTimeLineItems<Video>(videos.get(), data, "videos");
+				for (Json::ArrayIndex j = 0; j < data["videos"].size(); ++j) {
+					Video item;
+					item.setSettings(getSettings()); // copy default settings into object
+					if (item.read(data["videos"][j])) {
+						// only save if data was read in 
+						getEngine()->videos.add(item);
+						//videos.get().push_back(item);
+					}
+				}
 				createTimeLineItems<Audio>(audios, data, "audios");
-				createTimeLineItems<Video>(videos, data, "videos");
 				createTimeLineItems<Paragraph>(paragraphs, data, "paragraphs");
 				createTimeLineItems<Image>(images, data,"images");
 				createTimeLineItems<Graphic>(graphics, data, "graphics");
@@ -425,6 +453,7 @@ namespace Software2552 {
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				Scene scene;
+				scene.setVideos(engines->videos.get());
 				scene.read(json["scenes"][i]);
 				add(scene);
 			}

@@ -8,10 +8,14 @@
 
 namespace Software2552 {
 
+
+
 	// drawing drawingTools etc, shared across objects
 	class DrawingTools {
 	public:
-
+		DrawingTools() {
+			engines = std::make_shared<GraphicEngines>();
+		}
 		template<typename T> void update(T& v) {
 			for (auto& t : v) {
 				if (t.okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
@@ -73,7 +77,7 @@ namespace Software2552 {
 		}
 		float getLongestWaitTime()	{
 			float f = 0;
-			for (auto& v : videoPlayers) {
+			for (auto& v : *engines->videos.get()) {
 				// wait life the the movie unless a wait time is already set, allowing json to control wait
 				if (v.getWait() > 0) {
 					setIfGreater(f, v.getWait());
@@ -95,7 +99,6 @@ namespace Software2552 {
 		// draw all items in need of drawing
 		void draw();
 		// add (and setup) a video player
-		void setup(Video& video);
 		void setup(Paragraph& player) {
 			paragraphPlayers.push_back(player);
 		}
@@ -105,11 +108,12 @@ namespace Software2552 {
 		}
 		void start() { ofPushStyle(); } // start draw
 		void end() { ofPopStyle(); } // end draw
+
+		shared_ptr<GraphicEngines> engines;
 	private:
 		ofLight	 light;
 		ofCamera camera;
 		
-		vector<Video> videoPlayers;
 		vector<Audio> audioPlayers;
 		vector<Paragraph> paragraphPlayers;
 		vector<Text> textPlayers;

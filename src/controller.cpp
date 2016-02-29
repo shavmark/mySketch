@@ -13,8 +13,7 @@ namespace Software2552 {
 		longestWaitTime = 0;
 	}
 	void Timeline::enumerateSetup(Scene &scene) {
-
-		setup(scene.getVideo());
+		scene.getEngine()->videos.setup(longestWaitTime);
 		setup(scene.getAudio());
 		setup(scene.getParagraphs());
 		setup(scene.getTexts());
@@ -32,6 +31,7 @@ namespace Software2552 {
 	void Timeline::readStory(const string& path, const string& title) {
 		// read in story then let those objects go free as they are set in enumerate(Setup)
 		Story story;
+		story.setEngines(drawingTools.engines);
 		story.read(path, title);
 
 		// create drawing objects for all items in play list, then list the Story free up

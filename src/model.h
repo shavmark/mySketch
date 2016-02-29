@@ -312,7 +312,7 @@ namespace Software2552 {
 		GraphicID id() { return myID; }
 		int getWidth() { return width; }
 		int getHeight() { return height; }
-		string &getLocation() { return location; } 
+		string &getLocation() { return locationPath; }
 		float  getVolume() { return volume; }
 
 #if _DEBUG
@@ -327,7 +327,7 @@ namespace Software2552 {
 		string type; // 2d, 3d, other
 		int width; 
 		int height;
-		string location; // remote or local bugbug maybe make a better name?  not sure
+		string locationPath; // remote or local bugbug maybe make a better name?  not sure
 		ofParameter<float> volume;
 		float start;
 		bool paused;
@@ -476,24 +476,75 @@ namespace Software2552 {
 		string title; // title of deck, slide etc. 
 	};
 
+	class VideoEngine {
+	public:
+		VideoEngine() {
+			videos = nullptr;
+		}
+		VideoEngine(shared_ptr<vector<Video>> vidoesIn) {
+			set(vidoesIn);
+		}
+		void set(shared_ptr<vector<Video>> videosIn=nullptr) {
+			if (videosIn == nullptr) {
+				videos = std::make_shared<vector<Video>>();
+			}
+			else {
+				videos = videosIn;
+			}
+		}
+		shared_ptr<vector<Video>> get() {
+			if (videos == nullptr) {
+				set();
+			}
+			return videos; 
+		}
+		void add(Video& player, float wait=0);
+		void setup(float wait = 0);
+	private:
+		shared_ptr<vector<Video>> videos; // allow for sharing of this data
+	};
+	class GraphicEngines {
+	public:
+		VideoEngine videos;
+	};
 	class Scene : public SettingsAndTitle {
 	public:
 		Scene(const string&keynameIn) : SettingsAndTitle() {
 			keyname = keynameIn;
+			engines = nullptr;
 		}
 		Scene() : SettingsAndTitle() {
+			engines = nullptr;
 		}
 		Scene(const Settings& defaults) : SettingsAndTitle(defaults) {
+			engines = nullptr;
 		}
+		void setEngine(shared_ptr<GraphicEngines> enginesIn = nullptr) {
+			if (enginesIn == nullptr) {
+				engines = std::make_shared<GraphicEngines>();
+			}
+			else {
+				engines = enginesIn;
+			}
+		}
+		shared_ptr<GraphicEngines> getEngine() {
+			if (engines == nullptr) {
+				setEngine();
+			}
+			return engines;
+		}
+
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		bool read(const Json::Value &data);
 		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
-
+		void setVideos(shared_ptr<vector<Video>> v) {
+			getEngine()->videos.set(v);
+		}
 		vector <Paragraph>& getParagraphs() {	return paragraphs;}
 		vector <Text>& getTexts() { return texts; }
 		vector <Audio>& getAudio() { return audios; }
-		vector <Video>& getVideo() { return videos; }
+		shared_ptr<vector<Video>> getVideo() { return getEngine()->videos.get(); }
 		vector <Character>& getCharacters() { return characters; }
 		vector <Image>& getImages() { return images; }
 		vector <Graphic>& getGraphics() { return graphics; }
@@ -507,7 +558,7 @@ namespace Software2552 {
 
 			traceVector(texts);
 			traceVector(audios);
-			traceVector(videos);
+			traceVector(*getEngine()->videos.get());
 			traceVector(paragraphs);
 			traceVector(images);
 			traceVector(graphics);
@@ -517,8 +568,8 @@ namespace Software2552 {
 #endif // _DEBUG
 
 	protected:
+		shared_ptr<GraphicEngines> engines;
 		vector <Audio> audios; // join with ofaudio
-		vector <Video> videos; // join wiht ofvideo
 		vector <Character> characters; // join with vector <Model3D> models;
 		vector <Image> images; //bugbug join with ofImage vector <ofImage> images;
 		vector <Graphic> graphics; // tie to ofX
@@ -555,9 +606,14 @@ namespace Software2552 {
 		Playlist &getPlayList() {
 			return playlist;
 		};
+		void setEngine(shared_ptr<GraphicEngines> e) {
+			engines = e;
+		}
 	private:
 		vector <Scene> scenes;
 		Playlist playlist;
+		shared_ptr<GraphicEngines> engines;
+
 	};
 	
 	// an app can run many Stories
@@ -565,10 +621,14 @@ namespace Software2552 {
 	class Story :public SettingsAndTitle {
 	public:
 		// readJsonValue our own defaults
-		Story(const Settings& defaults, const string& title) : SettingsAndTitle(defaults, title) {}
+		Story(const Settings& defaults, const string& title) : SettingsAndTitle(defaults, title) {
+			engines = nullptr;
+		}
 
 		// get defaults later
-		Story() : SettingsAndTitle() {}
+		Story() : SettingsAndTitle() {
+			engines = nullptr;
+		}
 
 		vector<Act>& getActs() {
 			return acts;
@@ -577,11 +637,14 @@ namespace Software2552 {
 		// echo object (debug only) bugbug make debug only
 		void Story::trace();
 #endif
+		void setEngines(shared_ptr<GraphicEngines> v) {
+			engines = v;
+		}
 
 		void read(const string& path, const string& title="<title>");
 
 	private:
 		vector<Act> acts;
-
+		shared_ptr<GraphicEngines> engines;
 	};
 }

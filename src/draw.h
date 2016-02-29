@@ -1,5 +1,6 @@
 #pragma once
 #include "2552software.h"
+
 namespace Software2552 {
 
 	class TextToRender {
