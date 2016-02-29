@@ -25,16 +25,16 @@ namespace Software2552 {
 	}
 
 	void DrawingTools::setup(Video& video) {
-		if (video.player.load(video.getLocation())) {
+		if (video.getPlayer().load(video.getLocation())) {
 			videoPlayers.push_back(video);
 		}
 		else {
 			logErrorString("add video Player");
 		}
 	}
-	void DrawingTools::setup(shared_ptr< Wrapper<ofSoundPlayer>> player) {
-		if (player->load(player->getLocation())) {
-			audioPlayers.push_back(player);
+	void DrawingTools::setup(Audio& sound) {
+		if (sound.getPlayer().load(sound.getLocation())) {
+			audioPlayers.push_back(sound);
 		}
 		else {
 			logErrorString("add sound Player");
@@ -42,66 +42,50 @@ namespace Software2552 {
 	}
 	void DrawingTools::update() {
 		cleanup();
-		//start(videoPlayers);
-		for (auto& v : videoPlayers) {
-			if (v.okToDraw() && !v.player.isPlaying()) {
-				v.player.play();
-			}
-		}
-		start(audioPlayers);
 
-		//update(videoPlayers);
-		for (auto& v : videoPlayers) {
-			if (v.okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
-				v.player.update();
-			}
-		}
+		start(videoPlayers);// start if needed
+		start(audioPlayers); // start if needed
 
+		update(videoPlayers);
 		update(textPlayers);
 
 	}
 	// draw all items in need of drawing
 	void DrawingTools::draw() {
-		//draw(videoPlayers); // make derived classes to do fancy things beyond the scope here
-		for (auto& v : videoPlayers) {
-			if (v.okToDraw()) {
-				v.player.draw(v.getStartingPoint().x, v.getStartingPoint().y);
-			}
-		}
+		draw(videoPlayers); // make derived classes to do fancy things beyond the scope here
 		draw(paragraphPlayers);
 		draw(textPlayers);
 	}
 	void DrawingTools::pause() {
 		pause(paragraphPlayers);
 		pause(textPlayers);
-		pause(audioPlayers);
 		for (auto& v : videoPlayers) {
-			if (!v.player.isPlaying()) {
+			if (!v.getPlayer().isPlaying()) {
 				v.pause();
-				v.player.setPaused(true);
+				v.getPlayer().setPaused(true);
 			}
 		}
-		for (auto& player : audioPlayers) {
-			if (!player->isPlaying()) {
-				player->setPaused(true);
+		for (auto& a : audioPlayers) {
+			if (!a.getPlayer().isPlaying()) {
+				a.pause();
+				a.getPlayer().setPaused(true);
 			}
 		}
 	}
 
 	void DrawingTools::play() {
-		//startReadHead(videoPlayers);
 		startReadHead(paragraphPlayers);
 		startReadHead(textPlayers);
-		startReadHead(audioPlayers);
 		for (auto& v : videoPlayers) {
-			if (v.player.isPlaying()) {
+			if (v.getPlayer().isPlaying()) {
 				v.startReadHead();
-				v.player.setPaused(false);
+				v.getPlayer().setPaused(false);
 			}
 		}
-		for (auto& player : audioPlayers) {
-			if (player->isPlaying()) {
-				player->setPaused(false);
+		for (auto& v : audioPlayers) {
+			if (v.getPlayer().isPlaying()) {
+				v.startReadHead();
+				v.getPlayer().setPaused(false);
 			}
 		}
 

@@ -16,7 +16,7 @@ namespace Software2552 {
 		void play() { drawingTools.play(); }
 		void readStory(const string& path, const string& title);
 	private:
-		template<typename T> void setupTools(T& v);
+		template<typename T> void setup(T& v);
 		void enumerateSetup(Scene &scene);
 		DrawingTools drawingTools;
 		float longestWaitTime;

@@ -173,6 +173,7 @@ namespace Software2552 {
 		float getDuration() { return duration; }
 		float getWait() { return wait; }
 		void setWait(float waitIn) { wait = waitIn; }
+		void addWait(float waitIn) { wait += waitIn; }
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -339,52 +340,30 @@ namespace Software2552 {
 		Text() : Graphic() { str = "default";  }
 		Text(const string&textIn) : Graphic() { str = textIn;  }
 		bool read(const Json::Value &data);
-
-		shared_ptr<Wrapper<TextToRender>> getPlayer(float wait=0) {
-			if (shared == nullptr) {
-				shared = std::make_shared<Wrapper<TextToRender>>(id());
-			}
-			shared->setFont(getFont());
-			shared->setStart(getStartingPoint());
-			shared->setColor(getForeground());
-			shared->setText(str);
-			shared->setDuration(getDuration());
-			shared->setWaitTime(wait);
-			return shared;
+		TextToRender &getPlayer(float wait = 0) {
+			addWait(wait);
+			return player;
 		}
 
 		string& getText() { return str; }
+
 	private:
 		string str;
-		shared_ptr<Wrapper<TextToRender>> shared;
+		TextToRender player;
 	};
-	class Paragraph : public Text {
+	class Paragraph : public Graphic {
 	public:
 		Paragraph();
 		bool read(const Json::Value &data);
-		//  return a properly built player
-		shared_ptr<Wrapper<ofxParagraph>> getPlayer(float wait =0) {
-			paragraphData->setDuration(getDuration());
-			paragraphData->setText(getText());
-			paragraphData->setFont(getFont());
-			paragraphData->setColor(getForeground());
-			paragraphData->setPosition(getStartingPoint().x, getStartingPoint().y);
-			paragraphData->setWaitTime(wait);
-			return paragraphData;
+		ofxParagraph &getPlayer(float wait = 0) {
+			addWait(wait);
+			return paragraph;
 		}
-
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Paragraph));
-			Graphic::trace();
-			// not a lot of echo here, add if needed
-		}
-#endif // _DEBUG
-
+		string& getText() { return str; }
 
 	private:
-		shared_ptr<Wrapper<ofxParagraph>> paragraphData;
+		string str;
+		ofxParagraph paragraph;
 	};
 
 
@@ -397,43 +376,25 @@ namespace Software2552 {
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
 	class Audio : public Graphic {
 	public:
-		// build the player bugbug make Wrappr a smart pointer
-		shared_ptr<Wrapper<ofSoundPlayer>> getPlayer(float wait =0) {
-			if (shared == nullptr) {
-				shared = std::make_shared<Wrapper<ofSoundPlayer>>(id());
-			}
-			shared->setDuration(getDuration());
-			shared->setLocation(getLocation());
-			shared->setVolume(getVolume());
-			shared->setWaitTime(wait);
-			return shared;
+		bool read(const Json::Value &data);
+		ofSoundPlayer &getPlayer(float wait = 0) {
+			addWait(wait);
+			return player;
 		}
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Audio));
-		}
-
-#endif // _DEBUG
 	private:
-		shared_ptr<Wrapper<ofSoundPlayer>> shared;
 		ofSoundPlayer  player;
 	};
 	
 	class Video : public Graphic {
 	public:
-		ofVideoPlayer player;
-
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Video));
+		bool read(const Json::Value &data);
+		
+		ofVideoPlayer& getPlayer(float wait=0) { 
+			addWait(wait); 
+			return player; 
 		}
-
-#endif // _DEBUG
 	private:
-		shared_ptr<Wrapper<ofVideoPlayer>> shared;
-
+		ofVideoPlayer player;
 	};
 
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now

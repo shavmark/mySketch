@@ -2,9 +2,10 @@
 #include <functional>
 
 namespace Software2552 {
-	template<typename T> void Timeline::setupTools(T& v) {
+	template<typename T> void Timeline::setup(T& v) {
 		for (auto& a : v) {
-			drawingTools.setup(a.getPlayer(longestWaitTime));
+			a.addWait(longestWaitTime);
+			drawingTools.setup(a);
 		}
 	}
 
@@ -13,14 +14,10 @@ namespace Software2552 {
 	}
 	void Timeline::enumerateSetup(Scene &scene) {
 
-		//setupTools(scene.getVideo());
-		for (auto& a : scene.getVideo()) {
-			a.setWait(longestWaitTime);
-			drawingTools.setup(a);
-		}
-		setupTools(scene.getParagraphs());
-		setupTools(scene.getAudio());
-		setupTools(scene.getTexts());
+		setup(scene.getVideo());
+		setup(scene.getAudio());
+		setup(scene.getParagraphs());
+		setup(scene.getTexts());
 
 		for (auto& a : scene.getCharacters()) {
 		}

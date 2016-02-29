@@ -14,21 +14,21 @@ namespace Software2552 {
 
 		template<typename T> void update(T& v) {
 			for (auto& t : v) {
-				if (t->okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
-					t->update();
+				if (t.okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
+					t.getPlayer().update();
 				}
 			}
 		}
 		template<typename T> void startReadHead(T& v) {
 			for (auto& t : v) {
-				t->wrapperPlay();
+				t.play();
 			}
 		}
 		// a valid x and y are required to use this helper
 		template<typename T> void draw(T& v) {
 			for (auto& t : v) {
-				if (t->okToDraw()) {
-					t->draw(t->point.x, t->point.y);
+				if (t.okToDraw()) {
+					t.getPlayer().draw(t.getStartingPoint().x, t.getStartingPoint().y);
 				}
 			}
 		}
@@ -39,23 +39,23 @@ namespace Software2552 {
 		}
 		// start if ready
 		template<typename T> void start(T& v) {
-			for (auto& player : v) {
-				if (player->okToDraw() && !player->isPlaying()) {
-					player->play();
+			for (auto& a : v) {
+				if (a.okToDraw() && !a.getPlayer().isPlaying()) {
+					a.getPlayer().play();
 				}
 			}
 
 		}
 		template<typename T> void pause(T& v) {
 			for (auto& player : v) {
-				player->wrapperPause();
+				player.pause();
 			}
 		}
 
 		template<typename T> float findMaxWait(T& v) {
 			float f = 0;
 			for (auto& t : v) {
-				setIfGreater(f, t->getWrapperWait());
+				setIfGreater(f, t.getWait());
 			}
 			return f;
 		}
@@ -63,7 +63,7 @@ namespace Software2552 {
 		template<typename T> void removeExpiredItems(T& v) {
 			T::iterator i = v.begin();
 			while (i != v.end()) {
-				if ((*i)->okToRemove()) {
+				if (i->okToRemove()) {
 					i = v.erase(i);
 				}
 				else {
@@ -79,7 +79,7 @@ namespace Software2552 {
 					setIfGreater(f, v.getWait());
 				}
 				else {
-					setIfGreater(f, v.getDuration());
+					setIfGreater(f, v.getPlayer().getDuration());
 				}
 			}
 			setIfGreater(f, findMaxWait(paragraphPlayers));
@@ -96,11 +96,11 @@ namespace Software2552 {
 		void draw();
 		// add (and setup) a video player
 		void setup(Video& video);
-		void setup(shared_ptr< Wrapper<ofxParagraph>> player) {
+		void setup(Paragraph& player) {
 			paragraphPlayers.push_back(player);
 		}
-		void setup(shared_ptr< Wrapper<ofSoundPlayer>> player);
-		void setup(shared_ptr<Wrapper<TextToRender>> player) {
+		void setup(Audio& audio);
+		void setup(Text& player) {
 			textPlayers.push_back(player);
 		}
 		void start() { ofPushStyle(); } // start draw
@@ -108,11 +108,11 @@ namespace Software2552 {
 	private:
 		ofLight	 light;
 		ofCamera camera;
-		//bugbug at some point make these shared_ptr to avoid coping data
+		
 		vector<Video> videoPlayers;
-		vector<shared_ptr<Wrapper<ofxParagraph>>> paragraphPlayers;
-		vector<shared_ptr<Wrapper<TextToRender>>> textPlayers;
-		vector<shared_ptr<Wrapper<ofSoundPlayer>>> audioPlayers;
+		vector<Audio> audioPlayers;
+		vector<Paragraph> paragraphPlayers;
+		vector<Text> textPlayers;
 		void cleanup();
 
 	};

@@ -1,7 +1,5 @@
 #include "model.h"
 
-// this is the data model module, it should not contain drawing objects
-
 namespace Software2552 {
 	// helpers
 
@@ -296,8 +294,7 @@ namespace Software2552 {
 		READFLOAT(volume, data);
 		return true;
 	}
-	Paragraph::Paragraph() :Text() {
-		paragraphData = std::make_shared<Wrapper<ofxParagraph>>(id());
+	Paragraph::Paragraph() :Graphic() {
 	}
 	// return true if text read
 	bool Text::read(const Json::Value &data) {
@@ -306,37 +303,46 @@ namespace Software2552 {
 		if (Graphic::read(data)) {
 			// if no text string do not save the defaults
 			// so return true only if a string is found at this point
-			return setString(str, data["text"]["str"]);
+			setString(str, data["text"]["str"]);
+			player.setFont(getFont());
+			player.setColor(getForeground());
+			player.setText(str);
+
 		}
 		return true;
 	}
 	// return true if text read in
 	bool Paragraph::read(const Json::Value &data) {
 		ECHOAll(data);
-		bool textReadIn = Text::read(data);
+		Graphic::read(data);
+		setString(str, data["text"]["str"]);
+		paragraph.setText(str);
 		int indent;
 		int leading;
 		int spacing;
 		string alignment; // paragraph is a data type in this usage
 
 		if (READINT(indent, data)) {
-			paragraphData->setIndent(indent);
+			paragraph.setIndent(indent);
 		}
 		if (READINT(leading, data)) {
-			paragraphData->setLeading(leading);
+			paragraph.setLeading(leading);
 		}
 		if (READINT(spacing, data)) {
-			paragraphData->setSpacing(leading);
+			paragraph.setSpacing(leading);
 		}
 		READSTRING(alignment, data);
 		if (alignment == "center") { //bugbug ignore case
-			paragraphData->setAlignment(ofxParagraph::ALIGN_CENTER);
+			paragraph.setAlignment(ofxParagraph::ALIGN_CENTER);
 		}
 		else if (alignment == "right") { //bugbug ignore case
-			paragraphData->setAlignment(ofxParagraph::ALIGN_RIGHT);
+			paragraph.setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
+		paragraph.setFont(getFont());
+		paragraph.setColor(getForeground());
+		paragraph.setPosition(getStartingPoint().x, getStartingPoint().y);
 
-		return textReadIn;
+		return true;
 	}
 	template<typename T, typename T2> void Scene::createTimeLineItems(T2& vec, const Json::Value &data, const string& key)
 	{
@@ -362,6 +368,16 @@ namespace Software2552 {
 		backgroundColor = rhs.backgroundColor;
 		duration = rhs.duration;
 		wait = rhs.wait;
+	}
+	bool Video::read(const Json::Value &data) {
+		Graphic::read(data);
+		player.setVolume(getVolume());
+		return true;
+	}
+	bool Audio::read(const Json::Value &data) {
+		Graphic::read(data);
+		player.setVolume(getVolume());
+		return true;
 	}
 
 	bool Scene::read(const Json::Value &data) {
