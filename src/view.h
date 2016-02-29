@@ -12,7 +12,7 @@ namespace Software2552 {
 	class DrawingTools {
 	public:
 		DrawingTools() {
-			engines = nullptr;// std::make_shared<GraphicEngines>();
+			engines = std::make_shared<GraphicEngines>();
 		}
 		template<typename T> void update(T& v) {
 			for (auto& t : v) {
@@ -34,11 +34,6 @@ namespace Software2552 {
 				}
 			}
 		}
-		void setIfGreater(float& f1, float f2) {
-			if (f2 > f1) {
-				f1 = f2;
-			}
-		}
 		// start if ready
 		template<typename T> void start(T& v) {
 			for (auto& a : v) {
@@ -54,41 +49,6 @@ namespace Software2552 {
 			}
 		}
 
-		template<typename T> float findMaxWait(T& v) {
-			float f = 0;
-			for (auto& t : v) {
-				setIfGreater(f, t.getWait());
-			}
-			return f;
-		}
-		// remove items that are timed out
-		template<typename T> void removeExpiredItems(T& v) {
-			T::iterator i = v.begin();
-			while (i != v.end()) {
-				if (i->okToRemove()) {
-					i = v.erase(i);
-				}
-				else {
-					++i;
-				}
-			}
-		}
-		float getLongestWaitTime()	{
-			float f = 0;
-			for (auto& v : *engines->videos.get()) {
-				// wait life the the movie unless a wait time is already set, allowing json to control wait
-				if (v.getWait() > 0) {
-					setIfGreater(f, v.getWait());
-				}
-				else {
-					setIfGreater(f, v.getPlayer().getDuration());
-				}
-			}
-			setIfGreater(f, findMaxWait(paragraphPlayers));
-			setIfGreater(f, findMaxWait(textPlayers));
-			setIfGreater(f, findMaxWait(audioPlayers));
-			return f;
-		}
 		void pause();
 		void play();
 
@@ -96,29 +56,19 @@ namespace Software2552 {
 		void update();
 		// draw all items in need of drawing
 		void draw();
-		// add (and setup) a video player
-		void setup(Paragraph& player) {
-			paragraphPlayers.push_back(player);
-		}
-		void setup(Audio& audio);
-		void setup(Text& player) {
-			textPlayers.push_back(player);
-		}
 		void start() { ofPushStyle(); } // start draw
 		void end() { ofPopStyle(); } // end draw
 		void addEngines(shared_ptr<GraphicEngines> e) {
 			engines->add(e);
+		}
+		void setupEngines() {
+			engines->setup();
 		}
 	private:
 		ofLight	 light;
 		ofCamera camera;
 
 		shared_ptr<GraphicEngines> engines;
-
-		vector<Audio> audioPlayers;
-		vector<Paragraph> paragraphPlayers;
-		vector<Text> textPlayers;
-		void cleanup();
 
 	};
 

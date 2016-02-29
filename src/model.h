@@ -389,8 +389,7 @@ namespace Software2552 {
 	public:
 		bool read(const Json::Value &data);
 		
-		ofVideoPlayer& getPlayer(float wait=0) { 
-			addWait(wait); 
+		ofVideoPlayer& getPlayer() { 
 			return player; 
 		}
 	private:
@@ -415,29 +414,6 @@ namespace Software2552 {
 
 #endif // _DEBUG
 
-	};
-
-	// item in a play list
-	class PlayItem {
-	public:
-		PlayItem() {}
-		PlayItem(const string&keynameIn) { keyname = keynameIn; }
-		bool read(const Json::Value &data);
-		bool operator==(const PlayItem& rhs) { return rhs.keyname == keyname; }
-		string &getKeyName() {return keyname;}
-	private:
-		string keyname;
-	};
-	class Playlist  {
-	public:
-		bool read(const Json::Value &data);
-		vector<PlayItem>& plays() { return playList; }
-		void remove(const PlayItem &item) {
-			// remove by name
-			playList.erase(std::remove(playList.begin(), playList.end(), item), playList.end());
-		}
-	private:
-		vector<PlayItem> playList;
 	};
 
 	class SettingsAndTitle {
@@ -476,42 +452,58 @@ namespace Software2552 {
 		string title; // title of deck, slide etc. 
 	};
 
-	class VideoEngine {
-	public:
-		VideoEngine() {
-			videos = nullptr;
-		}
-		VideoEngine(shared_ptr<vector<Video>> vidoesIn) {
-			set(vidoesIn);
-		}
-		void set(shared_ptr<vector<Video>> videosIn=nullptr) {
-			if (videosIn == nullptr) {
-				videos = std::make_shared<vector<Video>>();
-			}
-			else {
-				videos = videosIn;
-			}
-		}
-		shared_ptr<vector<Video>> get() {
-			if (videos == nullptr) {
-				set();
-			}
-			return videos; 
-		}
-		void add(Video& player, float wait=0);
-		void setup(float wait = 0);
-	private:
-		shared_ptr<vector<Video>> videos; // allow for sharing of this data
-	};
 	class GraphicEngines {
 	public:
-		void add(shared_ptr<GraphicEngines> rhs) {
-			for (auto& player : *rhs->videos.get()) {
-				videos.get()->push_back(player);
+		template<typename T> void bumpWait(T& v, float wait) {
+			for (auto& t : v) {
+				t.addWait(wait);
 			}
-			// add the rest
 		}
-		VideoEngine videos;
+		template<typename T> float findMaxWait(T& v) {
+			float f = 0;
+			for (auto& t : v) {
+				setIfGreater(f, t.getWait());
+			}
+			return f;
+		}
+		// remove items that are timed out
+		template<typename T> void removeExpiredItems(T& v) {
+			T::iterator i = v.begin();
+			while (i != v.end()) {
+				if (i->okToRemove()) {
+					i = v.erase(i);
+				}
+				else {
+					++i;
+				}
+			}
+		}
+
+		void setIfGreater(float& f1, float f2) {
+			if (f2 > f1) {
+				f1 = f2;
+			}
+		}
+		void cleanup() {
+			removeExpiredItems(videos); // make derived classes to do fancy things beyond the scope here
+			removeExpiredItems(paragraphs);
+			removeExpiredItems(texts);
+			removeExpiredItems(audios);
+		}
+		bool dataAvailable();
+		void setup(float wait = 0);
+		void add(shared_ptr<GraphicEngines> rhs);
+		void updateWait();
+
+		vector<Video> videos;
+		vector <Audio> audios;
+		vector<Paragraph> paragraphs;
+		vector<Text> texts;
+		vector<Image> images;
+		vector<Graphic> graphics;
+		vector<Character> characters;
+	private:
+		float getLongestWaitTime();
 	};
 	class Scene : public SettingsAndTitle {
 	public:
@@ -545,42 +537,74 @@ namespace Software2552 {
 		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
 
-		vector <Paragraph>& getParagraphs() {	return paragraphs;}
-		vector <Text>& getTexts() { return texts; }
-		vector <Audio>& getAudio() { return audios; }
-		vector <Character>& getCharacters() { return characters; }
-		vector <Image>& getImages() { return images; }
-		vector <Graphic>& getGraphics() { return graphics; }
+		vector <Video>& getVideo() { return getEngines()->videos; }
+		vector <Paragraph>& getParagraphs() {	return getEngines()->paragraphs;}
+		vector <Text>& getTexts() { return getEngines()->texts; }
+		vector <Audio>& getAudio() { return  getEngines()->audios; }
+		vector <Character>& getCharacters() { return getEngines()->characters; }
+		vector <Image>& getImages() { return getEngines()->images; }
+		vector <Graphic>& getGraphics() { return getEngines()->graphics; }
 
-		bool dataAvailable();
 
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			logVerbose(STRINGIFY(Scene));
 
-			traceVector(texts);
-			traceVector(audios);
-			traceVector(*getEngines()->videos.get());
-			traceVector(paragraphs);
-			traceVector(images);
-			traceVector(graphics);
-			traceVector(characters);
+			traceVector(getEngines()->texts);
+			traceVector(getEngines()->audios);
+			traceVector(getEngines()->videos);
+			traceVector(getEngines()->paragraphs);
+			traceVector(getEngines()->images);
+			traceVector(getEngines()->graphics);
+			traceVector(getEngines()->characters);
 		}
 
 #endif // _DEBUG
 
 	protected:
 		shared_ptr<GraphicEngines> engines;
-		vector <Audio> audios; // join with ofaudio
-		vector <Character> characters; // join with vector <Model3D> models;
-		vector <Image> images; //bugbug join with ofImage vector <ofImage> images;
-		vector <Graphic> graphics; // tie to ofX
-		vector <Paragraph>  paragraphs; 
-		vector <Text>  texts;
 		string keyname;
 	private:
 	};
+	// item in a play list
+	class PlayItem {
+	public:
+		PlayItem() {}
+		PlayItem(const string&keynameIn) { keyname = keynameIn; }
+		bool read(const Json::Value &data);
+		bool operator==(const PlayItem& rhs) { return rhs.keyname == keyname; }
+		string &getKeyName() { return keyname; }
+		Scene scene;
+#if _DEBUG
+		void trace() {
+			logVerbose(STRINGIFY(PlayItem));
+			scene.trace();
+		}
+#endif
+
+	private:
+		string keyname;
+	};
+	class Playlist {
+	public:
+		bool read(const Json::Value &data);
+		vector<PlayItem>& plays() { return playList; }
+		void remove(const PlayItem &item) {
+			// remove by name
+			playList.erase(std::remove(playList.begin(), playList.end(), item), playList.end());
+		}
+#if _DEBUG
+		// echo object (debug only) bugbug make debug only
+		void trace() {
+			logVerbose(STRINGIFY(Playlist));
+			traceVector(plays());
+		}
+#endif
+	private:
+		vector<PlayItem> playList;
+	};
+
 
 	// an Act is one json file that contains 1 or more scenes
 	class Act : public SettingsAndTitle {
@@ -594,23 +618,14 @@ namespace Software2552 {
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			logVerbose(STRINGIFY(Act));
-			traceVector(scenes);
+			traceVector(playlist.plays());
 		}
 #endif
 		bool dataAvailable();
-		void add(const Scene &scene) {
-			scenes.push_back(scene);
-		}
-		void remove(const Scene &scene) {
-			// remove by name
-			scenes.erase(std::remove(scenes.begin(), scenes.end(), scene), scenes.end());
-		}
-		vector <Scene>& getScenes() { return scenes; }
 		Playlist &getPlayList() {
 			return playlist;
 		};
 	private:
-		vector <Scene> scenes;
 		Playlist playlist;
 	};
 	
@@ -625,7 +640,16 @@ namespace Software2552 {
 		// get defaults later
 		Story() : SettingsAndTitle() {
 		}
-
+		// get all engines in the Story
+		shared_ptr<GraphicEngines> getEngines() {
+			shared_ptr<GraphicEngines> engines = std::make_shared<GraphicEngines>();
+			for (auto& act : acts) {
+				for (auto& play : act.getPlayList().plays()) {
+					engines->add(play.scene.getEngines());
+				}
+			}
+			return engines;
+		}
 		vector<Act>& getActs() {
 			return acts;
 		}

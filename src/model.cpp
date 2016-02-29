@@ -134,8 +134,8 @@ namespace Software2552 {
 #endif
 	bool Act::dataAvailable() {
 		// see if any scenes have any data
-		for (auto& scene : scenes) {
-			if (scene.dataAvailable()) {
+		for (auto& play : playlist.plays()) {
+			if (play.scene.getEngines()->dataAvailable()) {
 				return true;
 			}
 		}
@@ -151,30 +151,54 @@ namespace Software2552 {
 	}
 
 	// see if any data in need of drawing is present
-	bool Scene::dataAvailable() {
+	bool GraphicEngines::dataAvailable() {
 		return audios.size() > 0 ||
-			getEngines()->videos.get()->size() > 0 ||
+			videos.size() > 0 ||
 			paragraphs.size() > 0 ||
 			images.size() > 0 ||
 			texts.size() > 0 ||
 			graphics.size() > 0 ||
 			characters.size() > 0;
 	}
-	void VideoEngine::setup(float wait) {
-		for (auto& v : *get()) {
+	void GraphicEngines::add(shared_ptr<GraphicEngines> rhs) {
+		for (auto& player : rhs->videos) {
+			videos.push_back(player);
+		}
+		// add the rest
+	}
+
+	float GraphicEngines::getLongestWaitTime() {
+		float f = 0;
+		for (auto& v : videos) {
+			// wait life the the movie unless a wait time is already set, allowing json to control wait
+			if (v.getWait() > 0) {
+				setIfGreater(f, v.getWait());
+			}
+			else {
+				setIfGreater(f, v.getPlayer().getDuration());
+			}
+		}
+		setIfGreater(f, findMaxWait(paragraphs));
+		setIfGreater(f, findMaxWait(texts));
+		setIfGreater(f, findMaxWait(audios));
+		setIfGreater(f, findMaxWait(images));
+		setIfGreater(f, findMaxWait(characters));
+		setIfGreater(f, findMaxWait(graphics));
+		return f;
+	}
+
+	void GraphicEngines::setup(float wait) {
+		for (auto& v : videos) {
 			v.addWait(wait);
 			if (!v.getPlayer().load(v.getLocation())) {
 				logErrorString("setup video Player");
 			}
 		}
-	}
-	void VideoEngine::add(Video& video, float wait) {
-		video.addWait(wait);
-		if (video.getPlayer().load(video.getLocation())) {
-			get()->push_back(video);
-		}
-		else {
-			logErrorString("add video Player");
+		for (auto& a : audios) {
+			a.addWait(wait);
+			if (!a.getPlayer().load(a.getLocation())) {
+				logErrorString("setup audio Player");
+			}
 		}
 	}
 
@@ -184,6 +208,7 @@ namespace Software2552 {
 		Act act(getSettings(), title);
 		// code in the list of items to make into the story here. 
 		act.read(path);
+
 		acts.push_back(act);
 	}
 
@@ -397,7 +422,17 @@ namespace Software2552 {
 		player.setVolume(getVolume());
 		return true;
 	}
-
+	// call after each scene to adjust wait times
+	void GraphicEngines::updateWait() {
+		// get the longest wait for the current scene
+		float wait = getLongestWaitTime();
+		bumpWait(videos, wait);
+		bumpWait(audios, wait);
+		bumpWait(paragraphs, wait);
+		bumpWait(texts, wait);
+		bumpWait(characters, wait);
+		bumpWait(graphics, wait);
+	}
 	bool Scene::read(const Json::Value &data) {
 		ECHOAll(data);
 
@@ -408,22 +443,14 @@ namespace Software2552 {
 					int i = 1;
 				}
 
-				//createTimeLineItems<Video>(videos.get(), data, "videos");
-				for (Json::ArrayIndex j = 0; j < data["videos"].size(); ++j) {
-					Video item;
-					item.setSettings(getSettings()); // copy default settings into object
-					if (item.read(data["videos"][j])) {
-						// only save if data was read in 
-						getEngines()->videos.add(item);
-						//videos.get().push_back(item);
-					}
-				}
-				createTimeLineItems<Audio>(audios, data, "audios");
-				createTimeLineItems<Paragraph>(paragraphs, data, "paragraphs");
-				createTimeLineItems<Image>(images, data,"images");
-				createTimeLineItems<Graphic>(graphics, data, "graphics");
-				createTimeLineItems<Text>(texts, data, "texts");
-				createTimeLineItems<Character>(characters, data, "characters");
+				createTimeLineItems<Video>(getVideo(), data, "videos");				
+				createTimeLineItems<Audio>(getAudio(), data, "audios");
+				createTimeLineItems<Paragraph>(getParagraphs(), data, "paragraphs");
+				createTimeLineItems<Image>(getImages(), data,"images");
+				createTimeLineItems<Graphic>(getGraphics(), data, "graphics");
+				createTimeLineItems<Text>(getTexts(), data, "texts");
+				createTimeLineItems<Character>(getCharacters(), data, "characters");
+				getEngines()->updateWait();
 				return true;
 			}
 		}
@@ -451,9 +478,17 @@ namespace Software2552 {
 
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
-				Scene scene;
-				scene.read(json["scenes"][i]);
-				add(scene);
+				string keyname;
+				if (setString(keyname, json["scenes"][i])) {
+					PlayItem key(keyname);
+					// if a scene is not in the play list do not save it
+					std::vector<PlayItem>::iterator finditem =
+						find(playlist.plays().begin(), playlist.plays().end(), key);
+					if (finditem != playlist.plays().end()) {
+						finditem->scene.read(json["scenes"][i]);
+					}
+				}
+
 			}
 		}
 		catch (std::exception e) {
