@@ -13,7 +13,11 @@ namespace Software2552 {
 	}
 	void Timeline::enumerateSetup(Scene &scene) {
 
-		setupTools(scene.getVideo());
+		//setupTools(scene.getVideo());
+		for (auto& a : scene.getVideo()) {
+			a.setWait(longestWaitTime);
+			drawingTools.setup(a);
+		}
 		setupTools(scene.getParagraphs());
 		setupTools(scene.getAudio());
 		setupTools(scene.getTexts());

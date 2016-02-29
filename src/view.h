@@ -2,6 +2,7 @@
 
 #include "2552software.h"
 #include "draw.h"
+#include "model.h"
 
 // to do  1.  add in time out code in contorller
 
@@ -74,11 +75,11 @@ namespace Software2552 {
 			float f = 0;
 			for (auto& v : videoPlayers) {
 				// wait life the the movie unless a wait time is already set, allowing json to control wait
-				if (v->getWrapperWait() > 0) {
-					setIfGreater(f, v->getWrapperWait());
+				if (v.getWait() > 0) {
+					setIfGreater(f, v.getWait());
 				}
 				else {
-					setIfGreater(f, v->getDuration());
+					setIfGreater(f, v.getDuration());
 				}
 			}
 			setIfGreater(f, findMaxWait(paragraphPlayers));
@@ -94,7 +95,7 @@ namespace Software2552 {
 		// draw all items in need of drawing
 		void draw();
 		// add (and setup) a video player
-		void setup(shared_ptr<Wrapper<ofVideoPlayer>> player);
+		void setup(Video& video);
 		void setup(shared_ptr< Wrapper<ofxParagraph>> player) {
 			paragraphPlayers.push_back(player);
 		}
@@ -108,7 +109,7 @@ namespace Software2552 {
 		ofLight	 light;
 		ofCamera camera;
 		//bugbug at some point make these shared_ptr to avoid coping data
-		vector<shared_ptr<Wrapper<ofVideoPlayer>>> videoPlayers;
+		vector<Video> videoPlayers;
 		vector<shared_ptr<Wrapper<ofxParagraph>>> paragraphPlayers;
 		vector<shared_ptr<Wrapper<TextToRender>>> textPlayers;
 		vector<shared_ptr<Wrapper<ofSoundPlayer>>> audioPlayers;

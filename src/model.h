@@ -171,6 +171,8 @@ namespace Software2552 {
 		const ofColor& getForeground(){ return foregroundColor; }
 		const ofColor& getBackground() { return backgroundColor; }
 		float getDuration() { return duration; }
+		float getWait() { return wait; }
+		void setWait(float waitIn) { wait = waitIn; }
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -264,10 +266,53 @@ namespace Software2552 {
 		Graphic();
 		
 		bool read(const Json::Value &data);
+		// for use with object
+		bool okToRemove() {
+			if (duration == 0) {
+				return false; // no time out ever, or we have not started yet
+			}
+			// example: ElapsedTime = 100, start = 50, wait = 100, duration 10 is (100-(50-100) > 60 is false 
+			// example: ElapsedTime = 500, start = 50, wait = 100, duration 10 is (500-(50-100) > 60 is true 
+			return (ofGetElapsedTimef() - (start - wait)) > start + duration;
+		}
+		void pause() {
+			float elapsed = ofGetElapsedTimef();
+			// if beyond wait time 
+			// else hold wait time even after pause
+			if (elapsed - (start + wait) > 0) {
+				wait = 0; // ignore wait time upon return
+			}
+			paused = true;
+		}
+		void startReadHead() {
+			start = ofGetElapsedTimef(); // set a base line of time
+		}
+
+		void play() {
+			paused = false;
+			startReadHead();
+		}
+		bool okToDraw() {
+			if (paused) {
+				return false;
+			}
+			float elapsed = ofGetElapsedTimef();
+			// example: ElapsedTime = 100, start = 50, wait = 100, duration 10
+			if (elapsed - (start + wait) > 0) {
+				if (duration == 0) {
+					return true; // draw away
+				}
+				// ok to start but only if we are less than duration
+				return (elapsed < start + wait + duration);
+			}
+			return false;
+		}
 
 		GraphicID id() { return myID; }
 		int getWidth() { return width; }
 		int getHeight() { return height; }
+		string &getLocation() { return location; } 
+		float  getVolume() { return volume; }
 
 #if _DEBUG
 		// echo object (debug only)
@@ -281,6 +326,10 @@ namespace Software2552 {
 		string type; // 2d, 3d, other
 		int width; 
 		int height;
+		string location; // remote or local bugbug maybe make a better name?  not sure
+		ofParameter<float> volume;
+		float start;
+		bool paused;
 	private:
 		GraphicID myID;// every graphic item gets a unique ID for deletion and etc
 	};
@@ -341,31 +390,13 @@ namespace Software2552 {
 
 	class Image : public Graphic {
 	public:
-		bool read(const Json::Value &data);
-		string &getLocation() { return location; } // not sure if location works bugbug
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Image));
-
-			Graphic::trace();
-			logVerbose(location);
-		}
-
-#endif // _DEBUG
 	protected:
-		string location; // remote or local bugbug maybe make a better name?  not sure
 
 	};
 
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
-	class Audio : public Image {
+	class Audio : public Graphic {
 	public:
-		Audio() {
-			volume = 5; // 1/2 way
-		}
-		bool read(const Json::Value &data);
-		float  getVolume() { return volume; }
 		// build the player bugbug make Wrappr a smart pointer
 		shared_ptr<Wrapper<ofSoundPlayer>> getPlayer(float wait =0) {
 			if (shared == nullptr) {
@@ -381,38 +412,22 @@ namespace Software2552 {
 		// echo object (debug only)
 		void trace() {
 			logVerbose(STRINGIFY(Audio));
-
-			Image::trace();
-			logVerbose(ofToString(volume));
 		}
 
 #endif // _DEBUG
 	private:
-		float     volume;
 		shared_ptr<Wrapper<ofSoundPlayer>> shared;
-
+		ofSoundPlayer  player;
 	};
 	
-	class Video : public Audio {
+	class Video : public Graphic {
 	public:
-
-		// build the player 
-		shared_ptr<Wrapper<ofVideoPlayer>> getPlayer(float wait =0) {
-			if (shared == nullptr) {
-				shared = std::make_shared<Wrapper<ofVideoPlayer>>(id());
-			}
-			shared->setDuration(getDuration());
-			shared->setLocation(getLocation());
-			shared->setVolume(getVolume());
-			shared->setWaitTime(wait);
-			return shared;
-		}
+		ofVideoPlayer player;
 
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
 			logVerbose(STRINGIFY(Video));
-			Audio::trace();
 		}
 
 #endif // _DEBUG
@@ -420,10 +435,11 @@ namespace Software2552 {
 		shared_ptr<Wrapper<ofVideoPlayer>> shared;
 
 	};
+
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
-	class Character : public Video {
+	class Character : public Graphic {
 	public:
-		Character() : Video(){
+		Character() : Graphic(){
 			type = "2d";
 		}
 		bool read(const Json::Value &data);
@@ -433,7 +449,7 @@ namespace Software2552 {
 		void trace() {
 			logVerbose(STRINGIFY(Character));
 
-			Video::trace();
+			Graphic::trace();
 		}
 
 #endif // _DEBUG

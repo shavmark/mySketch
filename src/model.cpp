@@ -183,15 +183,6 @@ namespace Software2552 {
 		}
 		return false; // some thing must be really wrong to return false as these are optional items
 	}
-	// return true if location found
-	bool Image::read(const Json::Value &data) {
-		ECHOAll(data);
-
-		if (Graphic::read(data)) {
-			return READSTRING(location, data);
-		}
-		return false;
-	}
 	bool Font::read(const Json::Value &data) {
 		ECHOAll(data);
 
@@ -246,7 +237,7 @@ namespace Software2552 {
 	bool Character::read(const Json::Value &data) {
 		ECHOAll(data);
 
-		if (Video::read(data)) {
+		if (Graphic::read(data)) {
 			return true;
 		}
 		return false;
@@ -287,6 +278,9 @@ namespace Software2552 {
 		//bugbug add a pause where time is suspended, add in rew, play, stop etc also
 		height = 0;
 		width = 0;
+		start = 0;
+		paused = false;
+		volume.set("volume", .5, 0, 1);
 		myID = ofGetSystemTimeMicros();
 
 	}
@@ -298,6 +292,8 @@ namespace Software2552 {
 		READSTRING(type, data);
 		READFLOAT(width, data);
 		READFLOAT(height, data);
+		READSTRING(location, data);
+		READFLOAT(volume, data);
 		return true;
 	}
 	Paragraph::Paragraph() :Text() {
@@ -394,16 +390,6 @@ namespace Software2552 {
 		}
 
 		return false;
-	}
-	bool Audio::read(const Json::Value &data) {
-		ECHOAll(data);
-
-		if (Image::read(data)) {
-			READFLOAT(volume, data);
-			return true;
-		}
-		return false;
-	
 	}
 	// read as many jason files as needed, each becomes a deck
 	bool Act::read(const string& fileName) {

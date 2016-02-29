@@ -8,15 +8,25 @@ namespace Software2552 {
 	//https://github.com/tesseract-ocr/tesseract
 
 	void DrawingTools::cleanup() {
-		removeExpiredItems(videoPlayers); // make derived classes to do fancy things beyond the scope here
+		//removeExpiredItems(videoPlayers); // make derived classes to do fancy things beyond the scope here
+		vector<Video>::iterator i = videoPlayers.begin();
+		while (i != videoPlayers.end()) {
+			if (i->okToRemove()) {
+				i = videoPlayers.erase(i);
+			}
+			else {
+				++i;
+			}
+		}
+
 		removeExpiredItems(paragraphPlayers);
 		removeExpiredItems(textPlayers);
 		removeExpiredItems(audioPlayers);
 	}
 
-	void DrawingTools::setup(shared_ptr<Wrapper<ofVideoPlayer>> player) {
-		if (player->load(player->getLocation())) {
-			videoPlayers.push_back(player);
+	void DrawingTools::setup(Video& video) {
+		if (video.player.load(video.getLocation())) {
+			videoPlayers.push_back(video);
 		}
 		else {
 			logErrorString("add video Player");
@@ -32,26 +42,43 @@ namespace Software2552 {
 	}
 	void DrawingTools::update() {
 		cleanup();
-		start(videoPlayers);
+		//start(videoPlayers);
+		for (auto& v : videoPlayers) {
+			if (v.okToDraw() && !v.player.isPlaying()) {
+				v.player.play();
+			}
+		}
 		start(audioPlayers);
-		update(videoPlayers);
+
+		//update(videoPlayers);
+		for (auto& v : videoPlayers) {
+			if (v.okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
+				v.player.update();
+			}
+		}
+
 		update(textPlayers);
 
 	}
 	// draw all items in need of drawing
 	void DrawingTools::draw() {
-		draw(videoPlayers); // make derived classes to do fancy things beyond the scope here
+		//draw(videoPlayers); // make derived classes to do fancy things beyond the scope here
+		for (auto& v : videoPlayers) {
+			if (v.okToDraw()) {
+				v.player.draw(v.getStartingPoint().x, v.getStartingPoint().y);
+			}
+		}
 		draw(paragraphPlayers);
 		draw(textPlayers);
 	}
 	void DrawingTools::pause() {
-		pause(videoPlayers);
 		pause(paragraphPlayers);
 		pause(textPlayers);
 		pause(audioPlayers);
-		for (auto& player : videoPlayers) {
-			if (!player->isPlaying()) {
-				player->setPaused(true);
+		for (auto& v : videoPlayers) {
+			if (!v.player.isPlaying()) {
+				v.pause();
+				v.player.setPaused(true);
 			}
 		}
 		for (auto& player : audioPlayers) {
@@ -62,13 +89,14 @@ namespace Software2552 {
 	}
 
 	void DrawingTools::play() {
-		startReadHead(videoPlayers);
+		//startReadHead(videoPlayers);
 		startReadHead(paragraphPlayers);
 		startReadHead(textPlayers);
 		startReadHead(audioPlayers);
-		for (auto& player : videoPlayers) {
-			if (player->isPlaying()) {
-				player->setPaused(false);
+		for (auto& v : videoPlayers) {
+			if (v.player.isPlaying()) {
+				v.startReadHead();
+				v.player.setPaused(false);
 			}
 		}
 		for (auto& player : audioPlayers) {
