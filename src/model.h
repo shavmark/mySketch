@@ -463,7 +463,7 @@ namespace Software2552 {
 		template<typename T> float findMaxWait(T& v) {
 			float f = 0;
 			for (auto& t : v) {
-				setIfGreater(f, t.getDuration());
+				setIfGreater(f, t.getDuration()+ t.getWait());
 			}
 			return f;
 		}

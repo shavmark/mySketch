@@ -203,6 +203,7 @@ namespace Software2552 {
 				}
 				setIfGreater(f, v.getPlayer().getDuration());
 			}
+			f += v.getWait();
 		}
 		setIfGreater(f, findMaxWait(paragraphs));
 		setIfGreater(f, findMaxWait(texts));
