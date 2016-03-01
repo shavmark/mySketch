@@ -135,7 +135,7 @@ namespace Software2552 {
 	bool Act::dataAvailable() {
 		// see if any scenes have any data
 		for (auto& play : playlist.plays()) {
-			if (play.scene.getEngines()->dataAvailable()) {
+			if (play.scene.dataAvailable()) {
 				return true;
 			}
 		}
@@ -160,11 +160,15 @@ namespace Software2552 {
 			graphics.size() > 0 ||
 			characters.size() > 0;
 	}
-	void GraphicEngines::add(shared_ptr<GraphicEngines> rhs) {
-		for (auto& player : rhs->videos) {
+	
+	void GraphicEngines::add(shared_ptr<GraphicEngines> e) {
+		for (auto& player : e->videos) {
 			videos.push_back(player);
 		}
 		// add the rest
+	}
+	void GraphicEngines::add(Scene&scene) {
+		add(scene.getEngines());
 	}
 
 	float GraphicEngines::getLongestWaitTime() {
@@ -175,6 +179,10 @@ namespace Software2552 {
 				setIfGreater(f, v.getWait());
 			}
 			else {
+				// will need to load it now to get the true lenght
+				if (!v.getPlayer().isLoaded()) {
+					v.getPlayer().load(v.getLocation());
+				}
 				setIfGreater(f, v.getPlayer().getDuration());
 			}
 		}
@@ -190,8 +198,10 @@ namespace Software2552 {
 	void GraphicEngines::setup(float wait) {
 		for (auto& v : videos) {
 			v.addWait(wait);
-			if (!v.getPlayer().load(v.getLocation())) {
-				logErrorString("setup video Player");
+			if (!v.getPlayer().isLoaded()) {
+				if (!v.getPlayer().load(v.getLocation())) {
+					logErrorString("setup video Player");
+				}
 			}
 		}
 		for (auto& a : audios) {
@@ -450,7 +460,6 @@ namespace Software2552 {
 				createTimeLineItems<Graphic>(getGraphics(), data, "graphics");
 				createTimeLineItems<Text>(getTexts(), data, "texts");
 				createTimeLineItems<Character>(getCharacters(), data, "characters");
-				getEngines()->updateWait();
 				return true;
 			}
 		}
@@ -475,17 +484,24 @@ namespace Software2552 {
 		try {
 			SettingsAndTitle::read(json); // read base class
 			playlist.read(json);
-
+			bool first = true;
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				string keyname;
-				if (setString(keyname, json["scenes"][i])) {
+				if (setString(keyname, json["scenes"][i]["keyname"])) {
 					PlayItem key(keyname);
 					// if a scene is not in the play list do not save it
 					std::vector<PlayItem>::iterator finditem =
 						find(playlist.plays().begin(), playlist.plays().end(), key);
 					if (finditem != playlist.plays().end()) {
 						finditem->scene.read(json["scenes"][i]);
+						if (first) {
+							first = false;
+						}
+						else {
+							finditem->scene.updateWait();
+						}
+
 					}
 				}
 

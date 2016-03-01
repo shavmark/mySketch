@@ -451,9 +451,11 @@ namespace Software2552 {
 		Settings settings; // every object can have its own  defaults that derives from this object
 		string title; // title of deck, slide etc. 
 	};
-
+	class Scene;
 	class GraphicEngines {
 	public:
+		
+
 		template<typename T> void bumpWait(T& v, float wait) {
 			for (auto& t : v) {
 				t.addWait(wait);
@@ -462,7 +464,7 @@ namespace Software2552 {
 		template<typename T> float findMaxWait(T& v) {
 			float f = 0;
 			for (auto& t : v) {
-				setIfGreater(f, t.getWait());
+				setIfGreater(f, t.getDuration());
 			}
 			return f;
 		}
@@ -492,7 +494,8 @@ namespace Software2552 {
 		}
 		bool dataAvailable();
 		void setup(float wait = 0);
-		void add(shared_ptr<GraphicEngines> rhs);
+		void add(Scene&scene);
+		void add(shared_ptr<GraphicEngines> e);
 		void updateWait();
 
 		vector<Video> videos;
@@ -507,6 +510,7 @@ namespace Software2552 {
 	};
 	class Scene : public SettingsAndTitle {
 	public:
+		friend class GraphicEngines;
 		Scene(const string&keynameIn) : SettingsAndTitle() {
 			keyname = keynameIn;
 			engines = nullptr;
@@ -525,18 +529,13 @@ namespace Software2552 {
 				engines = enginesIn;
 			}
 		}
-		shared_ptr<GraphicEngines> getEngines() {
-			if (engines == nullptr) {
-				setEngine();
-			}
-			return engines;
-		}
 
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		bool read(const Json::Value &data);
 		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
-
+		void updateWait() { getEngines()->updateWait(); }
+		bool dataAvailable() { return getEngines()->dataAvailable(); }
 		vector <Video>& getVideo() { return getEngines()->videos; }
 		vector <Paragraph>& getParagraphs() {	return getEngines()->paragraphs;}
 		vector <Text>& getTexts() { return getEngines()->texts; }
@@ -566,6 +565,13 @@ namespace Software2552 {
 		shared_ptr<GraphicEngines> engines;
 		string keyname;
 	private:
+		shared_ptr<GraphicEngines> getEngines() {
+			if (engines == nullptr) {
+				setEngine();
+			}
+			return engines;
+		}
+
 	};
 	// item in a play list
 	class PlayItem {
@@ -645,7 +651,7 @@ namespace Software2552 {
 			shared_ptr<GraphicEngines> engines = std::make_shared<GraphicEngines>();
 			for (auto& act : acts) {
 				for (auto& play : act.getPlayList().plays()) {
-					engines->add(play.scene.getEngines());
+					engines->add(play.scene);
 				}
 			}
 			return engines;
