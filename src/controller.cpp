@@ -20,16 +20,10 @@ namespace Software2552 {
 		return false;
 	}
 	void Timeline::play() { 
-		for (auto& v : engines->videos) {
-			if (v.okToDraw() && !v.getPlayer().isPlaying()) {
-				v.startReadHead();
-				v.getPlayer().setPaused(false);
-				v.getPlayer().play();
-			}
-		}
+		drawit.play(engines);
 	}
 	void Timeline::pause() {
-
+		drawit.pause(engines);
 	}
 	void Timeline::setup() {
 		ofSetFrameRate(framerate);
@@ -42,21 +36,15 @@ namespace Software2552 {
 	// keep this super fast
 	void Timeline::update() { 
 		engines->cleanup();
-		for (auto& v : engines->videos) {
-			if (v.okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
-				v.getPlayer().update();
-			}
-		}
+		drawit.update(engines);
+
 		//start(engines->videos);// start if needed
 	};
 
 	// keep as fast as possible
 	void Timeline::draw() {
-		for (auto& v : engines->videos) {
-			if (v.okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
-				v.getPlayer().draw(v.getStartingPoint().x, v.getStartingPoint().y);
-			}
-		}
+
+		drawit.draw(engines);
 
 	};
 

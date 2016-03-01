@@ -24,7 +24,7 @@ namespace Software2552 {
 				t.play();
 			}
 		}
-
+		DrawingTools drawit;
 		int framerate;
 		shared_ptr<GraphicEngines> engines;
 		vector<Act> acts; // timeline is a series of acts

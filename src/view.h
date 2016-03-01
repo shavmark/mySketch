@@ -12,7 +12,6 @@ namespace Software2552 {
 	class DrawingTools {
 	public:
 		DrawingTools() {
-			engines = std::make_shared<GraphicEngines>();
 		}
 		template<typename T> void update(T& v) {
 			for (auto& t : v) {
@@ -49,23 +48,14 @@ namespace Software2552 {
 			}
 		}
 
-		void pause();
-		void play();
+		void pause(shared_ptr<GraphicEngines> engines);
+		void play(shared_ptr<GraphicEngines> engines);
 
 		// update all drawing tools that require an update
-		void update();
+		void update(shared_ptr<GraphicEngines> engines);
 		// draw all items in need of drawing
-		void draw();
-		void start() { ofPushStyle(); } // start draw
-		void end() { ofPopStyle(); } // end draw
-		void addEngines(shared_ptr<GraphicEngines> e) {
-			engines->add(e);
-		}
-		void setupEngines() {
-			engines->setup();
-		}
+		void draw(shared_ptr<GraphicEngines> engines);
 	private:
-		shared_ptr<GraphicEngines> engines;
 
 	};
 

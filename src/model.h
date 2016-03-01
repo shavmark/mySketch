@@ -298,11 +298,11 @@ namespace Software2552 {
 			if (me.duration == 0 || me.start == 0) {
 				return false; // no time out ever, or we have not started yet
 			}
-			bool f = (ofGetElapsedTimef() - (me.start - me.wait)) > me.start + me.duration;
-			if (f) {
-				return true; // enable easy break point
+			float elapsed = ofGetElapsedTimef() - me.start;
+			if (me.wait > elapsed || me.duration < elapsed) {
+				return false;
 			}
-			return false;
+			return true; 
 
 		}
 		void pause() {

@@ -8,23 +8,23 @@ namespace Software2552 {
 	//https://github.com/tesseract-ocr/tesseract
 
 
-	void DrawingTools::update() {
+	void DrawingTools::update(shared_ptr<GraphicEngines> engines) {
 		engines->cleanup();
 
-		start(engines->videos);// start if needed
-		start(engines->audios); // start if needed
+		//start(engines->videos);// start if needed
+		//start(engines->audios); // start if needed
 
 		update(engines->videos);
 		update(engines->texts);
 
 	}
 	// draw all items in need of drawing
-	void DrawingTools::draw() {
+	void DrawingTools::draw(shared_ptr<GraphicEngines> engines) {
 		draw(engines->videos); // make derived classes to do fancy things beyond the scope here
 		draw(engines->paragraphs);
 		draw(engines->texts);
 	}
-	void DrawingTools::pause() {
+	void DrawingTools::pause(shared_ptr<GraphicEngines> engines) {
 		pause(engines->paragraphs);
 		pause(engines->texts);
 		for (auto& v : engines->videos) {
@@ -41,7 +41,7 @@ namespace Software2552 {
 		}
 	}
 
-	void DrawingTools::play() {
+	void DrawingTools::play(shared_ptr<GraphicEngines> engines) {
 		startReadHead(engines->paragraphs);
 		startReadHead(engines->texts);
 		for (auto& v : engines->videos) {
