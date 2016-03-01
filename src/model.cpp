@@ -357,13 +357,10 @@ namespace Software2552 {
 		READFLOAT(volume, data);
 		return true;
 	}
-	// return true if text read
 	bool Text::read(const Json::Value &data) {
 		ECHOAll(data);
 
 		if (Graphic::read(data)) {
-			// if no text string do not save the defaults
-			// so return true only if a string is found at this point
 			string str;
 			readStringFromJson(str, data["text"]["str"]);
 			player.setFont(getFont());
@@ -377,9 +374,11 @@ namespace Software2552 {
 	bool Paragraph::read(const Json::Value &data) {
 		ECHOAll(data);
 		Graphic::read(data);
+
 		string str;
 		readStringFromJson(str, data["text"]["str"]);
 		player.setText(str);
+
 		int indent;
 		int leading;
 		int spacing;
