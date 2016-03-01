@@ -22,15 +22,15 @@ namespace Software2552 {
 
 	// readJsonValue only if value in json, readJsonValue does not support string due to templatle issues
 	template<typename T> bool readJsonValue(T &value, const Json::Value& data);
-	bool setString(string &value, const Json::Value& data);
+	bool readStringFromJson(string &value, const Json::Value& data);
 
 	// will only readJsonValue vars if there is a string to readJsonValue, ok to preserve existing values
 	// always use this macro or the readJsonValue function to be sure errors are handled consitantly
 #define READFLOAT(var, data) readJsonValue(var, data[#var])
 #define READINT(var, data) readJsonValue(var, data[#var])
 #define READBOOL(var, data) readJsonValue(var, data[#var])
-#define READSTRING(var, data) setString(var, data[#var])
-#define READDATE(var, data) setString(var, data[#var])
+#define READSTRING(var, data) readStringFromJson(var, data[#var])
+#define READDATE(var, data) readStringFromJson(var, data[#var])
 
 	class Point3D : public ofVec3f {
 	public:
@@ -363,87 +363,61 @@ namespace Software2552 {
 	private:
 		GraphicID myID;// every graphic item gets a unique ID for deletion and etc
 	};
-	// with or w/o font
-	class Text : public Graphic {
+
+	// an actor if you will
+	template <class T> class ThePlayer : public Graphic
+	{
 	public:
-		Text() : Graphic() { str = "default"; }
-		Text(const string&textIn) : Graphic() { str = textIn; }
-		bool read(const Json::Value &data);
-		TextToRender &getPlayer(float wait = 0) {
-			addWait(wait);
+		virtual bool read(const Json::Value &data) = 0;
+		T &getPlayer() {
+			test();
 			return player;
 		}
-
-		string& getText() { return str; }
-
-	private:
-		string str;
-		TextToRender player;
-	};
-	class Paragraph : public Graphic {
-	public:
-		Paragraph();
-		bool read(const Json::Value &data);
-		ofxParagraph &getPlayer(float wait = 0) {
-			addWait(wait);
-			return paragraph;
-		}
-		string& getText() { return str; }
-
-	private:
-		string str;
-		ofxParagraph paragraph;
-	};
-
-
-	class Image : public Graphic {
-	public:
-	protected:
-
-	};
-
-	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
-	class Audio : public Graphic {
-	public:
-		bool read(const Json::Value &data);
-		ofSoundPlayer &getPlayer(float wait = 0) {
-			addWait(wait);
-			return player;
-		}
-	private:
-		ofSoundPlayer  player;
-	};
-
-	class Video : public Graphic {
-	public:
-		bool read(const Json::Value &data);
-
-		ofVideoPlayer& getPlayer() {
-			//player.setPixelFormat(OF_PIXELS_NATIVE);
-			return player;
-		}
-	private:
-		ofVideoPlayer player;
-	};
-
-	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
-	class Character : public Graphic {
-	public:
-		Character() : Graphic() {
-			type = "2d";
-		}
-		bool read(const Json::Value &data);
-
 #if _DEBUG
 		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Character));
-
+		virtual void test() {
+			logVerbose(STRINGIFY(T));
 			Graphic::trace();
 		}
 
 #endif // _DEBUG
 
+	protected:
+		T player;
+	};
+
+	class Image : public ThePlayer<ofImage> {
+	public:
+		bool read(const Json::Value &data);
+	};
+	class Text : public ThePlayer<TextToRender> {
+	public:
+		bool read(const Json::Value &data);
+	};
+	class Paragraph : public ThePlayer<ofxParagraph> {
+	public:
+		bool read(const Json::Value &data);
+	};
+
+
+	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
+	class Audio : public ThePlayer<ofSoundPlayer> {
+	public:
+		bool read(const Json::Value &data);
+	};
+
+	class Video : public ThePlayer<ofVideoPlayer> {
+	public:
+		bool read(const Json::Value &data);
+
+	};
+
+	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
+	class Character : public ThePlayer<string> {
+	public:
+		bool read(const Json::Value &data);
+	private:
+		// player is just a string object
 	};
 
 	class Scene;

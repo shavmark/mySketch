@@ -78,7 +78,7 @@ namespace Software2552 {
 		}
 	}
 	// get a string from json
-	bool setString(string &value, const Json::Value& data) {
+	bool readStringFromJson(string &value, const Json::Value& data) {
 		if (readJsonValue(value, data)) {
 			value = data.asString();
 			return true;
@@ -121,6 +121,13 @@ namespace Software2552 {
 		catch (std::exception e) {
 			echoJSONTree(__FUNCTION__, data, true);
 			logErrorString(e.what());
+		}
+		return false;
+	}
+	bool Image::read(const Json::Value &data) {
+		if (Graphic::read(data)) {
+			player.load(getLocation());//bugbug if things get too slow etc do not load here
+			return true;
 		}
 		return false;
 	}
@@ -242,8 +249,8 @@ namespace Software2552 {
 		int size = defaultFontSize;
 		string filename;
 
-		setString(name, data["font"]["name"]);
-		setString(name, data["font"]["file"]);
+		readStringFromJson(name, data["font"]["name"]);
+		readStringFromJson(name, data["font"]["file"]);
 		readJsonValue(size, data["font"]["size"]);
 
 		if (filename.size() != 0) {
@@ -350,8 +357,6 @@ namespace Software2552 {
 		READFLOAT(volume, data);
 		return true;
 	}
-	Paragraph::Paragraph() :Graphic() {
-	}
 	// return true if text read
 	bool Text::read(const Json::Value &data) {
 		ECHOAll(data);
@@ -359,7 +364,8 @@ namespace Software2552 {
 		if (Graphic::read(data)) {
 			// if no text string do not save the defaults
 			// so return true only if a string is found at this point
-			setString(str, data["text"]["str"]);
+			string str;
+			readStringFromJson(str, data["text"]["str"]);
 			player.setFont(getFont());
 			player.setColor(getForeground());
 			player.setText(str);
@@ -371,32 +377,33 @@ namespace Software2552 {
 	bool Paragraph::read(const Json::Value &data) {
 		ECHOAll(data);
 		Graphic::read(data);
-		setString(str, data["text"]["str"]);
-		paragraph.setText(str);
+		string str;
+		readStringFromJson(str, data["text"]["str"]);
+		player.setText(str);
 		int indent;
 		int leading;
 		int spacing;
 		string alignment; // paragraph is a data type in this usage
 
 		if (READINT(indent, data)) {
-			paragraph.setIndent(indent);
+			player.setIndent(indent);
 		}
 		if (READINT(leading, data)) {
-			paragraph.setLeading(leading);
+			player.setLeading(leading);
 		}
 		if (READINT(spacing, data)) {
-			paragraph.setSpacing(leading);
+			player.setSpacing(leading);
 		}
 		READSTRING(alignment, data);
 		if (alignment == "center") { //bugbug ignore case
-			paragraph.setAlignment(ofxParagraph::ALIGN_CENTER);
+			player.setAlignment(ofxParagraph::ALIGN_CENTER);
 		}
 		else if (alignment == "right") { //bugbug ignore case
-			paragraph.setAlignment(ofxParagraph::ALIGN_RIGHT);
+			player.setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
-		paragraph.setFont(getFont());
-		paragraph.setColor(getForeground());
-		paragraph.setPosition(getStartingPoint().x, getStartingPoint().y);
+		player.setFont(getFont());
+		player.setColor(getForeground());
+		player.setPosition(getStartingPoint().x, getStartingPoint().y);
 
 		return true;
 	}
@@ -488,7 +495,7 @@ namespace Software2552 {
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				string keyname;
-				if (setString(keyname, json["scenes"][i]["keyname"])) {
+				if (readStringFromJson(keyname, json["scenes"][i]["keyname"])) {
 					PlayItem key(keyname);
 					// if a scene is not in the play list do not save it
 					std::vector<PlayItem>::iterator finditem =

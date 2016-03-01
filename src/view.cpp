@@ -16,17 +16,20 @@ namespace Software2552 {
 
 		update(engines->videos);
 		update(engines->texts);
+		update(engines->images);
 
 	}
 	// draw all items in need of drawing
 	void DrawingTools::draw(shared_ptr<GraphicEngines> engines) {
-		draw(engines->videos); // make derived classes to do fancy things beyond the scope here
+		draw(engines->videos);
 		draw(engines->paragraphs);
 		draw(engines->texts);
+		draw(engines->images);
 	}
 	void DrawingTools::pause(shared_ptr<GraphicEngines> engines) {
 		pause(engines->paragraphs);
 		pause(engines->texts);
+		pause(engines->images);
 		for (auto& v : engines->videos) {
 			if (!v.getPlayer().isPlaying()) {
 				v.pause();
@@ -43,6 +46,7 @@ namespace Software2552 {
 
 	void DrawingTools::play(shared_ptr<GraphicEngines> engines) {
 		startReadHead(engines->paragraphs);
+		startReadHead(engines->images);
 		startReadHead(engines->texts);
 		for (auto& v : engines->videos) {
 			if (!v.getPlayer().isPlaying()) {
