@@ -65,9 +65,6 @@ namespace Software2552 {
 			engines->setup();
 		}
 	private:
-		ofLight	 light;
-		ofCamera camera;
-
 		shared_ptr<GraphicEngines> engines;
 
 	};

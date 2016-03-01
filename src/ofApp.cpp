@@ -9,8 +9,8 @@
 //--------------------------------------------------------------
 void ofStoryTellerApp::setup(){
 	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
-	timeline.readStory("json.json", "First Peoples");
-	timeline.setup();
+	timeline.readAct("json.json");
+	timeline.play();
 	//paragraphs.build(ofGetWidth());
 	
 	//ofSetFullscreen(true);

@@ -1,37 +1,59 @@
 #include "controller.h"
-#include <functional>
+//#include <functional>
 
 namespace Software2552 {
-	template<typename T> void Timeline::setup(T& v) {
-		for (auto& a : v) {
-			a.addWait(longestWaitTime);
-			drawingTools.setup(a);
+
+	Timeline::Timeline(){
+	}
+	// read one act and save it to the list of acts (ie a story)
+	bool Timeline::readAct(const string& path) {
+		// read in story then let those objects go free as they are set in enumerate(Setup)
+		Act act;
+		if (act.read(path)) {
+			acts.push_back(act);
+			return true;
+			//drawingTools.addEngines(act.getEngines());
+			//drawingTools.setupEngines();
+		}
+		return false;
+	}
+	void Timeline::play() { 
+		for (auto& a : acts) {
+			for (auto& v : a.getEngines()->videos) {
+				if (!v.getPlayer().isPlaying()) {
+					v.startReadHead();
+					v.getPlayer().setPaused(false);
+					v.getPlayer().play();
+				}
+			}
 		}
 	}
 
-	Timeline::Timeline(){
-		longestWaitTime = 0;
-	}
-	void Timeline::readStory(const string& path, const string& title) {
-		// read in story then let those objects go free as they are set in enumerate(Setup)
-		Story story;
-		story.read(path, title);
-		drawingTools.addEngines(story.getEngines());
-		drawingTools.setupEngines();
-		// create drawing objects for all items in play list, then list the Story free up
-
-		setup();
-
-	}
 	void Timeline::setup() {
-		drawingTools.play();
+		for (auto& a : acts) {
+			a.getEngines()->setup();
+		}
 	}
 	void Timeline::update() { 
-		drawingTools.update();
+		for (auto& a : acts) {
+			a.getEngines()->cleanup();
+			for (auto& v : a.getEngines()->videos) {
+				if (v.okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
+					v.getPlayer().update();
+				}
+			}
+		}
+		//start(engines->videos);// start if needed
 	};
 
 	void Timeline::draw() {
-		drawingTools.draw();
+		for (auto& a : acts) {
+			for (auto& v : a.getEngines()->videos) {
+				if (v.okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
+					v.getPlayer().draw(v.getStartingPoint().x, v.getStartingPoint().y);
+				}
+			}
+		}
 	};
 
 }

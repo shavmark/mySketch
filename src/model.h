@@ -6,7 +6,7 @@
 // timeline software, json based
 
 namespace Software2552 {
-	
+
 	// model helpers
 
 	void echoValue(const Json::Value &data, bool isError = false);
@@ -65,7 +65,7 @@ namespace Software2552 {
 	class DateAndTime : public Poco::DateTime {
 	public:
 		// default to no no date to avoid the current date being set for bad data
-		DateAndTime() : Poco::DateTime(0,1,1){
+		DateAndTime() : Poco::DateTime(0, 1, 1) {
 			timeZoneDifferential = 0;
 			bc = 0;
 		}
@@ -79,7 +79,7 @@ namespace Software2552 {
 			return Poco::DateTimeFormatter::format(timestamp(), format);
 		}
 		bool read(const Json::Value &data);
-		int timeZoneDifferential; 
+		int timeZoneDifferential;
 		int bc; // non zero if its a bc date
 
 #if _DEBUG
@@ -103,7 +103,7 @@ namespace Software2552 {
 #define defaultFontFile "fonts/Raleway-Thin.ttf"
 #define defaultFontName "Raleway-Thin"
 
-	class Font  {
+	class Font {
 	public:
 		Font() {
 			// always install the default foint
@@ -144,6 +144,26 @@ namespace Software2552 {
 
 	};
 
+	class TheSet {
+	public:
+		ofFloatColor readColor(ofFloatColor& color, const Json::Value &data) {
+			readJsonValue(color.r, data["r"]);
+			readJsonValue(color.g, data["g"]);
+			readJsonValue(color.g, data["b"]);
+
+			return color;
+		}
+		bool read(const Json::Value &data) {
+			light.setAmbientColor(readColor(light.getAmbientColor(), data["ambientColor"]));
+			light.setDiffuseColor(readColor(light.getDiffuseColor(), data["diffuseColor"]));
+			return true;
+		}
+
+		/// use pointers if data set gets too large
+
+		ofLight	light;
+		ofEasyCam camera;
+	};
 	//  settings
 	class Settings {
 	public:
@@ -155,20 +175,20 @@ namespace Software2552 {
 			name = nameIn;
 		}
 		const string JsonName = "settings";
-		void operator=(const Settings& rhs) { 
+		void operator=(const Settings& rhs) {
 			setSettings(rhs);
 		}
 		void setSettings(const Settings& rhs);
 		bool read(const Json::Value &data);
 
-		Point3D& getStartingPoint() {	return startingPoint;	}
+		Point3D& getStartingPoint() { return startingPoint; }
 
 		shared_ptr<ofxSmartFont> getFont() {
-			return font.font; 
+			return font.font;
 		}
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
-		const ofColor& getForeground(){ return foregroundColor; }
+		const ofColor& getForeground() { return foregroundColor; }
 		const ofColor& getBackground() { return backgroundColor; }
 		float getDuration() { return duration; }
 		float getWait() { return wait; }
@@ -205,6 +225,9 @@ namespace Software2552 {
 		float  duration; // life time of object, 0 means forever
 		float  wait;     // time to wait before drawing
 		Point3D startingPoint; // starting point of object for drawing
+		TheSet stageSet;
+		string title; // title object
+
 	private:
 		void init() {
 			Poco::Timespan totalTime = 1 * 1000 * 1000;
@@ -246,7 +269,7 @@ namespace Software2552 {
 		void trace() {
 			logVerbose(STRINGIFY(ReferencedItem));
 			Settings::trace();
-			
+
 			for (auto& ref : references) {
 				ref.trace();
 			}
@@ -258,14 +281,14 @@ namespace Software2552 {
 
 	protected:
 		vector <Reference> references;
-		
+
 	};
 
 	// basic graphic like SUN etc to add flavor
 	class Graphic : public ReferencedItem {
 	public:
 		Graphic();
-		
+
 		bool read(const Json::Value &data);
 		// for use with object
 		bool okToRemove() {
@@ -325,7 +348,7 @@ namespace Software2552 {
 #endif // _DEBUG
 	protected:
 		string type; // 2d, 3d, other
-		int width; 
+		int width;
 		int height;
 		string locationPath; // remote or local bugbug maybe make a better name?  not sure
 		ofParameter<float> volume;
@@ -337,8 +360,8 @@ namespace Software2552 {
 	// with or w/o font
 	class Text : public Graphic {
 	public:
-		Text() : Graphic() { str = "default";  }
-		Text(const string&textIn) : Graphic() { str = textIn;  }
+		Text() : Graphic() { str = "default"; }
+		Text(const string&textIn) : Graphic() { str = textIn; }
 		bool read(const Json::Value &data);
 		TextToRender &getPlayer(float wait = 0) {
 			addWait(wait);
@@ -384,13 +407,13 @@ namespace Software2552 {
 	private:
 		ofSoundPlayer  player;
 	};
-	
+
 	class Video : public Graphic {
 	public:
 		bool read(const Json::Value &data);
-		
-		ofVideoPlayer& getPlayer() { 
-			return player; 
+
+		ofVideoPlayer& getPlayer() {
+			return player;
 		}
 	private:
 		ofVideoPlayer player;
@@ -399,7 +422,7 @@ namespace Software2552 {
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
 	class Character : public Graphic {
 	public:
-		Character() : Graphic(){
+		Character() : Graphic() {
 			type = "2d";
 		}
 		bool read(const Json::Value &data);
@@ -416,45 +439,10 @@ namespace Software2552 {
 
 	};
 
-	class SettingsAndTitle {
-	public:
-		SettingsAndTitle() {
-		}
-		SettingsAndTitle(const string& titleIn) {
-			title = titleIn;
-		}
-		SettingsAndTitle(const Settings& defaultsIn, const string& titleIn) {
-			title = titleIn;
-			settings = defaultsIn;
-		}
-		SettingsAndTitle(const Settings& defaultsIn) {
-			settings = defaultsIn;
-		}
-		void operator=(const Settings& rhs) {
-			settings = rhs;
-		}
-		void setDefaults(const Settings& rhs) {
-			settings = rhs;
-		}
-		string &getTitle() { return title; }
-		bool read(const Json::Value &data) {
-			// dumps too much so only enable if there is a bug: ECHOAll(data);
-			settings.read(data[settings.JsonName]);
-			READSTRING(title, data);
-			return true;
-		}
-		Settings& getSettings() {
-			return settings;
-		}
-
-	private:
-		Settings settings; // every object can have its own  defaults that derives from this object
-		string title; // title of deck, slide etc. 
-	};
 	class Scene;
 	class GraphicEngines {
 	public:
-		
+
 		template<typename T> void bumpWait(T& v, float wait) {
 			for (auto& t : v) {
 				t.addWait(wait);
@@ -463,7 +451,7 @@ namespace Software2552 {
 		template<typename T> float findMaxWait(T& v) {
 			float f = 0;
 			for (auto& t : v) {
-				setIfGreater(f, t.getDuration()+ t.getWait());
+				setIfGreater(f, t.getDuration() + t.getWait());
 			}
 			return f;
 		}
@@ -490,6 +478,9 @@ namespace Software2552 {
 			removeExpiredItems(paragraphs);
 			removeExpiredItems(texts);
 			removeExpiredItems(audios);
+			removeExpiredItems(images);
+			removeExpiredItems(graphics);
+			removeExpiredItems(characters);
 		}
 		bool dataAvailable();
 		void setup(float wait = 0);
@@ -507,17 +498,15 @@ namespace Software2552 {
 	private:
 		float getLongestWaitTime();
 	};
-	class Scene : public SettingsAndTitle {
+
+	class Scene : public Settings {
 	public:
 		friend class GraphicEngines;
-		Scene(const string&keynameIn) : SettingsAndTitle() {
+		Scene(const string&keynameIn) {
 			keyname = keynameIn;
 			engines = nullptr;
 		}
-		Scene() : SettingsAndTitle() {
-			engines = nullptr;
-		}
-		Scene(const Settings& defaults) : SettingsAndTitle(defaults) {
+		Scene() {
 			engines = nullptr;
 		}
 		void setEngine(shared_ptr<GraphicEngines> enginesIn = nullptr) {
@@ -536,7 +525,7 @@ namespace Software2552 {
 		void updateWait() { getEngines()->updateWait(); }
 		bool dataAvailable() { return getEngines()->dataAvailable(); }
 		vector <Video>& getVideo() { return getEngines()->videos; }
-		vector <Paragraph>& getParagraphs() {	return getEngines()->paragraphs;}
+		vector <Paragraph>& getParagraphs() { return getEngines()->paragraphs; }
 		vector <Text>& getTexts() { return getEngines()->texts; }
 		vector <Audio>& getAudio() { return  getEngines()->audios; }
 		vector <Character>& getCharacters() { return getEngines()->characters; }
@@ -563,7 +552,9 @@ namespace Software2552 {
 	protected:
 		shared_ptr<GraphicEngines> engines;
 		string keyname;
+
 	private:
+		// we want folks to use wrappers to avoid tons of dependicies on this
 		shared_ptr<GraphicEngines> getEngines() {
 			if (engines == nullptr) {
 				setEngine();
@@ -612,12 +603,20 @@ namespace Software2552 {
 
 
 	// an Act is one json file that contains 1 or more scenes
-	class Act : public SettingsAndTitle {
+	class Act {
 	public:
-		Act(const Settings& defaults, const string& title) : SettingsAndTitle(defaults, title) {}
+		Act() {}
 
 		// read a deck from json (you can also just build one in code)
 		bool read(const string& fileName = "json.json");
+		// get all engines in the Act
+		shared_ptr<GraphicEngines> getEngines() {
+			shared_ptr<GraphicEngines> engines = std::make_shared<GraphicEngines>();
+			for (auto& play : playlist.plays()) {
+				engines->add(play.scene);
+			}
+			return engines;
+		}
 
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
@@ -632,39 +631,7 @@ namespace Software2552 {
 		};
 	private:
 		Playlist playlist;
-	};
-	
-	// an app can run many Stories
-	// a Story is a collection of acts
-	class Story :public SettingsAndTitle {
-	public:
-		// readJsonValue our own defaults
-		Story(const Settings& defaults, const string& title) : SettingsAndTitle(defaults, title) {
-		}
 
-		// get defaults later
-		Story() : SettingsAndTitle() {
-		}
-		// get all engines in the Story
-		shared_ptr<GraphicEngines> getEngines() {
-			shared_ptr<GraphicEngines> engines = std::make_shared<GraphicEngines>();
-			for (auto& act : acts) {
-				for (auto& play : act.getPlayList().plays()) {
-					engines->add(play.scene);
-				}
-			}
-			return engines;
-		}
-		vector<Act>& getActs() {
-			return acts;
-		}
-#if _DEBUG
-		// echo object (debug only) bugbug make debug only
-		void Story::trace();
-#endif
-		void read(const string& path, const string& title="<title>");
-
-	private:
-		vector<Act> acts;
 	};
+
 }

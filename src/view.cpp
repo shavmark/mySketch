@@ -52,11 +52,9 @@ namespace Software2552 {
 			}
 		}
 		for (auto& v : engines->audios) {
-			if (v.getPlayer().isPlaying()) {
+			if (!v.getPlayer().isPlaying()) {
 				v.startReadHead();
 				v.getPlayer().setPaused(false);
-			}
-			else {
 				v.getPlayer().play();
 			}
 		}

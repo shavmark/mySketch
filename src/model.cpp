@@ -125,13 +125,6 @@ namespace Software2552 {
 		return false;
 	}
 
-#if _DEBUG
-	// echo object (debug only) bugbug make debug only
-	void Story::trace() {
-		logVerbose(STRINGIFY(Story));
-		traceVector(acts);
-	}
-#endif
 	bool Act::dataAvailable() {
 		// see if any scenes have any data
 		for (auto& play : playlist.plays()) {
@@ -228,20 +221,8 @@ namespace Software2552 {
 			if (!a.getPlayer().load(a.getLocation())) {
 				logErrorString("setup audio Player");
 			}
-			a.getPlayer().play();
 		}
 	}
-
-	void Story::read(const string& path, const string& title) {
-		echo("read a story");
-
-		Act act(getSettings(), title);
-		// code in the list of items to make into the story here. 
-		act.read(path);
-
-		acts.push_back(act);
-	}
-
 
 	// return true if there is some data 
 	bool ReferencedItem::read(const Json::Value &data) {
@@ -278,6 +259,7 @@ namespace Software2552 {
 		// dumps too much so only enable if there is a bug: ECHOAll(data);
 		if (!data.empty()) { // ignore reference as an array or w/o data at this point
 			READSTRING(name, data);
+			READSTRING(title, data);
 			READSTRING(notes, data);
 			READFLOAT(duration, data);
 			READFLOAT(wait, data);
@@ -288,6 +270,7 @@ namespace Software2552 {
 			foregroundColor.read(data["foreground"]);
 			backgroundColor.read(data["background"]);
 			font.read(data["font"]);
+			stageSet.read(data["set"]);
 		}
 
 		return true;
@@ -423,7 +406,6 @@ namespace Software2552 {
 
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			T item;
-			item.setSettings(getSettings()); // copy default settings into object
 			if (item.read(data[key][j])) {
 				// only save if data was read in 
 				vec.push_back(item);
@@ -441,6 +423,7 @@ namespace Software2552 {
 		backgroundColor = rhs.backgroundColor;
 		duration = rhs.duration;
 		wait = rhs.wait;
+		stageSet = rhs.stageSet;
 	}
 	bool Video::read(const Json::Value &data) {
 		Graphic::read(data);
@@ -467,21 +450,19 @@ namespace Software2552 {
 		ECHOAll(data);
 
 		try {
-			if (SettingsAndTitle::read(data)) {
-				READSTRING(keyname, data);
-				if (keyname == "ClydeBellecourt") {
-					int i = 1;
-				}
-
-				createTimeLineItems<Video>(getVideo(), data, "videos");				
-				createTimeLineItems<Audio>(getAudio(), data, "audios");
-				createTimeLineItems<Paragraph>(getParagraphs(), data, "paragraphs");
-				createTimeLineItems<Image>(getImages(), data,"images");
-				createTimeLineItems<Graphic>(getGraphics(), data, "graphics");
-				createTimeLineItems<Text>(getTexts(), data, "texts");
-				createTimeLineItems<Character>(getCharacters(), data, "characters");
-				return true;
+			READSTRING(keyname, data);
+			if (keyname == "ClydeBellecourt") {
+				int i = 1;
 			}
+			Settings::read(data);
+			createTimeLineItems<Video>(getVideo(), data, "videos");				
+			createTimeLineItems<Audio>(getAudio(), data, "audios");
+			createTimeLineItems<Paragraph>(getParagraphs(), data, "paragraphs");
+			createTimeLineItems<Image>(getImages(), data,"images");
+			createTimeLineItems<Graphic>(getGraphics(), data, "graphics");
+			createTimeLineItems<Text>(getTexts(), data, "texts");
+			createTimeLineItems<Character>(getCharacters(), data, "characters");
+			return true;
 		}
 		catch (std::exception e) {
 			logErrorString(e.what());
@@ -502,7 +483,6 @@ namespace Software2552 {
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
-			SettingsAndTitle::read(json); // read base class
 			playlist.read(json);
 			bool first = true;
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {

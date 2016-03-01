@@ -13,14 +13,20 @@ namespace Software2552 {
 		void update();
 		void draw();
 		void pause() { drawingTools.pause(); }
-		void play() { drawingTools.play(); }
-		void readStory(const string& path, const string& title);
+		void play();
+
+		bool readAct(const string& path);
+
 	private:
-		template<typename T> void setup(T& v);
-		void enumerateSetup(Scene &scene);
+		// stat all objects in vector to playing
+		template<typename T> void startReadHead(T& v) {
+			for (auto& t : v) {
+				t.play();
+			}
+		}
+
 		DrawingTools drawingTools;
-		float longestWaitTime;
-		
+		vector<Act> acts; // timeline is a series of acts
 	};
 
 
