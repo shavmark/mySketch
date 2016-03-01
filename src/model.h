@@ -455,7 +455,6 @@ namespace Software2552 {
 	class GraphicEngines {
 	public:
 		
-
 		template<typename T> void bumpWait(T& v, float wait) {
 			for (auto& t : v) {
 				t.addWait(wait);

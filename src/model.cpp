@@ -165,7 +165,25 @@ namespace Software2552 {
 		for (auto& player : e->videos) {
 			videos.push_back(player);
 		}
-		// add the rest
+
+		for (auto& player : e->audios) {
+			audios.push_back(player);
+		}
+		for (auto& player : e->paragraphs) {
+			paragraphs.push_back(player);
+		}
+		for (auto& player : e->texts) {
+			texts.push_back(player);
+		}
+		for (auto& player : e->images) {
+			images.push_back(player);
+		}
+		for (auto& player : e->graphics) {
+			graphics.push_back(player);
+		}
+		for (auto& player : e->characters) {
+			characters.push_back(player);
+		}
 	}
 	void GraphicEngines::add(Scene&scene) {
 		add(scene.getEngines());
@@ -209,6 +227,7 @@ namespace Software2552 {
 			if (!a.getPlayer().load(a.getLocation())) {
 				logErrorString("setup audio Player");
 			}
+			a.getPlayer().play();
 		}
 	}
 

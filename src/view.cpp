@@ -45,15 +45,19 @@ namespace Software2552 {
 		startReadHead(engines->paragraphs);
 		startReadHead(engines->texts);
 		for (auto& v : engines->videos) {
-			if (v.getPlayer().isPlaying()) {
+			if (!v.getPlayer().isPlaying()) {
 				v.startReadHead();
 				v.getPlayer().setPaused(false);
+				v.getPlayer().play();
 			}
 		}
 		for (auto& v : engines->audios) {
 			if (v.getPlayer().isPlaying()) {
 				v.startReadHead();
 				v.getPlayer().setPaused(false);
+			}
+			else {
+				v.getPlayer().play();
 			}
 		}
 
