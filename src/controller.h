@@ -12,7 +12,7 @@ namespace Software2552 {
 		void setup();
 		void update();
 		void draw();
-		void pause() { drawingTools.pause(); }
+		void pause();
 		void play();
 
 		bool readAct(const string& path);
@@ -25,7 +25,8 @@ namespace Software2552 {
 			}
 		}
 
-		DrawingTools drawingTools;
+		int framerate;
+		shared_ptr<GraphicEngines> engines;
 		vector<Act> acts; // timeline is a series of acts
 	};
 

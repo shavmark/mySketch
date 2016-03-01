@@ -121,6 +121,7 @@ class ofStoryTellerApp : public ofBaseApp{
 		ofxBox2dParticleSystem particles;			      //    LiquidFun particle system
 		ofLight	light;
 		ofEasyCam camera;
+		ofVideoPlayer test;
 		ofMaterial material;
 		int   appFPS;
 		float sequenceFPS;

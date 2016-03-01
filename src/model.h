@@ -176,9 +176,8 @@ namespace Software2552 {
 		}
 		const string JsonName = "settings";
 		void operator=(const Settings& rhs) {
-			setSettings(rhs);
+			//remove_if needs this, but we do not want to copy in that case setSettings(rhs);
 		}
-		void setSettings(const Settings& rhs);
 		bool read(const Json::Value &data);
 
 		Point3D& getStartingPoint() { return startingPoint; }
@@ -236,6 +235,8 @@ namespace Software2552 {
 			foregroundColor.set(0, 0, 255);
 			backgroundColor.set(255, 255, 0);
 		}
+		void setSettings(const Settings& rhs);
+
 	};
 
 	// reference to a cited item
@@ -290,14 +291,19 @@ namespace Software2552 {
 		Graphic();
 
 		bool read(const Json::Value &data);
-		// for use with object
-		bool okToRemove() {
-			if (duration == 0) {
+
+		// for use in remove_if
+		static bool staticOKToRemove(Graphic& me) {
+			// duration == 0 means never go away, and start == 0 means we have not started yet
+			if (me.duration == 0 || me.start == 0) {
 				return false; // no time out ever, or we have not started yet
 			}
-			// example: ElapsedTime = 100, start = 50, wait = 100, duration 10 is (100-(50-100) > 60 is false 
-			// example: ElapsedTime = 500, start = 50, wait = 100, duration 10 is (500-(50-100) > 60 is true 
-			return (ofGetElapsedTimef() - (start - wait)) > start + duration;
+			bool f = (ofGetElapsedTimef() - (me.start - me.wait)) > me.start + me.duration;
+			if (f) {
+				return true; // enable easy break point
+			}
+			return false;
+
 		}
 		void pause() {
 			float elapsed = ofGetElapsedTimef();
@@ -413,6 +419,7 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 
 		ofVideoPlayer& getPlayer() {
+			//player.setPixelFormat(OF_PIXELS_NATIVE);
 			return player;
 		}
 	private:
@@ -457,15 +464,8 @@ namespace Software2552 {
 		}
 		// remove items that are timed out
 		template<typename T> void removeExpiredItems(T& v) {
-			T::iterator i = v.begin();
-			while (i != v.end()) {
-				if (i->okToRemove()) {
-					i = v.erase(i);
-				}
-				else {
-					++i;
-				}
-			}
+			
+			v.erase(std::remove_if(v.begin(), v.end(), Graphic::staticOKToRemove), v.end());
 		}
 
 		void setIfGreater(float& f1, float f2) {
@@ -486,8 +486,8 @@ namespace Software2552 {
 		void setup(float wait = 0);
 		void add(Scene&scene);
 		void add(shared_ptr<GraphicEngines> e);
-		void updateWait();
-
+		void bumpWaits(float wait);
+		float getLongestWaitTime();
 		vector<Video> videos;
 		vector <Audio> audios;
 		vector<Paragraph> paragraphs;
@@ -496,12 +496,10 @@ namespace Software2552 {
 		vector<Graphic> graphics;
 		vector<Character> characters;
 	private:
-		float getLongestWaitTime();
 	};
 
 	class Scene : public Settings {
 	public:
-		friend class GraphicEngines;
 		Scene(const string&keynameIn) {
 			keyname = keynameIn;
 			engines = nullptr;
@@ -522,8 +520,11 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
-		void updateWait() { getEngines()->updateWait(); }
+		float getLongestWaitTime() { return getEngines()->getLongestWaitTime(); }
+		void bumpWaits(float wait) { getEngines()->bumpWaits(wait); }
 		bool dataAvailable() { return getEngines()->dataAvailable(); }
+		void setup() { getEngines()->setup(); }
+		void cleanup() { getEngines()->cleanup(); }
 		vector <Video>& getVideo() { return getEngines()->videos; }
 		vector <Paragraph>& getParagraphs() { return getEngines()->paragraphs; }
 		vector <Text>& getTexts() { return getEngines()->texts; }
@@ -532,6 +533,13 @@ namespace Software2552 {
 		vector <Image>& getImages() { return getEngines()->images; }
 		vector <Graphic>& getGraphics() { return getEngines()->graphics; }
 
+		// we want folks to use wrappers to avoid tons of dependicies on this
+		shared_ptr<GraphicEngines> getEngines() {
+			if (engines == nullptr) {
+				setEngine();
+			}
+			return engines;
+		}
 
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
@@ -554,13 +562,6 @@ namespace Software2552 {
 		string keyname;
 
 	private:
-		// we want folks to use wrappers to avoid tons of dependicies on this
-		shared_ptr<GraphicEngines> getEngines() {
-			if (engines == nullptr) {
-				setEngine();
-			}
-			return engines;
-		}
 
 	};
 	// item in a play list
@@ -585,20 +586,16 @@ namespace Software2552 {
 	class Playlist {
 	public:
 		bool read(const Json::Value &data);
-		vector<PlayItem>& plays() { return playList; }
-		void remove(const PlayItem &item) {
-			// remove by name
-			playList.erase(std::remove(playList.begin(), playList.end(), item), playList.end());
-		}
+		vector<PlayItem>& getList() { return list; }
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			logVerbose(STRINGIFY(Playlist));
-			traceVector(plays());
+			traceVector(getList());
 		}
 #endif
 	private:
-		vector<PlayItem> playList;
+		vector<PlayItem> list;
 	};
 
 
@@ -609,26 +606,16 @@ namespace Software2552 {
 
 		// read a deck from json (you can also just build one in code)
 		bool read(const string& fileName = "json.json");
-		// get all engines in the Act
-		shared_ptr<GraphicEngines> getEngines() {
-			shared_ptr<GraphicEngines> engines = std::make_shared<GraphicEngines>();
-			for (auto& play : playlist.plays()) {
-				engines->add(play.scene);
-			}
-			return engines;
-		}
+		bool dataAvailable();
+		vector<PlayItem> &getPlayList() { return playlist.getList(); };
 
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			logVerbose(STRINGIFY(Act));
-			traceVector(playlist.plays());
+			traceVector(getPlayList());
 		}
 #endif
-		bool dataAvailable();
-		Playlist &getPlayList() {
-			return playlist;
-		};
 	private:
 		Playlist playlist;
 

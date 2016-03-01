@@ -127,8 +127,8 @@ namespace Software2552 {
 
 	bool Act::dataAvailable() {
 		// see if any scenes have any data
-		for (auto& play : playlist.plays()) {
-			if (play.scene.dataAvailable()) {
+		for (auto& item : playlist.getList()) {
+			if (item.scene.dataAvailable()) {
 				return true;
 			}
 		}
@@ -139,7 +139,7 @@ namespace Software2552 {
 		return true;
 	}
 	bool Playlist::read(const Json::Value &data) {
-		parse<PlayItem>(playList, data["playList"]);
+		parse<PlayItem>(list, data["playList"]);
 		return true;
 	}
 
@@ -435,10 +435,10 @@ namespace Software2552 {
 		player.setVolume(getVolume());
 		return true;
 	}
-	// call after each scene to adjust wait times
-	void GraphicEngines::updateWait() {
-		// get the longest wait for the current scene
-		float wait = getLongestWaitTime();
+	void GraphicEngines::bumpWaits(float wait) {
+		if (!wait) {
+			return;
+		}
 		bumpWait(videos, wait);
 		bumpWait(audios, wait);
 		bumpWait(paragraphs, wait);
@@ -484,7 +484,7 @@ namespace Software2552 {
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
 			playlist.read(json);
-			bool first = true;
+			
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				string keyname;
@@ -492,20 +492,19 @@ namespace Software2552 {
 					PlayItem key(keyname);
 					// if a scene is not in the play list do not save it
 					std::vector<PlayItem>::iterator finditem =
-						find(playlist.plays().begin(), playlist.plays().end(), key);
-					if (finditem != playlist.plays().end()) {
+						find(playlist.getList().begin(), playlist.getList().end(), key);
+					if (finditem != playlist.getList().end()) {
 						finditem->scene.read(json["scenes"][i]);
-						if (first) {
-							first = false;
-						}
-						else {
-							finditem->scene.updateWait();
-						}
-
 					}
 				}
-
 			}
+			// space out waits, but calc out video and other lengths (will result in loading videos)
+			float wait = 0;
+			for (auto& item : playlist.getList()) {
+				item.scene.bumpWaits(wait);
+				wait = item.scene.getLongestWaitTime();
+			}
+
 		}
 		catch (std::exception e) {
 			logErrorString(e.what());
