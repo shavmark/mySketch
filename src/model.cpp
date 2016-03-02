@@ -277,7 +277,6 @@ namespace Software2552 {
 			foregroundColor.read(data["foreground"]);
 			backgroundColor.read(data["background"]);
 			font.read(data["font"]);
-			stageSet.read(data["set"]);
 		}
 
 		return true;
@@ -302,13 +301,6 @@ namespace Software2552 {
 			return true;
 		}
 		return false;
-	}
-	bool Color::read(const Json::Value &data) {
-		ECHOAll(data);
-		READINT(r, data);
-		READINT(g, data);
-		READINT(b, data);
-		return true;
 	}
 	bool Point3D::read(const Json::Value &data) {
 		ECHOAll(data);
@@ -412,6 +404,7 @@ namespace Software2552 {
 
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			T item;
+			item.setSettings(this); // inherit settings
 			if (item.read(data[key][j])) {
 				// only save if data was read in 
 				vec.push_back(item);
@@ -429,7 +422,6 @@ namespace Software2552 {
 		backgroundColor = rhs.backgroundColor;
 		duration = rhs.duration;
 		wait = rhs.wait;
-		stageSet = rhs.stageSet;
 	}
 	bool Video::read(const Json::Value &data) {
 		Graphic::read(data);

@@ -35,32 +35,31 @@ namespace Software2552 {
 	class Point3D : public ofVec3f {
 	public:
 		bool read(const Json::Value &data);
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Point3D));
-			logVerbose(ofToString(x));
-			logVerbose(ofToString(y));
-			logVerbose(ofToString(z));
-		}
-#endif // _DEBUG
-
 	};
-	class Color : public ofColor {
+	template <class T> class ColorBase {
 	public:
-		bool read(const Json::Value &data);
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(RGB));
-			logVerbose(ofToString(r));
-			logVerbose(ofToString(g));
-			logVerbose(ofToString(b));
+		ColorBase() {}
+		ColorBase(const T& colorIn) {
+			color = colorIn;
 		}
-#endif // _DEBUG
+		bool read(const Json::Value &data) {
+			readJsonValue(color.r, data["r"]);
+			readJsonValue(color.g, data["g"]);
+			readJsonValue(color.g, data["b"]);
+			return true;
+		}
+		T color;
+	};
+	class Color : public ColorBase<ofColor> {
+	public:
+	};
+	class floatColor : public ColorBase<ofFloatColor> {
+	public:
+		floatColor(const ofFloatColor& color):ColorBase(color){
+		}
 
 	};
-
+	
 	//http://pocoproject.org/slides/070-DateAndTime.pdf
 	class DateAndTime : public Poco::DateTime {
 	public:
@@ -127,35 +126,18 @@ namespace Software2552 {
 			return ofxSmartFont::get(name, size) != nullptr;
 		}
 
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Font));
-			if (font != nullptr) {
-				logVerbose(font->name());
-				logVerbose(font->file());
-				logVerbose(ofToString(font->size()));
-			}
-			else {
-				basicTrace("no font");
-			}
-		}
-#endif // _DEBUG
-
 	};
 
 	class TheSet {
 	public:
-		ofFloatColor readColor(ofFloatColor& color, const Json::Value &data) {
-			readJsonValue(color.r, data["r"]);
-			readJsonValue(color.g, data["g"]);
-			readJsonValue(color.g, data["b"]);
-
-			return color;
-		}
 		bool read(const Json::Value &data) {
-			light.setAmbientColor(readColor(light.getAmbientColor(), data["ambientColor"]));
-			light.setDiffuseColor(readColor(light.getDiffuseColor(), data["diffuseColor"]));
+			floatColor colorAmbient(light.getAmbientColor());
+			colorAmbient.read(data["ambientColor"]);
+			light.setAmbientColor(colorAmbient.color);
+
+			floatColor colorDiffuse(light.getDiffuseColor());
+			colorAmbient.read(data["diffuseColor"]);
+			light.setDiffuseColor(colorDiffuse.color);
 			return true;
 		}
 
@@ -164,7 +146,7 @@ namespace Software2552 {
 		ofLight	light;
 		ofEasyCam camera;
 	};
-	//  settings
+	//  settings get copied a lot as they are the default data for all classes so they need to stay small
 	class Settings {
 	public:
 		Settings() {
@@ -176,7 +158,7 @@ namespace Software2552 {
 		}
 		const string JsonName = "settings";
 		void operator=(const Settings& rhs) {
-			//remove_if needs this, but we do not want to copy in that case setSettings(rhs);
+			setSettings(rhs);
 		}
 		bool read(const Json::Value &data);
 
@@ -187,20 +169,22 @@ namespace Software2552 {
 		}
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
-		const ofColor& getForeground() { return foregroundColor; }
-		const ofColor& getBackground() { return backgroundColor; }
+		const ofColor& getForeground() { return foregroundColor.color; }
+		const ofColor& getBackground() { return backgroundColor.color; }
 		float getDuration() { return duration; }
 		float getWait() { return wait; }
 		void setWait(float waitIn) { wait = waitIn; }
 		void addWait(float waitIn) { wait += waitIn; }
+		void setSettings(Settings* rhs) {
+			if (rhs != nullptr) {
+				setSettings(*rhs);
+			}
+		}
+
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
 			logVerbose(STRINGIFY(Settings));
-			foregroundColor.trace();
-			backgroundColor.trace();
-			startingPoint.trace();
-			font.trace();
 			timelineDate.trace(); // date item existed
 			lastUpdateDate.trace(); // last time object was updated
 			itemDate.trace();
@@ -224,18 +208,18 @@ namespace Software2552 {
 		float  duration; // life time of object, 0 means forever
 		float  wait;     // time to wait before drawing
 		Point3D startingPoint; // starting point of object for drawing
-		TheSet stageSet;
 		string title; // title object
+	protected:
+		void setSettings(const Settings& rhs);
 
 	private:
 		void init() {
 			Poco::Timespan totalTime = 1 * 1000 * 1000;
 			duration = 0;
 			wait = 0;
-			foregroundColor.set(0, 0, 255);
-			backgroundColor.set(255, 255, 0);
+			foregroundColor.color.set(0, 0, 255);
+			backgroundColor.color.set(255, 255, 0);
 		}
-		void setSettings(const Settings& rhs);
 
 	};
 
@@ -489,7 +473,6 @@ namespace Software2552 {
 				engines = enginesIn;
 			}
 		}
-
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		bool read(const Json::Value &data);
 		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data, const string& key);
