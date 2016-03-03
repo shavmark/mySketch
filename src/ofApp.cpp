@@ -146,7 +146,7 @@ void ofStoryTellerApp::setup(){
 
 //--------------------------------------------------------------
 void ofStoryTellerApp::update(){
-	//timeline.update();
+	timeline.update();
 	particles.update();
 
 	return;
@@ -268,7 +268,7 @@ void ofStoryTellerApp::update(){
 }
 //--------------------------------------------------------------
 void ofStoryTellerApp::draw(){
-	///timeline.draw();
+	timeline.draw();
 	particles.draw(0,0);
 	return;
 	//for (int i = 0; i< paragraphs.get().size(); i++) {

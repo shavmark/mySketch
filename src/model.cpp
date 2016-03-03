@@ -209,6 +209,16 @@ namespace Software2552 {
 	}
 
 	void GraphicEngines::setup() {
+		shared_ptr<Video> v = std::make_shared<Video>();
+		v->test = "hi";
+		g.push_back(v);
+		shared_ptr<Paragraph> v2 = std::make_shared<Paragraph>();
+		g.push_back(v2);
+		std::shared_ptr<Video> sp1 =
+			std::dynamic_pointer_cast<Video>(g[0]);
+		for (auto& t : g) {
+			t->setup();
+		}
 		setup(videos);
 		setup(audios);
 		setup(paragraphs);

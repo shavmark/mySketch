@@ -51,7 +51,7 @@ namespace Software2552 {
 		operator T() {
 			return color;
 		}
-		T get() { return color; }
+		T& get() { return color; }
 	protected:
 		T color;
 	};
@@ -161,8 +161,8 @@ namespace Software2552 {
 		shared_ptr<ofxSmartFont> getFontPointer() { return font.font; }
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
-		const ofColor& getForeground() { return foregroundColor.get(); }
-		const ofColor& getBackground() { return backgroundColor.get(); }
+		const ofColor getForeground() { return foregroundColor.get(); }
+		const ofColor getBackground() { return backgroundColor.get(); }
 		float getDuration() { return duration; }
 		float getWait() { return wait; }
 		void setWait(float waitIn) { wait = waitIn; }
@@ -313,6 +313,9 @@ namespace Software2552 {
 			}
 			return false;
 		}
+		virtual void setup() {}
+		virtual void draw() {}
+		virtual void update() {}
 
 		GraphicID id() { return myID; }
 		int getWidth() { return width; }
@@ -365,9 +368,6 @@ namespace Software2552 {
 	class Image : public ThePlayer<ofImage> {
 	public:
 		bool read(const Json::Value &data);
-		void setup() {
-		}
-
 		void draw() {
 			player.draw(getStartingPoint().x, getStartingPoint().y);
 		}
@@ -379,8 +379,6 @@ namespace Software2552 {
 	class Text : public ThePlayer<TextEngine> {
 	public:
 		bool read(const Json::Value &data);
-		void setup() {
-		}
 		void draw() {
 			player.draw(this);
 		}
@@ -395,12 +393,9 @@ namespace Software2552 {
 	class Paragraph : public ThePlayer<ofxParagraph> {
 	public:
 		bool read(const Json::Value &data);
-		void setup() {
-		}
 		void draw() {
 			player.draw(getStartingPoint().x, getStartingPoint().y);
 		}
-		void update() {}
 	};
 
 
@@ -413,8 +408,6 @@ namespace Software2552 {
 				logErrorString("setup audio Player");
 			}
 		}
-		void update() {}; // no update
-		void draw() {}; // no draw 
 	};
 
 	class Video : public ThePlayer<ofVideoPlayer> {
@@ -433,6 +426,7 @@ namespace Software2552 {
 		void draw() {
 			player.draw(getStartingPoint().x, getStartingPoint().y);
 		}
+		string test;
 	};
 
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
@@ -497,12 +491,15 @@ namespace Software2552 {
 		void add(shared_ptr<GraphicEngines> e);
 		void bumpWaits(float wait);
 		float getLongestWaitTime();
+		// keep add in its own vector
 		vector<Video> videos;
-		vector <Audio> audios;
+		vector<Audio> audios;
 		vector<Paragraph> paragraphs;
 		vector<Text> texts;
 		vector<Image> images;
 		vector<Character> characters;
+		vector<shared_ptr<Graphic>> g;
+
 	private:
 	};
 
