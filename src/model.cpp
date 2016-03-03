@@ -62,8 +62,8 @@ namespace Software2552 {
 
 #if _DEBUG
 	template<typename T> void traceVector(T& vec) {
-		for (auto& a : vec) {
-			a.trace();
+		for (auto a : vec) {
+			a->trace();
 		}
 	}
 #endif // _DEBUG
@@ -152,32 +152,12 @@ namespace Software2552 {
 
 	// see if any data in need of drawing is present
 	bool GraphicEngines::dataAvailable() {
-		return audios.size() > 0 ||
-			videos.size() > 0 ||
-			paragraphs.size() > 0 ||
-			images.size() > 0 ||
-			texts.size() > 0 ||
-			characters.size() > 0;
+		return graphicsHelpers.size() > 0;
 	}
 	
 	void GraphicEngines::add(shared_ptr<GraphicEngines> e) {
-		for (auto& player : e->videos) {
-			videos.push_back(player);
-		}
-		for (auto& player : e->audios) {
-			audios.push_back(player);
-		}
-		for (auto& player : e->paragraphs) {
-			paragraphs.push_back(player);
-		}
-		for (auto& player : e->texts) {
-			texts.push_back(player);
-		}
-		for (auto& player : e->images) {
-			images.push_back(player);
-		}
-		for (auto& player : e->characters) {
-			characters.push_back(player);
+		for (auto& player : e->graphicsHelpers) {
+			graphicsHelpers.push_back(player);
 		}
 	}
 	void GraphicEngines::add(Scene&scene) {
@@ -185,46 +165,7 @@ namespace Software2552 {
 	}
 
 	float GraphicEngines::getLongestWaitTime() {
-		float f = 0;
-		for (auto& v : videos) {
-			// wait life the the movie unless a wait time is already set, allowing json to control wait
-			if (v.getWait() > 0) {
-				setIfGreater(f, v.getWait());
-			}
-			else {
-				// will need to load it now to get the true lenght
-				if (!v.getPlayer().isLoaded()) {
-					v.getPlayer().load(v.getLocation());
-				}
-				setIfGreater(f, v.getPlayer().getDuration());
-			}
-			f += v.getWait();
-		}
-		setIfGreater(f, findMaxWait(paragraphs));
-		setIfGreater(f, findMaxWait(texts));
-		setIfGreater(f, findMaxWait(audios));
-		setIfGreater(f, findMaxWait(images));
-		setIfGreater(f, findMaxWait(characters));
-		return f;
-	}
-
-	void GraphicEngines::setup() {
-		shared_ptr<Video> v = std::make_shared<Video>();
-		v->test = "hi";
-		g.push_back(v);
-		shared_ptr<Paragraph> v2 = std::make_shared<Paragraph>();
-		g.push_back(v2);
-		std::shared_ptr<Video> sp1 =
-			std::dynamic_pointer_cast<Video>(g[0]);
-		for (auto& t : g) {
-			t->setup();
-		}
-		setup(videos);
-		setup(audios);
-		setup(paragraphs);
-		setup(texts);
-		setup(images);
-		setup(characters);
+		return findMaxWait();
 	}
 
 	// return true if there is some data 
@@ -400,16 +341,14 @@ namespace Software2552 {
 
 		return true;
 	}
-	template<typename T, typename T2> void Scene::createTimeLineItems(T2& vec, const Json::Value &data, const string& key)
+	template<typename T> void Scene::createTimeLineItems(const Json::Value &data, const string& key)
 	{
-		logTrace("createTimeLineItems for " + key);
-
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
-			T item;
-			item.setSettings(this); // inherit settings
-			if (item.read(data[key][j])) {
+			shared_ptr<T> v = std::make_shared<T>();
+			v->setSettings(this); // inherit settings
+			if (v->read(data[key][j])) {
 				// only save if data was read in 
-				vec.push_back(item);
+				engines->graphicsHelpers.push_back(v);
 			}
 		}
 	}
@@ -426,11 +365,13 @@ namespace Software2552 {
 		wait = rhs.wait;
 	}
 	bool Video::read(const Json::Value &data) {
+
 		Graphic::read(data);
 		player.setVolume(getVolume());
 		return true;
 	}
 	bool Audio::read(const Json::Value &data) {
+
 		Graphic::read(data);
 		player.setVolume(getVolume());
 		return true;
@@ -439,11 +380,7 @@ namespace Software2552 {
 		if (!wait) {
 			return;
 		}
-		bumpWait(videos, wait);
-		bumpWait(audios, wait);
-		bumpWait(paragraphs, wait);
-		bumpWait(texts, wait);
-		bumpWait(characters, wait);
+		bumpWait(wait);
 	}
 	bool Scene::read(const Json::Value &data) {
 		ECHOAll(data);
@@ -454,12 +391,14 @@ namespace Software2552 {
 				int i = 1;
 			}
 			Settings::read(data);
-			createTimeLineItems<Video>(getVideo(), data, "videos");				
-			createTimeLineItems<Audio>(getAudio(), data, "audios");
-			createTimeLineItems<Paragraph>(getParagraphs(), data, "paragraphs");
-			createTimeLineItems<Image>(getImages(), data,"images");
-			createTimeLineItems<Text>(getTexts(), data, "texts");
-			createTimeLineItems<Character>(getCharacters(), data, "characters");
+			// add in a known type if data found
+			// keep add in its own vector
+			createTimeLineItems<Video>(data, "vidoes");				
+			createTimeLineItems<Audio>(data, "audios");
+			createTimeLineItems<Paragraph>(data, "paragraphs");
+			createTimeLineItems<Image>(data,"images");
+			createTimeLineItems<Text>(data, "texts");
+			createTimeLineItems<Character>(data, "characters");
 			return true;
 		}
 		catch (std::exception e) {

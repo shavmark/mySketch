@@ -10,61 +10,18 @@ namespace Software2552 {
 
 	void DrawingTools::update(shared_ptr<GraphicEngines> engines) {
 		engines->cleanup();
-
-		//start(engines->videos);// start if needed
-		//start(engines->audios); // start if needed
-
-		update(engines->videos);
-		update(engines->texts);
-		update(engines->images);
-		update(engines->characters);
-
+		engines->update();
 	}
 	// draw all items in need of drawing
 	void DrawingTools::draw(shared_ptr<GraphicEngines> engines) {
-		draw(engines->videos);
-		draw(engines->paragraphs);
-		draw(engines->texts);
-		draw(engines->images);
-		draw(engines->characters);
+		engines->draw();
 	}
 	void DrawingTools::pause(shared_ptr<GraphicEngines> engines) {
-		pause(engines->paragraphs);
-		pause(engines->texts);
-		pause(engines->images);
-		for (auto& v : engines->videos) {
-			if (!v.getPlayer().isPlaying()) {
-				v.pause();
-				v.getPlayer().setPaused(true);
-			}
-		}
-		for (auto& a : engines->audios) {
-			if (!a.getPlayer().isPlaying()) {
-				a.pause();
-				a.getPlayer().setPaused(true);
-			}
-		}
+		engines->pause();
 	}
 
 	void DrawingTools::play(shared_ptr<GraphicEngines> engines) {
-		startReadHead(engines->paragraphs);
-		startReadHead(engines->images);
-		startReadHead(engines->texts);
-		for (auto& v : engines->videos) {
-			if (!v.getPlayer().isPlaying()) {
-				v.startReadHead();
-				v.getPlayer().setPaused(false);
-				v.getPlayer().play();
-			}
-		}
-		for (auto& v : engines->audios) {
-			if (!v.getPlayer().isPlaying()) {
-				v.startReadHead();
-				v.getPlayer().setPaused(false);
-				v.getPlayer().play();
-			}
-		}
-
+		engines->play();
 	}
 
 	// its ok also if Controller passes in an object such as a paragraph to copy in

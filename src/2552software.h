@@ -33,6 +33,12 @@
 
 namespace Software2552 {
 	typedef uint64_t GraphicID;
+	template<typename T>void setIfGreater(T& f1, T f2) {
+		if (f2 > f1) {
+			f1 = f2;
+		}
+	}
+
 	// root class, basic and small but items every object needs.  Try to avoid adding data to keep it small
 	class BaseClass {
 	public:

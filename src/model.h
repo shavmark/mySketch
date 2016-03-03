@@ -269,13 +269,13 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 
 		// for use in remove_if
-		static bool staticOKToRemove(Graphic& me) {
+		static bool staticOKToRemove(shared_ptr<Graphic> me) {
 			// duration == 0 means never go away, and start == 0 means we have not started yet
-			if (me.duration == 0 || me.start == 0) {
+			if (me->duration == 0 || me->start == 0) {
 				return false; // no time out ever, or we have not started yet
 			}
-			float elapsed = ofGetElapsedTimef() - me.start;
-			if (me.wait > elapsed || me.duration < elapsed) {
+			float elapsed = ofGetElapsedTimef() - me->start;
+			if (me->wait > elapsed || me->duration < elapsed) {
 				return false;
 			}
 			return true; 
@@ -322,6 +322,9 @@ namespace Software2552 {
 		int getHeight() { return height; }
 		string &getLocation() { return locationPath; }
 		float  getVolume() { return volume; }
+		virtual void getTimeBeforeStart(float& f) {
+			setIfGreater(f, getDuration() + getWait());
+		}
 
 #if _DEBUG
 		// echo object (debug only)
@@ -378,6 +381,8 @@ namespace Software2552 {
 
 	class Text : public ThePlayer<TextEngine> {
 	public:
+		const string keyname = "texts";
+
 		bool read(const Json::Value &data);
 		void draw() {
 			player.draw(this);
@@ -392,6 +397,7 @@ namespace Software2552 {
 
 	class Paragraph : public ThePlayer<ofxParagraph> {
 	public:
+
 		bool read(const Json::Value &data);
 		void draw() {
 			player.draw(getStartingPoint().x, getStartingPoint().y);
@@ -402,6 +408,8 @@ namespace Software2552 {
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
 	class Audio : public ThePlayer<ofSoundPlayer> {
 	public:
+		const string keyname = "audios";
+
 		bool read(const Json::Value &data);
 		void setup() {
 			if (!getPlayer().load(getLocation())) {
@@ -412,6 +420,7 @@ namespace Software2552 {
 
 	class Video : public ThePlayer<ofVideoPlayer> {
 	public:
+
 		bool read(const Json::Value &data);
 		void setup() {
 			if (!getPlayer().isLoaded()) {
@@ -426,12 +435,30 @@ namespace Software2552 {
 		void draw() {
 			player.draw(getStartingPoint().x, getStartingPoint().y);
 		}
+		// 
+		virtual float getTimeBeforeStart(float f = 0) {
+
+			// if json sets a wait use it
+			if (getWait() > 0) {
+				setIfGreater(f, getWait());
+			}
+			else {
+				// will need to load it now to get the true lenght
+				if (!getPlayer().isLoaded()) {
+					getPlayer().load(getLocation());
+				}
+				setIfGreater(f, getPlayer().getDuration());
+			}
+			return f;
+		}
 		string test;
 	};
 
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
 	class Character : public ThePlayer<CharacterEngine> {
 	public:
+		const string keyname = "characters";
+
 		bool read(const Json::Value &data);
 		void setup() {
 		}
@@ -449,56 +476,68 @@ namespace Software2552 {
 	class GraphicEngines {
 	public:
 
-		template<typename T> void bumpWait(T& v, float wait) {
-			for (auto& t : v) {
-				t.addWait(wait);
+		void bumpWait(float wait) {
+			for (auto& t : graphicsHelpers) {
+				t->addWait(wait);
 			}
 		}
-		template<typename T> void setup(T& v) {
-			for (auto& t : v) {
-				t.setup();
+		void play() {
+			for (auto& t : graphicsHelpers) {
+				t->play();
 			}
 		}
-		template<typename T> float findMaxWait(T& v) {
+		void pause() {
+			for (auto& t : graphicsHelpers) {
+				t->pause();
+			}
+		}
+		void setup() {
+			for (auto& t : graphicsHelpers) {
+				t->setup();
+			}
+		}
+		void draw() {
+			for (auto& t : graphicsHelpers) {
+				t->draw();
+			}
+		}
+		void update() {
+			for (auto& t : graphicsHelpers) {
+				t->update();
+			}
+		}
+		float findMaxWait() {
 			float f = 0;
-			for (auto& t : v) {
-				setIfGreater(f, t.getDuration() + t.getWait());
+			for (auto& t : graphicsHelpers) {
+				setIfGreater(f, t->getDuration() + t->getWait());
 			}
 			return f;
 		}
 		// remove items that are timed out
-		template<typename T> void removeExpiredItems(T& v) {
-			
-			v.erase(std::remove_if(v.begin(), v.end(), Graphic::staticOKToRemove), v.end());
+		void removeExpiredItems() {
+			graphicsHelpers.erase(std::remove_if(graphicsHelpers.begin(), graphicsHelpers.end(),
+				Graphic::staticOKToRemove), graphicsHelpers.end());
 		}
 
-		void setIfGreater(float& f1, float f2) {
-			if (f2 > f1) {
-				f1 = f2;
-			}
-		}
 		void cleanup() {
-			removeExpiredItems(videos); // make derived classes to do fancy things beyond the scope here
-			removeExpiredItems(paragraphs);
-			removeExpiredItems(texts);
-			removeExpiredItems(audios);
-			removeExpiredItems(images);
-			removeExpiredItems(characters);
+			removeExpiredItems();
 		}
 		bool dataAvailable();
-		void setup();
+		void setupObject();
 		void add(Scene&scene);
 		void add(shared_ptr<GraphicEngines> e);
 		void bumpWaits(float wait);
 		float getLongestWaitTime();
-		// keep add in its own vector
-		vector<Video> videos;
-		vector<Audio> audios;
-		vector<Paragraph> paragraphs;
-		vector<Text> texts;
-		vector<Image> images;
-		vector<Character> characters;
-		vector<shared_ptr<Graphic>> g;
+		//		std::shared_ptr<Video> sp1 =
+//			std::dynamic_pointer_cast<Video>(graphicsHelpers[0]);
+		/* example
+				shared_ptr<Video> v = std::make_shared<Video>();
+		v->test = "hi";
+		graphicsHelpers.push_back(v);
+		shared_ptr<Paragraph> v2 = std::make_shared<Paragraph>();
+		graphicsHelpers.push_back(v2);
+*/
+		vector<shared_ptr<Graphic>> graphicsHelpers;
 
 	private:
 	};
@@ -522,19 +561,13 @@ namespace Software2552 {
 		}
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		bool read(const Json::Value &data);
-		template<typename T, typename T2> void createTimeLineItems(T2& vec, const Json::Value &data, const string& key);
+		template<typename T> void createTimeLineItems(const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
 		float getLongestWaitTime() { return getEngines()->getLongestWaitTime(); }
 		void bumpWaits(float wait) { getEngines()->bumpWaits(wait); }
 		bool dataAvailable() { return getEngines()->dataAvailable(); }
 		void setup() { getEngines()->setup(); }
 		void cleanup() { getEngines()->cleanup(); }
-		vector <Video>& getVideo() { return getEngines()->videos; }
-		vector <Paragraph>& getParagraphs() { return getEngines()->paragraphs; }
-		vector <Text>& getTexts() { return getEngines()->texts; }
-		vector <Audio>& getAudio() { return  getEngines()->audios; }
-		vector <Character>& getCharacters() { return getEngines()->characters; }
-		vector <Image>& getImages() { return getEngines()->images; }
 
 		// we want folks to use wrappers to avoid tons of dependicies on this
 		shared_ptr<GraphicEngines> getEngines() {
@@ -548,13 +581,7 @@ namespace Software2552 {
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			logVerbose(STRINGIFY(Scene));
-
-			traceVector(getEngines()->texts);
-			traceVector(getEngines()->audios);
-			traceVector(getEngines()->videos);
-			traceVector(getEngines()->paragraphs);
-			traceVector(getEngines()->images);
-			traceVector(getEngines()->characters);
+			traceVector(getEngines()->graphicsHelpers);
 		}
 
 #endif // _DEBUG
@@ -593,7 +620,6 @@ namespace Software2552 {
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			logVerbose(STRINGIFY(Playlist));
-			traceVector(getList());
 		}
 #endif
 	private:
@@ -615,7 +641,6 @@ namespace Software2552 {
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			logVerbose(STRINGIFY(Act));
-			traceVector(getPlayList());
 		}
 #endif
 	private:
