@@ -279,7 +279,7 @@ C:\Users\mark\Documents\of_v0.9.1_vs_release\addons\ofxJson\libs\jsoncpp\include
     <ClCompile Include="..\..\..\addons\ofxsmartfont\src\ofxSmartFont.cpp" />
     <ClCompile Include="notes.cpp" />
     <ClCompile Include="src\2552software.cpp" />
-    <ClCompile Include="src\controller.cpp" />
+    <ClCompile Include="src\timeline.cpp" />
     <ClCompile Include="src\draw.cpp" />
     <ClCompile Include="src\kinect2552.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -288,10 +288,8 @@ C:\Users\mark\Documents\of_v0.9.1_vs_release\addons\ofxJson\libs\jsoncpp\include
     <ClCompile Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpMeshHelper.cpp" />
     <ClCompile Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpModelLoader.cpp" />
     <ClCompile Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpTexture.cpp" />
-    <ClCompile Include="src\ofxBox2dParticleSystem.cpp" />
     <ClCompile Include="src\model.cpp" />
     <ClCompile Include="src\trialcode.cpp" />
-    <ClCompile Include="src\view.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\addons\ofxBox2d\libs\Box2D\Box2D.h" />
@@ -412,7 +410,7 @@ C:\Users\mark\Documents\of_v0.9.1_vs_release\addons\ofxJson\libs\jsoncpp\include
     <ClInclude Include="..\..\..\addons\ofxParagraph\src\ofxParagraph.h" />
     <ClInclude Include="..\..\..\addons\ofxsmartfont\src\ofxSmartFont.h" />
     <ClInclude Include="src\2552software.h" />
-    <ClInclude Include="src\controller.h" />
+    <ClInclude Include="src\timeline.h" />
     <ClInclude Include="src\draw.h" />
     <ClInclude Include="src\kinect2552.h" />
     <ClInclude Include="src\ofApp.h" />
@@ -457,9 +455,7 @@ C:\Users\mark\Documents\of_v0.9.1_vs_release\addons\ofxJson\libs\jsoncpp\include
     <ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\libs\assimp\include\assimp\vector2.h" />
     <ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\libs\assimp\include\assimp\vector3.h" />
     <ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\libs\assimp\include\assimp\version.h" />
-    <ClInclude Include="src\ofxBox2dParticleSystem.h" />
     <ClInclude Include="src\model.h" />
-    <ClInclude Include="src\view.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

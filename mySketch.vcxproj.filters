@@ -26,9 +26,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="notes.cpp" />
-    <ClCompile Include="src\ofxBox2dParticleSystem.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\addons\ofxGui\src\ofxBaseGui.cpp">
       <Filter>addons\ofxGui\src</Filter>
     </ClCompile>
@@ -308,13 +305,10 @@
     <ClCompile Include="src\trialcode.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\view.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\controller.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\draw.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\timeline.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -586,9 +580,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\kinect2552.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ofxBox2dParticleSystem.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\addons\ofxGui\src\ofxBaseGui.h">
@@ -945,13 +936,10 @@
     <ClInclude Include="src\model.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\view.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\controller.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\draw.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\timeline.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

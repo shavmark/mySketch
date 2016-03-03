@@ -255,7 +255,7 @@ namespace Software2552 {
 		width = 0;
 		start = 0;
 		paused = false;
-		volume.set("volume", .5, 0, 1);
+		volume = 0.5;
 		myID = ofGetSystemTimeMicros();
 
 	}
@@ -371,7 +371,7 @@ namespace Software2552 {
 			// add in a known type if data found
 			// keep add in its own vector
 			createTimeLineItems<Particles>(data, "particles");
-			createTimeLineItems<Video>(data, "vidoes");
+			createTimeLineItems<Video>(data, "videos");
 			createTimeLineItems<Audio>(data, "audios");
 			createTimeLineItems<Paragraph>(data, "paragraphs");
 			createTimeLineItems<Image>(data,"images");

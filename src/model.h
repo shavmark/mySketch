@@ -302,7 +302,7 @@ namespace Software2552 {
 			return true;
 
 		}
-		void pause() {
+		virtual void pause() {
 			float elapsed = ofGetElapsedTimef();
 			// if beyond wait time 
 			// else hold wait time even after pause
@@ -315,9 +315,11 @@ namespace Software2552 {
 			start = ofGetElapsedTimef(); // set a base line of time
 		}
 
-		void play() {
+		virtual void play() {
 			paused = false;
 			startReadHead();
+		}
+		virtual void stop() {
 		}
 		bool okToDraw() {
 			if (paused) {
@@ -337,7 +339,7 @@ namespace Software2552 {
 		virtual void setup() {}
 		virtual void draw() {}
 		virtual void update() {}
-
+		
 		GraphicID id() { return myID; }
 		int getWidth() { return width; }
 		int getHeight() { return height; }
@@ -360,7 +362,7 @@ namespace Software2552 {
 		int width;
 		int height;
 		string locationPath; // remote or local bugbug maybe make a better name?  not sure
-		ofParameter<float> volume;
+		float volume;
 		float start;
 		bool paused;
 	private:
@@ -376,6 +378,7 @@ namespace Software2552 {
 			test();
 			return player;
 		}
+
 #if _DEBUG
 		// echo object (debug only)
 		virtual void test() {
@@ -389,6 +392,7 @@ namespace Software2552 {
 		T player;
 	};
 
+	// some objects just use the OpenFrameworks objects if things are basic enough
 	class Image : public ThePlayer<ofImage> {
 	public:
 		bool read(const Json::Value &data);
@@ -423,7 +427,7 @@ namespace Software2552 {
 			player.draw(this);
 		}
 		void update() {
-			player.update();
+			player.update(this);
 		};
 		string& getText() { return text; }
 	private:
@@ -443,8 +447,6 @@ namespace Software2552 {
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
 	class Audio : public ThePlayer<ofSoundPlayer> {
 	public:
-		const string keyname = "audios";
-
 		bool read(const Json::Value &data);
 		void setup() {
 			if (!getPlayer().load(getLocation())) {
@@ -453,23 +455,32 @@ namespace Software2552 {
 		}
 	};
 
-	class Video : public ThePlayer<ofVideoPlayer> {
+	class Video : public ThePlayer<VideoEngine> {
 	public:
 
 		bool read(const Json::Value &data);
 		void setup() {
-			if (!getPlayer().isLoaded()) {
-				if (!getPlayer().load(getLocation())) {
-					logErrorString("setup video Player");
-				}
-			}
+			player.setup(this);
 		};
 		void update() {
-			player.update();
+			player.update(this);
 		};
 		void draw() {
-			player.draw(getStartingPoint().x, getStartingPoint().y);
+			player.draw(this);
 		}
+		void pause() {
+			Graphic::pause();
+			player.setPaused(true);
+		}
+		void stop() {
+			Graphic::stop();
+			player.stop();
+		}
+		void play() {
+			Graphic::play();
+			player.play();
+		}
+
 		// 
 		virtual float getTimeBeforeStart(float f = 0) {
 
@@ -492,17 +503,8 @@ namespace Software2552 {
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
 	class Character : public ThePlayer<CharacterEngine> {
 	public:
-		const string keyname = "characters";
 
 		bool read(const Json::Value &data);
-		void setup() {
-		}
-		void draw() {
-			player.draw(this);
-		}
-		void update() {
-			player.update();
-		};
 	private:
 		// player is just a string object
 	};

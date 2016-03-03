@@ -4,6 +4,20 @@
 // this is the drawing  module where most drawing work is done
 
 namespace Software2552 {
+	void VideoEngine::draw(Video*v) {
+		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
+	}
+	void VideoEngine::update(Video*v) {
+		ofVideoPlayer::update();
+	}
+	void VideoEngine::setup(Video*v) {
+		if (!isLoaded()) {
+			if (!load(v->getLocation())) {
+				logErrorString("setup video Player");
+			}
+		}
+	}
+
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();
 		ofSetColor(t->getForeground());

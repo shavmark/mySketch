@@ -8,6 +8,7 @@ namespace Software2552 {
 	class Text;
 	class Character;
 	class Particles;
+	class Video;
 
 	// drawing related items start here
 	class BaseClass2552WithDrawing : public BaseClass {
@@ -69,7 +70,19 @@ namespace Software2552 {
 		void applyForce(int32 particle_index, float force_x, float force_y);
 
 	};
-	class ParticlesEngine {
+	template<typename T>
+	class Engine {
+	public:
+		// fill in the ones you need in derived classes
+		virtual void draw(T*) {};
+		virtual void update(T*) {};
+		virtual void setup(T*) {};
+		virtual void play() {};
+		virtual void stop() {};
+		virtual void pause() {};
+	};
+
+	class ParticlesEngine : public Engine<Particles> {
 	public:
 		void draw(Particles*particles);
 		void update(Particles*particles);
@@ -78,24 +91,30 @@ namespace Software2552 {
 		vector <ofPtr<ofxBox2dCircle> >	circles;		  //	default box2d circles
 		vector <ofPtr<ofxBox2dRect> > boxes;			  //	defalut box2d rects
 	private:
+		// use contains for multiple objects or complicated objects
 		ofxBox2dParticleSystem part;
 		ofxBox2d box2d;
 	};
 	
-	class CharacterEngine {
+	class CharacterEngine : public Engine<Character> {
 	public:
 		CharacterEngine() {}
-		void draw(Character*) {};
-		void update() {};
 
 	private:
 	};
-
-	class TextEngine {
+	//ofVideoPlayer
+	class VideoEngine :public ofVideoPlayer {
+	public:
+		VideoEngine() {}
+		void draw(Video*v);
+		void update(Video*v);
+		void setup(Video*v);
+	private:
+	};
+	class TextEngine : public Engine<Text> {
 	public:
 		TextEngine() {}
 		void draw(Text*);
-		void update() {};
 
 	private:
 	};
