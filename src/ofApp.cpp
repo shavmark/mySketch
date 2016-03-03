@@ -12,6 +12,7 @@ void ofStoryTellerApp::setup(){
 	timeline.readAct("json.json");
 	timeline.setup();
 	timeline.play();
+	particles.setup();
 	//paragraphs.build(ofGetWidth());
 	
 	//ofSetFullscreen(true);
@@ -39,19 +40,6 @@ void ofStoryTellerApp::setup(){
 	ring.load("ring.wav");
 #endif // 0
 
-	box2d.init();
-	box2d.setGravity(0, 0);
-	box2d.setFPS(30.0);
-	box2d.createBounds();
-
-	ofColor color;
-	color.set(255);
-	particles.setParticleFlag(b2_tensileParticle);
-	particles.loadImage("particle32.png");
-	particles.setup(box2d.getWorld(), 12000, 160.0, 16.0, 92.0, ofColor(0, 0, ofRandom(128, 255)));
-	franklinBook14.load("frabk.ttf", 14, true, true, true);
-	franklinBook14.setLineHeight(18.0f);
-	franklinBook14.setLetterSpacing(1.037);
 	years = 0;
 	return;
 	// show images, then wash them away
@@ -159,22 +147,12 @@ void ofStoryTellerApp::setup(){
 //--------------------------------------------------------------
 void ofStoryTellerApp::update(){
 	timeline.update();
+	particles.update();
+
 	return;
 	if (years < 12000) {
-		for (int i = 0; i < 10; i++) {
-			float radius = ofRandom(160, 280);
-			ofVec2f position = ofVec2f(cos(ofRandom(PI * 2.0)), sin(ofRandom(PI * 2.0)));
-			ofVec2f velocity = ofVec2f(0.0f, -50.0f);
-			ofColor color;
-			int hue = int(ofGetFrameNum() / 4.0) % 255;
-			color.setHsb(hue, 180, 255);
-			particles.setColor(color);
-			particles.setParticleFlag(b2_elasticParticle);
-			particles.createParticle(position, velocity);
-		}
 		years += 10;
 	}
-	box2d.update();
 	ofSetCircleResolution(circleResolution);
 	return;
 //	myPlayer.update(); // get all the new frames
@@ -294,17 +272,12 @@ void ofStoryTellerApp::update(){
 //--------------------------------------------------------------
 void ofStoryTellerApp::draw(){
 	timeline.draw();
+	particles.draw(0,0);
 	return;
 	//for (int i = 0; i< paragraphs.get().size(); i++) {
 	//	paragraphs.get(i).draw();
 	//}
 	
-	ofBackgroundGradient(ofColor(0), ofColor(63), OF_GRADIENT_LINEAR);
-	ofFill();
-	franklinBook14.drawStringAsShapes("Known years native people were in MN before first treaty (12,000)", 15, 480);
-	ofEnableBlendMode(OF_BLENDMODE_ADD);
-	particles.draw();
-	ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 	//string info = "";
 	//info += "Mouse Drag for particles\n";
 	//info += "Total Particles: " + ofToString(particles.getParticleCount()) + "\n\n";
@@ -532,15 +505,15 @@ void ofStoryTellerApp::dragEvent(ofDragInfo dragInfo){
 void ofStoryTellerApp::keyPressed(int key) {
 	if (key == 'c') {
 		float r = ofRandom(4, 20);
-		circles.push_back(ofPtr<ofxBox2dCircle>(new ofxBox2dCircle));
-		circles.back().get()->setPhysics(0.9, 0.9, 0.1);
-		circles.back().get()->setup(box2d.getWorld(), mouseX, mouseY, r);
+		///circles.push_back(ofPtr<ofxBox2dCircle>(new ofxBox2dCircle));
+		//circles.back().get()->setPhysics(0.9, 0.9, 0.1);
+		//circles.back().get()->setup(box2d.getWorld(), mouseX, mouseY, r);
 	}
 	if (key == 'b') {
 		float w = ofRandom(20, 40);
 		float h = ofRandom(20, 40);
-		boxes.push_back(ofPtr<ofxBox2dRect>(new ofxBox2dRect));
-		boxes.back().get()->setPhysics(4.0, 0.53, 0.1);
-		boxes.back().get()->setup(box2d.getWorld(), mouseX, mouseY, w, h);
+		//boxes.push_back(ofPtr<ofxBox2dRect>(new ofxBox2dRect));
+		//boxes.back().get()->setPhysics(4.0, 0.53, 0.1);
+		//boxes.back().get()->setup(box2d.getWorld(), mouseX, mouseY, w, h);
 	}
 }

@@ -7,14 +7,12 @@
 #include <cctype>
 #include <locale>
 
-#include "ofxBox2d.h"
-#include "ofxBox2dParticleSystem.h"
 #include "ofxGui.h"
 
 #include "2552software.h"
 #include "kinect2552.h"
 #include "controller.h"
-
+#include "draw.h"
 
 class ofStoryTellerApp : public ofBaseApp{
 
@@ -115,10 +113,7 @@ class ofStoryTellerApp : public ofBaseApp{
 	ofDisableDepthTest();
 }
 
-		ofxBox2d box2d;
-		vector <ofPtr<ofxBox2dCircle> >	circles;		  //	default box2d circles
-		vector <ofPtr<ofxBox2dRect> > boxes;			  //	defalut box2d rects
-		ofxBox2dParticleSystem particles;			      //    LiquidFun particle system
+		Software2552::Particles particles;
 		ofLight	light;
 		ofEasyCam camera;
 		ofVideoPlayer test;
@@ -127,8 +122,6 @@ class ofStoryTellerApp : public ofBaseApp{
 		float sequenceFPS;
 		bool  bFrameIndependent;
 		
-		ofTrueTypeFont  franklinBook14;
-
 		void circleResolutionChanged(int & circleResolution);
 		void ringButtonPressed();
 		bool bHide;

@@ -48,13 +48,24 @@ namespace Software2552 {
 			readJsonValue(color.g, data["b"]);
 			return true;
 		}
+		operator T() {
+			return color;
+		}
+		T get() { return color; }
+	protected:
 		T color;
 	};
 	class Color : public ColorBase<ofColor> {
 	public:
+		Color() :ColorBase() {
+		}
+		Color(const ofColor& color) :ColorBase(color) {
+		}
 	};
 	class floatColor : public ColorBase<ofFloatColor> {
 	public:
+		floatColor() :ColorBase() {
+		}
 		floatColor(const ofFloatColor& color):ColorBase(color){
 		}
 
@@ -133,11 +144,11 @@ namespace Software2552 {
 		bool read(const Json::Value &data) {
 			floatColor colorAmbient(light.getAmbientColor());
 			colorAmbient.read(data["ambientColor"]);
-			light.setAmbientColor(colorAmbient.color);
+			light.setAmbientColor(colorAmbient.get());
 
 			floatColor colorDiffuse(light.getDiffuseColor());
 			colorAmbient.read(data["diffuseColor"]);
-			light.setDiffuseColor(colorDiffuse.color);
+			light.setDiffuseColor(colorDiffuse.get());
 			return true;
 		}
 
@@ -169,8 +180,8 @@ namespace Software2552 {
 		}
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
-		const ofColor& getForeground() { return foregroundColor.color; }
-		const ofColor& getBackground() { return backgroundColor.color; }
+		const ofColor& getForeground() { return foregroundColor.get(); }
+		const ofColor& getBackground() { return backgroundColor.get(); }
 		float getDuration() { return duration; }
 		float getWait() { return wait; }
 		void setWait(float waitIn) { wait = waitIn; }
@@ -217,8 +228,8 @@ namespace Software2552 {
 			Poco::Timespan totalTime = 1 * 1000 * 1000;
 			duration = 0;
 			wait = 0;
-			foregroundColor.color.set(0, 0, 255);
-			backgroundColor.color.set(255, 255, 0);
+			foregroundColor.get().set(0, 0, 255);
+			backgroundColor.get().set(255, 255, 0);
 		}
 
 	};
