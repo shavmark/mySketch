@@ -17,6 +17,7 @@ namespace Software2552 {
 		update(engines->videos);
 		update(engines->texts);
 		update(engines->images);
+		update(engines->characters);
 
 	}
 	// draw all items in need of drawing
@@ -25,6 +26,7 @@ namespace Software2552 {
 		draw(engines->paragraphs);
 		draw(engines->texts);
 		draw(engines->images);
+		draw(engines->characters);
 	}
 	void DrawingTools::pause(shared_ptr<GraphicEngines> engines) {
 		pause(engines->paragraphs);

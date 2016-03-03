@@ -16,7 +16,7 @@ namespace Software2552 {
 		template<typename T> void update(T& v) {
 			for (auto& t : v) {
 				if (t.okToDraw()) { //bugbug thinking here is only update active ones? or are they deleted?
-					t.getPlayer().update();
+					t.update();
 				}
 			}
 		}
@@ -29,7 +29,7 @@ namespace Software2552 {
 		template<typename T> void draw(T& v) {
 			for (auto& t : v) {
 				if (t.okToDraw()) {
-					t.getPlayer().draw(t.getStartingPoint().x, t.getStartingPoint().y);
+					t.draw();
 				}
 			}
 		}

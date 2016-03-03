@@ -157,7 +157,6 @@ namespace Software2552 {
 			paragraphs.size() > 0 ||
 			images.size() > 0 ||
 			texts.size() > 0 ||
-			graphics.size() > 0 ||
 			characters.size() > 0;
 	}
 	
@@ -165,7 +164,6 @@ namespace Software2552 {
 		for (auto& player : e->videos) {
 			videos.push_back(player);
 		}
-
 		for (auto& player : e->audios) {
 			audios.push_back(player);
 		}
@@ -177,9 +175,6 @@ namespace Software2552 {
 		}
 		for (auto& player : e->images) {
 			images.push_back(player);
-		}
-		for (auto& player : e->graphics) {
-			graphics.push_back(player);
 		}
 		for (auto& player : e->characters) {
 			characters.push_back(player);
@@ -210,25 +205,16 @@ namespace Software2552 {
 		setIfGreater(f, findMaxWait(audios));
 		setIfGreater(f, findMaxWait(images));
 		setIfGreater(f, findMaxWait(characters));
-		setIfGreater(f, findMaxWait(graphics));
 		return f;
 	}
 
-	void GraphicEngines::setup(float wait) {
-		for (auto& v : videos) {
-			v.addWait(wait);
-			if (!v.getPlayer().isLoaded()) {
-				if (!v.getPlayer().load(v.getLocation())) {
-					logErrorString("setup video Player");
-				}
-			}
-		}
-		for (auto& a : audios) {
-			a.addWait(wait);
-			if (!a.getPlayer().load(a.getLocation())) {
-				logErrorString("setup audio Player");
-			}
-		}
+	void GraphicEngines::setup() {
+		setup(videos);
+		setup(audios);
+		setup(paragraphs);
+		setup(texts);
+		setup(images);
+		setup(characters);
 	}
 
 	// return true if there is some data 
@@ -250,14 +236,25 @@ namespace Software2552 {
 		string filename;
 
 		readStringFromJson(name, data["font"]["name"]);
-		readStringFromJson(name, data["font"]["file"]);
+		readStringFromJson(filename, data["font"]["file"]);
 		readJsonValue(size, data["font"]["size"]);
 
+		// filename required
 		if (filename.size() != 0) {
-			if (!fontExists(filename, size)) {
+			font = ofxSmartFont::get(filename, size);
+			if (font == nullptr) {
 				// name is not unqiue, just a helper of some kind I guess
 				font = ofxSmartFont::add(filename, size, name);
 			}
+			if (font == nullptr) {
+				logErrorString("font file issue");
+				return false;
+			}
+		}
+		else {
+			font = nullptr;
+			logErrorString("font file name required");
+			return false;
 		}
 		return true;
 	}
@@ -351,14 +348,9 @@ namespace Software2552 {
 	}
 	bool Text::read(const Json::Value &data) {
 		ECHOAll(data);
-
+		player = player;
 		if (Graphic::read(data)) {
-			string str;
-			readStringFromJson(str, data["text"]["str"]);
-			player.setFont(getFont());
-			player.setColor(getForeground());
-			player.setText(str);
-
+			readStringFromJson(text, data["text"]["str"]);
 		}
 		return true;
 	}
@@ -392,7 +384,7 @@ namespace Software2552 {
 		else if (alignment == "right") { //bugbug ignore case
 			player.setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
-		player.setFont(getFont());
+		player.setFont(getFontPointer());
 		player.setColor(getForeground());
 		player.setPosition(getStartingPoint().x, getStartingPoint().y);
 
@@ -442,7 +434,6 @@ namespace Software2552 {
 		bumpWait(paragraphs, wait);
 		bumpWait(texts, wait);
 		bumpWait(characters, wait);
-		bumpWait(graphics, wait);
 	}
 	bool Scene::read(const Json::Value &data) {
 		ECHOAll(data);
@@ -457,7 +448,6 @@ namespace Software2552 {
 			createTimeLineItems<Audio>(getAudio(), data, "audios");
 			createTimeLineItems<Paragraph>(getParagraphs(), data, "paragraphs");
 			createTimeLineItems<Image>(getImages(), data,"images");
-			createTimeLineItems<Graphic>(getGraphics(), data, "graphics");
 			createTimeLineItems<Text>(getTexts(), data, "texts");
 			createTimeLineItems<Character>(getCharacters(), data, "characters");
 			return true;

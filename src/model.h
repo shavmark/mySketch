@@ -113,30 +113,13 @@ namespace Software2552 {
 #define defaultFontFile "fonts/Raleway-Thin.ttf"
 #define defaultFontName "Raleway-Thin"
 
-	class Font {
+	class Font  { 
 	public:
-		Font() {
-			// always install the default foint
-			if (!fontExists(defaultFontFile, defaultFontSize)) {
-				font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);
-			}
-			else {
-				font = ofxSmartFont::get(defaultFontFile, defaultFontSize);
-			}
-		}
-		// only add if its not already there
-		void addFont(const string& file, int size = defaultFontSize, const string& name = "default") {
-			if (!fontExists(file, size)) {
-				font = ofxSmartFont::add(file, size, name);;
-			}
-		}
+		ofTrueTypeFont& get() { return font->ttf; }
 
 		bool read(const Json::Value &data);
-		shared_ptr<ofxSmartFont> font; // no need to re-wrap
-		bool fontExists(const string& name, int size = defaultFontSize) {
-			return ofxSmartFont::get(name, size) != nullptr;
-		}
-
+	
+		shared_ptr<ofxSmartFont> font;
 	};
 
 	class TheSet {
@@ -174,10 +157,8 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 
 		Point3D& getStartingPoint() { return startingPoint; }
-
-		shared_ptr<ofxSmartFont> getFont() {
-			return font.font;
-		}
+		ofTrueTypeFont& getFont() { return font.get(); }
+		shared_ptr<ofxSmartFont> getFontPointer() { return font.font; }
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
 		const ofColor& getForeground() { return foregroundColor.get(); }
@@ -384,14 +365,42 @@ namespace Software2552 {
 	class Image : public ThePlayer<ofImage> {
 	public:
 		bool read(const Json::Value &data);
+		void setup() {
+		}
+
+		void draw() {
+			player.draw(getStartingPoint().x, getStartingPoint().y);
+		}
+		void update() {
+			player.update();
+		};
 	};
-	class Text : public ThePlayer<TextToRender> {
+
+	class Text : public ThePlayer<TextEngine> {
 	public:
 		bool read(const Json::Value &data);
+		void setup() {
+		}
+		void draw() {
+			player.draw(this);
+		}
+		void update() {
+			player.update();
+		};
+		string& getText() { return text; }
+	private:
+		string text;
 	};
+
 	class Paragraph : public ThePlayer<ofxParagraph> {
 	public:
 		bool read(const Json::Value &data);
+		void setup() {
+		}
+		void draw() {
+			player.draw(getStartingPoint().x, getStartingPoint().y);
+		}
+		void update() {}
 	};
 
 
@@ -399,18 +408,45 @@ namespace Software2552 {
 	class Audio : public ThePlayer<ofSoundPlayer> {
 	public:
 		bool read(const Json::Value &data);
+		void setup() {
+			if (!getPlayer().load(getLocation())) {
+				logErrorString("setup audio Player");
+			}
+		}
+		void update() {}; // no update
+		void draw() {}; // no draw 
 	};
 
 	class Video : public ThePlayer<ofVideoPlayer> {
 	public:
 		bool read(const Json::Value &data);
-
+		void setup() {
+			if (!getPlayer().isLoaded()) {
+				if (!getPlayer().load(getLocation())) {
+					logErrorString("setup video Player");
+				}
+			}
+		};
+		void update() {
+			player.update();
+		};
+		void draw() {
+			player.draw(getStartingPoint().x, getStartingPoint().y);
+		}
 	};
 
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
-	class Character : public ThePlayer<string> {
+	class Character : public ThePlayer<CharacterEngine> {
 	public:
 		bool read(const Json::Value &data);
+		void setup() {
+		}
+		void draw() {
+			player.draw(this);
+		}
+		void update() {
+			player.update();
+		};
 	private:
 		// player is just a string object
 	};
@@ -422,6 +458,11 @@ namespace Software2552 {
 		template<typename T> void bumpWait(T& v, float wait) {
 			for (auto& t : v) {
 				t.addWait(wait);
+			}
+		}
+		template<typename T> void setup(T& v) {
+			for (auto& t : v) {
+				t.setup();
 			}
 		}
 		template<typename T> float findMaxWait(T& v) {
@@ -448,11 +489,10 @@ namespace Software2552 {
 			removeExpiredItems(texts);
 			removeExpiredItems(audios);
 			removeExpiredItems(images);
-			removeExpiredItems(graphics);
 			removeExpiredItems(characters);
 		}
 		bool dataAvailable();
-		void setup(float wait = 0);
+		void setup();
 		void add(Scene&scene);
 		void add(shared_ptr<GraphicEngines> e);
 		void bumpWaits(float wait);
@@ -462,7 +502,6 @@ namespace Software2552 {
 		vector<Paragraph> paragraphs;
 		vector<Text> texts;
 		vector<Image> images;
-		vector<Graphic> graphics;
 		vector<Character> characters;
 	private:
 	};
@@ -499,7 +538,6 @@ namespace Software2552 {
 		vector <Audio>& getAudio() { return  getEngines()->audios; }
 		vector <Character>& getCharacters() { return getEngines()->characters; }
 		vector <Image>& getImages() { return getEngines()->images; }
-		vector <Graphic>& getGraphics() { return getEngines()->graphics; }
 
 		// we want folks to use wrappers to avoid tons of dependicies on this
 		shared_ptr<GraphicEngines> getEngines() {
@@ -519,7 +557,6 @@ namespace Software2552 {
 			traceVector(getEngines()->videos);
 			traceVector(getEngines()->paragraphs);
 			traceVector(getEngines()->images);
-			traceVector(getEngines()->graphics);
 			traceVector(getEngines()->characters);
 		}
 

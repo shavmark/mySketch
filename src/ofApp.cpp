@@ -146,13 +146,10 @@ void ofStoryTellerApp::setup(){
 
 //--------------------------------------------------------------
 void ofStoryTellerApp::update(){
-	timeline.update();
+	//timeline.update();
 	particles.update();
 
 	return;
-	if (years < 12000) {
-		years += 10;
-	}
 	ofSetCircleResolution(circleResolution);
 	return;
 //	myPlayer.update(); // get all the new frames
@@ -271,7 +268,7 @@ void ofStoryTellerApp::update(){
 }
 //--------------------------------------------------------------
 void ofStoryTellerApp::draw(){
-	timeline.draw();
+	///timeline.draw();
 	particles.draw(0,0);
 	return;
 	//for (int i = 0; i< paragraphs.get().size(); i++) {
