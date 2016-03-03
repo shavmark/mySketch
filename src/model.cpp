@@ -126,21 +126,14 @@ namespace Software2552 {
 	}
 	bool Image::read(const Json::Value &data) {
 		if (Graphic::read(data)) {
-			player.load(getLocation());//bugbug if things get too slow etc do not load here
+			if (getLocation().size() > 0) {
+				player.load(getLocation());//bugbug if things get too slow etc do not load here
+			}
 			return true;
 		}
 		return false;
 	}
 
-	bool Act::dataAvailable() {
-		// see if any scenes have any data
-		for (auto& item : playlist.getList()) {
-			if (item.scene.dataAvailable()) {
-				return true;
-			}
-		}
-		return false;
-	}
 	bool PlayItem::read(const Json::Value &data) {
 		READSTRING(keyname, data);
 		return true;
@@ -155,14 +148,6 @@ namespace Software2552 {
 		return graphicsHelpers.size() > 0;
 	}
 	
-	void GraphicEngines::add(shared_ptr<GraphicEngines> e) {
-		for (auto& player : e->graphicsHelpers) {
-			graphicsHelpers.push_back(player);
-		}
-	}
-	void GraphicEngines::add(Scene&scene) {
-		add(scene.getEngines());
-	}
 
 	float GraphicEngines::getLongestWaitTime() {
 		return findMaxWait();
@@ -170,7 +155,6 @@ namespace Software2552 {
 
 	// return true if there is some data 
 	bool ReferencedItem::read(const Json::Value &data) {
-		ECHOAll(data);
 
 		if (Settings::read(data[Settings::JsonName])) {
 
@@ -180,7 +164,6 @@ namespace Software2552 {
 		return false; // some thing must be really wrong to return false as these are optional items
 	}
 	bool Font::read(const Json::Value &data) {
-		ECHOAll(data);
 
 		string name;
 		int size = defaultFontSize;
@@ -190,7 +173,7 @@ namespace Software2552 {
 		readStringFromJson(filename, data["font"]["file"]);
 		readJsonValue(size, data["font"]["size"]);
 
-		// filename required
+		// filename required to create a font, else default font is used
 		if (filename.size() != 0) {
 			font = ofxSmartFont::get(filename, size);
 			if (font == nullptr) {
@@ -201,11 +184,6 @@ namespace Software2552 {
 				logErrorString("font file issue");
 				return false;
 			}
-		}
-		else {
-			font = nullptr;
-			logErrorString("font file name required");
-			return false;
 		}
 		return true;
 	}
@@ -231,7 +209,6 @@ namespace Software2552 {
 	}
 	
 	bool Reference::read(const Json::Value &data) {
-		ECHOAll(data);
 
 		if (Settings::read(data[Settings::JsonName])) { // ignore reference as an array or w/o data at this point
 			// no base class so it repeats some data in base class ReferencedItem
@@ -243,7 +220,6 @@ namespace Software2552 {
 		return false;
 	}
 	bool Character::read(const Json::Value &data) {
-		ECHOAll(data);
 
 		if (Graphic::read(data)) {
 			return true;
@@ -251,14 +227,12 @@ namespace Software2552 {
 		return false;
 	}
 	bool Point3D::read(const Json::Value &data) {
-		ECHOAll(data);
 		READFLOAT(x, data);
 		READFLOAT(y, data);
 		READFLOAT(z, data);
 		return true;
 	}
 	bool DateAndTime::read(const Json::Value &data) {
-		ECHOAll(data);
 
 		if (READINT(bc, data)) {
 			return true;
@@ -287,8 +261,7 @@ namespace Software2552 {
 	}
 	// always return true as these are optional items
 	bool Graphic::read(const Json::Value &data) {
-		ECHOAll(data);
-
+	
 		ReferencedItem::read(data);
 		READSTRING(type, data);
 		READFLOAT(width, data);
@@ -297,9 +270,14 @@ namespace Software2552 {
 		READFLOAT(volume, data);
 		return true;
 	}
+	
+	bool Particles::read(const Json::Value &data) {
+		if (Graphic::read(data)) {
+			return true;
+		}
+		return true;
+	}
 	bool Text::read(const Json::Value &data) {
-		ECHOAll(data);
-		player = player;
 		if (Graphic::read(data)) {
 			readStringFromJson(text, data["text"]["str"]);
 		}
@@ -307,7 +285,7 @@ namespace Software2552 {
 	}
 	// return true if text read in
 	bool Paragraph::read(const Json::Value &data) {
-		ECHOAll(data);
+
 		Graphic::read(data);
 
 		string str;
@@ -348,7 +326,7 @@ namespace Software2552 {
 			v->setSettings(this); // inherit settings
 			if (v->read(data[key][j])) {
 				// only save if data was read in 
-				engines->graphicsHelpers.push_back(v);
+				getDrawingEngines()->get().push_back(v);
 			}
 		}
 	}
@@ -383,7 +361,6 @@ namespace Software2552 {
 		bumpWait(wait);
 	}
 	bool Scene::read(const Json::Value &data) {
-		ECHOAll(data);
 
 		try {
 			READSTRING(keyname, data);
@@ -393,7 +370,8 @@ namespace Software2552 {
 			Settings::read(data);
 			// add in a known type if data found
 			// keep add in its own vector
-			createTimeLineItems<Video>(data, "vidoes");				
+			createTimeLineItems<Particles>(data, "particles");
+			createTimeLineItems<Video>(data, "vidoes");
 			createTimeLineItems<Audio>(data, "audios");
 			createTimeLineItems<Paragraph>(data, "paragraphs");
 			createTimeLineItems<Image>(data,"images");
@@ -438,8 +416,8 @@ namespace Software2552 {
 			// space out waits, but calc out video and other lengths (will result in loading videos)
 			float wait = 0;
 			for (auto& item : playlist.getList()) {
-				item.scene.bumpWaits(wait);
-				wait = item.scene.getLongestWaitTime();
+				item.scene.getDrawingEngines()->bumpWaits(wait);
+				wait = item.scene.getDrawingEngines()->getLongestWaitTime();
 			}
 
 		}

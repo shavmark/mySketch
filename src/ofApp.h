@@ -11,7 +11,7 @@
 
 #include "2552software.h"
 #include "kinect2552.h"
-#include "controller.h"
+#include "timeline.h"
 #include "draw.h"
 
 class ofStoryTellerApp : public ofBaseApp{
@@ -113,7 +113,6 @@ class ofStoryTellerApp : public ofBaseApp{
 	ofDisableDepthTest();
 }
 
-		Software2552::Particles particles;
 		ofLight	light;
 		ofEasyCam camera;
 		ofVideoPlayer test;

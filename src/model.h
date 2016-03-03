@@ -115,10 +115,28 @@ namespace Software2552 {
 
 	class Font  { 
 	public:
-		ofTrueTypeFont& get() { return font->ttf; }
-
+		ofTrueTypeFont& get() { 
+			if (font != nullptr) {
+				return font->ttf;
+			}
+			ofTrueTypeFont font2;
+			return font2; // default
+		}
+		shared_ptr<ofxSmartFont> getPointer() {
+			if (font == nullptr) {
+				font = ofxSmartFont::get(defaultFontFile, defaultFontSize);
+				if (font == nullptr) {
+					// name is not unqiue, just a helper of some kind I guess
+					font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);
+				}
+			}
+			if (font == nullptr) {
+				logErrorString("font is null");
+			}
+			return font;
+		}
 		bool read(const Json::Value &data);
-	
+	private:
 		shared_ptr<ofxSmartFont> font;
 	};
 
@@ -158,7 +176,7 @@ namespace Software2552 {
 
 		Point3D& getStartingPoint() { return startingPoint; }
 		ofTrueTypeFont& getFont() { return font.get(); }
-		shared_ptr<ofxSmartFont> getFontPointer() { return font.font; }
+		shared_ptr<ofxSmartFont> getFontPointer() { return font.getPointer(); }
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
 		const ofColor getForeground() { return foregroundColor.get(); }
@@ -275,10 +293,13 @@ namespace Software2552 {
 				return false; // no time out ever, or we have not started yet
 			}
 			float elapsed = ofGetElapsedTimef() - me->start;
-			if (me->wait > elapsed || me->duration < elapsed) {
+			if (me->wait > elapsed) {
 				return false;
 			}
-			return true; 
+			if (me->duration > elapsed) {
+				return false;
+			}
+			return true;
 
 		}
 		void pause() {
@@ -378,11 +399,25 @@ namespace Software2552 {
 			player.update();
 		};
 	};
+	
+	class Particles : public ThePlayer<ParticlesEngine> {
+	public:
+
+		bool read(const Json::Value &data);
+		void draw() {
+			player.draw(this);
+		}
+		void setup() {
+			player.setup(this);
+		};
+		void update() {
+			player.update(this);
+		};
+	private:
+	};
 
 	class Text : public ThePlayer<TextEngine> {
 	public:
-		const string keyname = "texts";
-
 		bool read(const Json::Value &data);
 		void draw() {
 			player.draw(this);
@@ -477,55 +512,52 @@ namespace Software2552 {
 	public:
 
 		void bumpWait(float wait) {
-			for (auto& t : graphicsHelpers) {
+			for (auto& t : get()) {
 				t->addWait(wait);
 			}
 		}
 		void play() {
-			for (auto& t : graphicsHelpers) {
+			for (auto& t : get()) {
 				t->play();
 			}
 		}
 		void pause() {
-			for (auto& t : graphicsHelpers) {
+			for (auto& t : get()) {
 				t->pause();
 			}
 		}
 		void setup() {
-			for (auto& t : graphicsHelpers) {
+			for (auto& t : get()) {
 				t->setup();
 			}
 		}
 		void draw() {
-			for (auto& t : graphicsHelpers) {
+			for (auto& t : get()) {
 				t->draw();
 			}
 		}
 		void update() {
-			for (auto& t : graphicsHelpers) {
+			for (auto& t : get()) {
 				t->update();
 			}
 		}
 		float findMaxWait() {
 			float f = 0;
-			for (auto& t : graphicsHelpers) {
+			for (auto& t : get()) {
 				setIfGreater(f, t->getDuration() + t->getWait());
 			}
 			return f;
 		}
 		// remove items that are timed out
 		void removeExpiredItems() {
-			graphicsHelpers.erase(std::remove_if(graphicsHelpers.begin(), graphicsHelpers.end(),
-				Graphic::staticOKToRemove), graphicsHelpers.end());
+			get().erase(std::remove_if(get().begin(), get().end(),
+				Graphic::staticOKToRemove), get().end());
 		}
 
 		void cleanup() {
 			removeExpiredItems();
 		}
 		bool dataAvailable();
-		void setupObject();
-		void add(Scene&scene);
-		void add(shared_ptr<GraphicEngines> e);
 		void bumpWaits(float wait);
 		float getLongestWaitTime();
 		//		std::shared_ptr<Video> sp1 =
@@ -537,9 +569,11 @@ namespace Software2552 {
 		shared_ptr<Paragraph> v2 = std::make_shared<Paragraph>();
 		graphicsHelpers.push_back(v2);
 */
-		vector<shared_ptr<Graphic>> graphicsHelpers;
-
+		vector<shared_ptr<Graphic>>& get() { 
+			return graphicsHelpers;
+		}
 	private:
+		vector<shared_ptr<Graphic>> graphicsHelpers;
 	};
 
 	class Scene : public Settings {
@@ -563,14 +597,9 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 		template<typename T> void createTimeLineItems(const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
-		float getLongestWaitTime() { return getEngines()->getLongestWaitTime(); }
-		void bumpWaits(float wait) { getEngines()->bumpWaits(wait); }
-		bool dataAvailable() { return getEngines()->dataAvailable(); }
-		void setup() { getEngines()->setup(); }
-		void cleanup() { getEngines()->cleanup(); }
 
 		// we want folks to use wrappers to avoid tons of dependicies on this
-		shared_ptr<GraphicEngines> getEngines() {
+		shared_ptr<GraphicEngines> getDrawingEngines() {
 			if (engines == nullptr) {
 				setEngine();
 			}
@@ -581,16 +610,16 @@ namespace Software2552 {
 		// echo object (debug only) bugbug make debug only
 		void trace() {
 			logVerbose(STRINGIFY(Scene));
-			traceVector(getEngines()->graphicsHelpers);
+			traceVector(getDrawingEngines()->get());
 		}
 
 #endif // _DEBUG
 
 	protected:
-		shared_ptr<GraphicEngines> engines;
 		string keyname;
 
 	private:
+		shared_ptr<GraphicEngines> engines;
 
 	};
 	// item in a play list
@@ -634,11 +663,10 @@ namespace Software2552 {
 
 		// read a deck from json (you can also just build one in code)
 		bool read(const string& fileName = "json.json");
-		bool dataAvailable();
 		vector<PlayItem> &getPlayList() { return playlist.getList(); };
 
 #if _DEBUG
-		// echo object (debug only) bugbug make debug only
+		// echo object (debug only) 
 		void trace() {
 			logVerbose(STRINGIFY(Act));
 		}

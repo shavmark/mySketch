@@ -12,7 +12,6 @@ void ofStoryTellerApp::setup(){
 	timeline.readAct("json.json");
 	timeline.setup();
 	timeline.play();
-	particles.setup();
 	//paragraphs.build(ofGetWidth());
 	
 	//ofSetFullscreen(true);
@@ -147,8 +146,6 @@ void ofStoryTellerApp::setup(){
 //--------------------------------------------------------------
 void ofStoryTellerApp::update(){
 	timeline.update();
-	particles.update();
-
 	return;
 	ofSetCircleResolution(circleResolution);
 	return;
@@ -269,7 +266,6 @@ void ofStoryTellerApp::update(){
 //--------------------------------------------------------------
 void ofStoryTellerApp::draw(){
 	timeline.draw();
-	particles.draw(0,0);
 	return;
 	//for (int i = 0; i< paragraphs.get().size(); i++) {
 	//	paragraphs.get(i).draw();
@@ -447,8 +443,6 @@ void ofStoryTellerApp::mouseDragged(int x, int y, int button) {
 		ofColor color;
 		int hue = int(ofGetFrameNum() / 4.0) % 255;
 		color.setHsb(hue, 180, 200);
-		particles.setColor(color);
-		particles.createParticle(position, velocity);
 	}
 }
 
