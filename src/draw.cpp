@@ -7,10 +7,22 @@ namespace Software2552 {
 	void VideoEngine::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
-
+	void BackgroundEngine::draw(Settings*settings){
+		ofGradientMode mode = OF_GRADIENT_LINEAR;
+		switch ((int)ofRandom(1, 3)) {
+		case 1:
+			mode = OF_GRADIENT_CIRCULAR;
+			break;
+		case 2:
+			mode = OF_GRADIENT_BAR;
+			break;
+		}
+		ofBackgroundGradient(settings->backgroundColor,
+			settings->foregroundColor, OF_GRADIENT_CIRCULAR);
+	}
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();
-		ofSetColor(t->getForeground());
+		ofSetColor(t->foregroundColor);
 		t->getFont().drawString(t->getText(), t->getStartingPoint().x, t->getStartingPoint().y);
 		ofPopStyle();
 	}
@@ -160,14 +172,11 @@ namespace Software2552 {
 	}
 	void ParticlesEngine::draw(Particles*particles) {
 		ofPushStyle();
-
-		ofBackgroundGradient(ofColor(0), ofColor(63), OF_GRADIENT_LINEAR);
-
-		ofEnableBlendMode(OF_BLENDMODE_ADD);
+		//ofEnableBlendMode(OF_BLENDMODE_ADD);
 		part.draw();
-		ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+		//ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 		ofPopStyle();
-		particles->getFont().drawStringAsShapes("Known years native people were in MN before first treaty (12,000)", 15, 480);
+		particles->getFont().drawStringAsShapes("Known years native people were in MN before first treaty (12,000)", 1900, 480);
 	}
 	void ParticlesEngine::update(Particles*particles) {
 		years += 10;

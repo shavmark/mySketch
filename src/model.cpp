@@ -156,7 +156,7 @@ namespace Software2552 {
 	// return true if there is some data 
 	bool ReferencedItem::read(const Json::Value &data) {
 
-		if (Settings::read(data[Settings::JsonName])) {
+		if (Dates::read(data)) {
 
 			parse<Reference>(references, data["references"]);
 			return true;
@@ -194,12 +194,6 @@ namespace Software2552 {
 			READSTRING(name, data);
 			READSTRING(title, data);
 			READSTRING(notes, data);
-			READFLOAT(duration, data);
-			READFLOAT(wait, data);
-			timelineDate.read(data["timelineDate"]); // date item existed
-			lastUpdateDate.read(data["lastUpdateDate"]); // last time object was updated
-			itemDate.read(data["itemDate"]);
-			startingPoint.read(data["startingPoint"]);
 			foregroundColor.read(data["foreground"]);
 			backgroundColor.read(data["background"]);
 			font.read(data["font"]);
@@ -207,10 +201,17 @@ namespace Software2552 {
 
 		return true;
 	}
-	
+	bool Dates::read(const Json::Value &data) {
+		Settings::read(data["settings"]);
+		timelineDate.read(data["timelineDate"]); // date item existed
+		lastUpdateDate.read(data["lastUpdateDate"]); // last time object was updated
+		itemDate.read(data["itemDate"]);
+		return true;
+	}
+
 	bool Reference::read(const Json::Value &data) {
 
-		if (Settings::read(data[Settings::JsonName])) { // ignore reference as an array or w/o data at this point
+		if (Dates::read(data)) { // ignore reference as an array or w/o data at this point
 			// no base class so it repeats some data in base class ReferencedItem
 			READSTRING(location, data[STRINGIFY(Reference)]);
 			READSTRING(locationPath, data[STRINGIFY(Reference)]);
@@ -292,7 +293,7 @@ namespace Software2552 {
 			player.setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
 		player.setFont(getFontPointer());
-		player.setColor(getForeground());
+		player.setColor(foregroundColor);
 		player.setPosition(getStartingPoint().x, getStartingPoint().y);
 
 		return true;
@@ -310,16 +311,10 @@ namespace Software2552 {
 	}
 
 	void Settings::setSettings(const Settings& rhs) {
+		// only copy items that change as a default
 		font = rhs.font;
-		timelineDate = rhs.timelineDate; // date item existed
-		lastUpdateDate = rhs.lastUpdateDate; // last time object was updated
-		name = rhs.name; // any object can have a name, note, date, reference, duration
-		notes = rhs.notes;
-		itemDate = rhs.itemDate; 
 		foregroundColor = rhs.foregroundColor;
 		backgroundColor = rhs.backgroundColor;
-		duration = rhs.duration;
-		wait = rhs.wait;
 	}
 	void Audio::setup() {
 		if (!getPlayer().load(getLocation())) {
@@ -478,6 +473,8 @@ namespace Software2552 {
 		paused = false;
 		volume = 0.5;
 		myID = ofGetSystemTimeMicros();
+		duration = 0;
+		wait = 0;
 
 	}
 	// always return true as these are optional items
@@ -489,6 +486,10 @@ namespace Software2552 {
 		READFLOAT(height, data);
 		READSTRING(locationPath, data);
 		READFLOAT(volume, data);
+		READFLOAT(duration, data);
+		READFLOAT(wait, data);
+		startingPoint.read(data["startingPoint"]);
+
 		return true;
 	}
 

@@ -171,23 +171,16 @@ namespace Software2552 {
 			init();
 			name = nameIn;
 		}
-		const string JsonName = "settings";
 		void operator=(const Settings& rhs) {
 			setSettings(rhs);
 		}
 		bool read(const Json::Value &data);
 
-		Point3D& getStartingPoint() { return startingPoint; }
 		ofTrueTypeFont& getFont() { return font.get(); }
 		shared_ptr<ofxSmartFont> getFontPointer() { return font.getPointer(); }
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
-		const ofColor getForeground() { return foregroundColor.get(); }
-		const ofColor getBackground() { return backgroundColor.get(); }
-		float getDuration() { return duration; }
-		float getWait() { return wait; }
-		void setWait(float waitIn) { wait = waitIn; }
-		void addWait(float waitIn) { wait += waitIn; }
+
 		void setSettings(Settings* rhs) {
 			if (rhs != nullptr) {
 				setSettings(*rhs);
@@ -198,46 +191,42 @@ namespace Software2552 {
 		// echo object (debug only)
 		void trace() {
 			logVerbose(STRINGIFY(Settings));
-			timelineDate.trace(); // date item existed
-			lastUpdateDate.trace(); // last time object was updated
-			itemDate.trace();
 
 			logVerbose(name);
 			logVerbose(notes);
-			logVerbose(ofToString(duration));
-			logVerbose(ofToString(wait));
 		}
 #endif
+		Color  foregroundColor;
+		Color  backgroundColor;
 
 	protected:
 		Font   font;
-		DateAndTime timelineDate; // date item existed
-		DateAndTime lastUpdateDate; // last time object was updated
-		DateAndTime itemDate; // date of reference vs the date of the referenced item 
-		string name; // any object can have a name, note, date, reference, duration
 		string notes;// unstructured string of info, can be shown to the user
-		Color  foregroundColor;
-		Color  backgroundColor;
-		float  duration; // life time of object, 0 means forever
-		float  wait;     // time to wait before drawing
-		Point3D startingPoint; // starting point of object for drawing
 		string title; // title object
+		string name; // any object can have a name, note, date, reference, duration
 	protected:
 		void setSettings(const Settings& rhs);
 
 	private:
 		void init() {
-			Poco::Timespan totalTime = 1 * 1000 * 1000;
-			duration = 0;
-			wait = 0;
+			//Poco::Timespan totalTime = 1 * 1000 * 1000;
 			foregroundColor.get().set(0, 0, 255);
 			backgroundColor.get().set(255, 255, 0);
 		}
 
 	};
 
+	class Dates : public Settings {
+	public:
+		bool read(const Json::Value &data);
+	protected:
+		DateAndTime timelineDate; // date item existed
+		DateAndTime lastUpdateDate; // last time object was updated
+		DateAndTime itemDate; // date of reference vs the date of the referenced item 
+
+	};
 	// reference to a cited item
-	class Reference : public Settings {
+	class Reference : public Dates {
 	public:
 		bool read(const Json::Value &data);
 
@@ -258,24 +247,18 @@ namespace Software2552 {
 	};
 
 	// true for all time based items
-	class ReferencedItem : public Settings {
+	class ReferencedItem : public Dates {
 	public:
-		ReferencedItem() : Settings() {};
-		ReferencedItem(const string &name) :Settings(name) {};
+		bool read(const Json::Value &data);
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
 			logVerbose(STRINGIFY(ReferencedItem));
-			Settings::trace();
-
-			for (auto& ref : references) {
-				ref.trace();
-			}
+			Dates::trace();
 		}
 
 #endif // _DEBUG
 
-		bool read(const Json::Value &data);
 
 	protected:
 		vector <Reference> references;
@@ -308,6 +291,11 @@ namespace Software2552 {
 		virtual void getTimeBeforeStart(float& f) {
 			setIfGreater(f, getDuration() + getWait());
 		}
+		float getDuration() { return duration; }
+		float getWait() { return wait; }
+		void setWait(float waitIn) { wait = waitIn; }
+		void addWait(float waitIn) { wait += waitIn; }
+		Point3D& getStartingPoint() { return startingPoint; }
 
 #if _DEBUG
 		// echo object (debug only)
@@ -325,6 +313,10 @@ namespace Software2552 {
 		float volume;
 		float start;
 		bool paused;
+		float  duration; // life time of object, 0 means forever
+		float  wait;     // time to wait before drawing
+		Point3D startingPoint; // starting point of object for drawing
+
 	private:
 		GraphicID myID;// every graphic item gets a unique ID for deletion and etc
 	};

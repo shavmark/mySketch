@@ -9,6 +9,7 @@ namespace Software2552 {
 	class Character;
 	class Particles;
 	class Video;
+	class Settings;
 
 	// drawing related items start here
 	class BaseClass2552WithDrawing : public BaseClass {
@@ -81,7 +82,11 @@ namespace Software2552 {
 		virtual void stop() {};
 		virtual void pause() {};
 	};
+	class BackgroundEngine : public Engine<Settings> {
+	public:
+		void draw(Settings*settings);
 
+	};
 	class ParticlesEngine : public Engine<Particles> {
 	public:
 		void draw(Particles*particles);
