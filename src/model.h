@@ -2,7 +2,7 @@
 
 #include "2552software.h"
 #include "draw.h"
-
+#include <unordered_map>
 // json driven model
 
 namespace Software2552 {
@@ -61,53 +61,65 @@ namespace Software2552 {
 	// there is a lot we can do
 	class ColorSet {
 	public:
+		enum ColorType {
+			Warm, Cool,Stark, LightValue, DarkValue, MediumValue, Random
+		};
+
 		ColorSet() {
-			state = std::make_tuple(ofColor(0, 0, 0), ofColor(255, 255, 255), ofColor(0, 0, 0));
+			state = std::make_tuple(Stark, ofColor(0, 0, 0), ofColor(255, 255, 255), ofColor(0, 0, 0));
 		}
-		ColorSet(const ofColor&foreground, const ofColor&background, const ofColor&text) {
-			state = std::make_tuple(foreground, background, text);
+		ColorSet(const ColorType type, const ofColor&foreground, const ofColor&background, const ofColor&text) {
+			state = std::make_tuple(type, foreground, background, text);
 		}
-		ofColor getForeground() {
+		ColorType getType() {
 			return get<0>(state);
 		}
-		ofColor getBackground() {
+		ofColor getForeground() {
 			return get<1>(state);
 		}
-		ofColor getFontColor() {
+		ofColor getBackground() {
 			return get<2>(state);
+		}
+		ofColor getFontColor() {
+			return get<3>(state);
 		}
 	private:
 		// never want to seperate or we will not match
-		tuple<ofColor, ofColor, ofColor> state;
+		tuple<ColorType, ofColor, ofColor, ofColor> state;
 	};
 	class Colors {
 	public:
 		Colors() {
-			setup();
+			setup(); 
 		}
-		ColorSet get() {
-			int i = ofRandom(1000);
-			int mod = i % colors.size();
-			return colors[mod];
+		//bugbug we should let the json go by warms, cools, lights, darks so colors match the scene
+		ColorSet get(ColorSet::ColorType type= ColorSet::Warm) {
+			int i = ofRandom(data.size() * 1000); // should tend to change color less often
+			int mod = i % data.size();
+			for (const auto &w : data) {
+				if (w.first == type)
+				{
+					return w.second; // bugbug do not stop on first match
+				}
+			}
 		}
 	private:
 		// foreground, background, font
-		vector <ColorSet> colors;
+		std::unordered_map<ColorSet::ColorType, ColorSet> data;
+		//vector <ColorSet> warm;
 		// make a bunch of colors that match using various techniques
 		void setup() {
-			colors.push_back(ColorSet(ofColor(255, 0, 0), ofColor(255, 255, 255), ofColor(255, 255, 255)));
-			colors.push_back(ColorSet(ofColor(0, 0, 0), ofColor(255, 255, 255), ofColor(0, 0, 0)));
-
+			data.insert(std::pair<ColorSet::ColorType, ColorSet>(ColorSet::Warm, ColorSet(ColorSet::Stark, ofColor(255, 0, 0), ofColor(255, 255, 255), ofColor(255, 255, 255))));
 			ofColor fore, back, text;
 			fore.fromHsb(200, 100, 40); // just made this up for now
 			back.fromHsb(100, 100, 50);
 			text.fromHsb(200, 100, 100);
-			colors.push_back(ColorSet(fore, back, text));
+			data.insert(std::pair<ColorSet::ColorType, ColorSet>(ColorSet::Cool, ColorSet(ColorSet::Stark, fore, back, text)));
 
 			fore.fromHsb(200, 100, 40); // just made this up for now
 			back.fromHsb(100, 100, 50);
 			text.fromHsb(200, 100, 100);
-			colors.push_back(ColorSet(ofColor::aliceBlue, ofColor::darkGoldenRod, ofColor::whiteSmoke));
+			data.insert(std::pair<ColorSet::ColorType, ColorSet>(ColorSet::Stark, ColorSet(ColorSet::Stark, fore, back, text)));
 		}
 	};
 	// color support of explict color is needed
@@ -257,6 +269,20 @@ namespace Software2552 {
 		static ofColor getForeground() { return colors.get().getForeground(); }
 		static ofColor getFontColor() { return colors.get().getFontColor(); }
 		static ofColor getBackground() { return colors.get().getBackground(); }
+		// bugbug enable this in json
+		void useWarms() {
+
+		}
+		void useCools() {
+
+		}
+		void useLights() {
+
+		}
+		void useDarks() {
+
+		}
+
 	protected:
 		Font   font;
 		string notes;// unstructured string of info, can be shown to the user
