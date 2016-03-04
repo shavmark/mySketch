@@ -7,9 +7,6 @@ namespace Software2552 {
 	void VideoEngine::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
-	void VideoEngine::update(Video*v) {
-		ofVideoPlayer::update();
-	}
 	void VideoEngine::setup(Video*v) {
 		if (!isLoaded()) {
 			if (!load(v->getLocation())) {

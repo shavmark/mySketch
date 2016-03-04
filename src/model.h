@@ -463,7 +463,7 @@ namespace Software2552 {
 			player.setup(this);
 		};
 		void update() {
-			player.update(this);
+			player.update();
 		};
 		void draw() {
 			player.draw(this);

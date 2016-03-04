@@ -107,7 +107,6 @@ namespace Software2552 {
 	public:
 		VideoEngine() {}
 		void draw(Video*v);
-		void update(Video*v);
 		void setup(Video*v);
 	private:
 	};
