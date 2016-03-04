@@ -3,7 +3,7 @@
 #include "2552software.h"
 #include "draw.h"
 
-// timeline software, json based
+// json driven model
 
 namespace Software2552 {
 
@@ -116,6 +116,9 @@ namespace Software2552 {
 	class Font  { 
 	public:
 		ofTrueTypeFont& get() { 
+			if (font == nullptr) {
+				getPointer();
+			}
 			if (font != nullptr) {
 				return font->ttf;
 			}

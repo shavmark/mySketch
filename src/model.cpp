@@ -378,7 +378,7 @@ namespace Software2552 {
 			Settings::read(data);
 			// add in a known type if data found
 			// keep add in its own vector
-			createTimeLineItems<Particles>(data, "particles");
+			createTimeLineItems<Particles>(data, "particles"); 
 			createTimeLineItems<Video>(data, "videos");
 			createTimeLineItems<Audio>(data, "audios");
 			createTimeLineItems<Paragraph>(data, "paragraphs");

@@ -88,8 +88,6 @@ namespace Software2552 {
 		void update(Particles*particles);
 		void setup(Particles*particles);
 		int years;
-		vector <ofPtr<ofxBox2dCircle> >	circles;		  //	default box2d circles
-		vector <ofPtr<ofxBox2dRect> > boxes;			  //	defalut box2d rects
 	private:
 		// use contains for multiple objects or complicated objects
 		ofxBox2dParticleSystem part;
