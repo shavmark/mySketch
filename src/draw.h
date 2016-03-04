@@ -82,9 +82,9 @@ namespace Software2552 {
 		virtual void stop() {};
 		virtual void pause() {};
 	};
-	class BackgroundEngine : public Engine<Settings> {
+	class BackgroundEngine  {
 	public:
-		void draw(Settings*settings);
+		void draw();
 
 	};
 	class ParticlesEngine : public Engine<Particles> {

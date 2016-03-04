@@ -2,6 +2,8 @@
 
 namespace Software2552 {
 	// helpers
+	
+	Colors Settings::colors;
 
 	//bugbug todo weave into errors, even on release mode as anyone can break a json file
 	void echoValue(const Json::Value &data, bool isError) {
@@ -194,8 +196,6 @@ namespace Software2552 {
 			READSTRING(name, data);
 			READSTRING(title, data);
 			READSTRING(notes, data);
-			foregroundColor.read(data["foreground"]);
-			backgroundColor.read(data["background"]);
 			font.read(data["font"]);
 		}
 
@@ -293,7 +293,7 @@ namespace Software2552 {
 			player.setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
 		player.setFont(getFontPointer());
-		player.setColor(foregroundColor);
+		player.setColor(getFontColor());
 		player.setPosition(getStartingPoint().x, getStartingPoint().y);
 
 		return true;
@@ -313,8 +313,6 @@ namespace Software2552 {
 	void Settings::setSettings(const Settings& rhs) {
 		// only copy items that change as a default
 		font = rhs.font;
-		foregroundColor = rhs.foregroundColor;
-		backgroundColor = rhs.backgroundColor;
 	}
 	void Audio::setup() {
 		if (!getPlayer().load(getLocation())) {

@@ -55,6 +55,62 @@ namespace Software2552 {
 	protected:
 		T color;
 	};
+	// matching colors, this class controls colors, no data or others selected colors
+	// this way its easier to manage things
+	//http://openframeworks.cc/documentation/types/ofColor/#show_fromHsb
+	// there is a lot we can do
+	class ColorSet {
+	public:
+		ColorSet() {
+			state = std::make_tuple(ofColor(0, 0, 0), ofColor(255, 255, 255), ofColor(0, 0, 0));
+		}
+		ColorSet(const ofColor&foreground, const ofColor&background, const ofColor&text) {
+			state = std::make_tuple(foreground, background, text);
+		}
+		ofColor getForeground() {
+			return get<0>(state);
+		}
+		ofColor getBackground() {
+			return get<1>(state);
+		}
+		ofColor getFontColor() {
+			return get<2>(state);
+		}
+	private:
+		// never want to seperate or we will not match
+		tuple<ofColor, ofColor, ofColor> state;
+	};
+	class Colors {
+	public:
+		Colors() {
+			setup();
+		}
+		ColorSet get() {
+			int i = ofRandom(1000);
+			int mod = i % colors.size();
+			return colors[mod];
+		}
+	private:
+		// foreground, background, font
+		vector <ColorSet> colors;
+		// make a bunch of colors that match using various techniques
+		void setup() {
+			colors.push_back(ColorSet(ofColor(255, 0, 0), ofColor(255, 255, 255), ofColor(255, 255, 255)));
+			colors.push_back(ColorSet(ofColor(0, 0, 0), ofColor(255, 255, 255), ofColor(0, 0, 0)));
+
+			ofColor fore, back, text;
+			fore.fromHsb(200, 100, 40); // just made this up for now
+			back.fromHsb(100, 100, 50);
+			text.fromHsb(200, 100, 100);
+			colors.push_back(ColorSet(fore, back, text));
+
+			fore.fromHsb(200, 100, 40); // just made this up for now
+			back.fromHsb(100, 100, 50);
+			text.fromHsb(200, 100, 100);
+			colors.push_back(ColorSet(ofColor::aliceBlue, ofColor::darkGoldenRod, ofColor::whiteSmoke));
+		}
+	};
+	// color support of explict color is needed
 	class Color : public ColorBase<ofColor> {
 	public:
 		Color() :ColorBase() {
@@ -196,9 +252,11 @@ namespace Software2552 {
 			logVerbose(notes);
 		}
 #endif
-		Color  foregroundColor;
-		Color  backgroundColor;
-
+		static Colors& getColors() { return colors; }
+		// do not break colors up or thins will not match
+		static ofColor getForeground() { return colors.get().getForeground(); }
+		static ofColor getFontColor() { return colors.get().getFontColor(); }
+		static ofColor getBackground() { return colors.get().getBackground(); }
 	protected:
 		Font   font;
 		string notes;// unstructured string of info, can be shown to the user
@@ -208,10 +266,9 @@ namespace Software2552 {
 		void setSettings(const Settings& rhs);
 
 	private:
+		static Colors colors;
 		void init() {
 			//Poco::Timespan totalTime = 1 * 1000 * 1000;
-			foregroundColor.get().set(0, 0, 255);
-			backgroundColor.get().set(255, 255, 0);
 		}
 
 	};

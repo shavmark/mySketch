@@ -7,9 +7,13 @@ namespace Software2552 {
 	void VideoEngine::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
-	void BackgroundEngine::draw(Settings*settings){
+	void BackgroundEngine::draw(){
+		//bugbug make this time based using color list
 		ofGradientMode mode = OF_GRADIENT_LINEAR;
-		switch ((int)ofRandom(1, 3)) {
+		switch ((int)ofRandom(0, 3)) {
+		case 0:
+			mode = OF_GRADIENT_LINEAR;
+			break;
 		case 1:
 			mode = OF_GRADIENT_CIRCULAR;
 			break;
@@ -17,12 +21,12 @@ namespace Software2552 {
 			mode = OF_GRADIENT_BAR;
 			break;
 		}
-		ofBackgroundGradient(settings->backgroundColor,
-			settings->foregroundColor, OF_GRADIENT_CIRCULAR);
+		ofBackgroundGradient(Settings::getForeground(),
+			Settings::getBackground(), OF_GRADIENT_CIRCULAR);
 	}
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();
-		ofSetColor(t->foregroundColor);
+		ofSetColor(Settings::getFontColor());
 		t->getFont().drawString(t->getText(), t->getStartingPoint().x, t->getStartingPoint().y);
 		ofPopStyle();
 	}
