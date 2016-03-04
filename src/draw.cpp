@@ -7,13 +7,6 @@ namespace Software2552 {
 	void VideoEngine::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
-	void VideoEngine::setup(Video*v) {
-		if (!isLoaded()) {
-			if (!load(v->getLocation())) {
-				logErrorString("setup video Player");
-			}
-		}
-	}
 
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();

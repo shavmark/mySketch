@@ -287,55 +287,12 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 
 		// for use in remove_if
-		static bool staticOKToRemove(shared_ptr<Graphic> me) {
-			// duration == 0 means never go away, and start == 0 means we have not started yet
-			if (me->duration == 0 || me->start == 0) {
-				return false; // no time out ever, or we have not started yet
-			}
-			float elapsed = ofGetElapsedTimef() - me->start;
-			if (me->wait > elapsed) {
-				return false;
-			}
-			if (me->duration > elapsed) {
-				return false;
-			}
-			return true;
-
-		}
-		virtual void pause() {
-			float elapsed = ofGetElapsedTimef();
-			// if beyond wait time 
-			// else hold wait time even after pause
-			if (elapsed - (start + wait) > 0) {
-				wait = 0; // ignore wait time upon return
-			}
-			paused = true;
-		}
-		void startReadHead() {
-			start = ofGetElapsedTimef(); // set a base line of time
-		}
-
-		virtual void play() {
-			paused = false;
-			startReadHead();
-		}
-		virtual void stop() {
-		}
-		bool okToDraw() {
-			if (paused) {
-				return false;
-			}
-			float elapsed = ofGetElapsedTimef();
-			// example: ElapsedTime = 100, start = 50, wait = 100, duration 10
-			if (elapsed - (start + wait) > 0) {
-				if (duration == 0) {
-					return true; // draw away
-				}
-				// ok to start but only if we are less than duration
-				return (elapsed < start + wait + duration);
-			}
-			return false;
-		}
+		static bool staticOKToRemove(shared_ptr<Graphic> me);
+		virtual void pause();
+		void startReadHead();
+		virtual void play();
+		virtual void stop() {	}
+		bool okToDraw();
 		virtual void setup() {}
 		virtual void draw() {}
 		virtual void update() {}
@@ -448,20 +405,14 @@ namespace Software2552 {
 	class Audio : public ThePlayer<ofSoundPlayer> {
 	public:
 		bool read(const Json::Value &data);
-		void setup() {
-			if (!getPlayer().load(getLocation())) {
-				logErrorString("setup audio Player");
-			}
-		}
+		void setup();
 	};
 
 	class Video : public ThePlayer<VideoEngine> {
 	public:
 
 		bool read(const Json::Value &data);
-		void setup() {
-			player.setup(this);
-		};
+		void setup();
 		void update() {
 			player.update();
 		};
@@ -482,21 +433,7 @@ namespace Software2552 {
 		}
 
 		// 
-		virtual float getTimeBeforeStart(float f = 0) {
-
-			// if json sets a wait use it
-			if (getWait() > 0) {
-				setIfGreater(f, getWait());
-			}
-			else {
-				// will need to load it now to get the true lenght
-				if (!getPlayer().isLoaded()) {
-					getPlayer().load(getLocation());
-				}
-				setIfGreater(f, getPlayer().getDuration());
-			}
-			return f;
-		}
+		virtual float getTimeBeforeStart(float f = 0);
 		string test;
 	};
 

@@ -98,21 +98,17 @@ namespace Software2552 {
 	
 	class CharacterEngine : public Engine<Character> {
 	public:
-		CharacterEngine() {}
 
 	private:
 	};
-	//ofVideoPlayer
+	// put advanced drawing in these objects
 	class VideoEngine :public ofVideoPlayer {
 	public:
-		VideoEngine() {}
 		void draw(Video*v);
-		void setup(Video*v);
 	private:
 	};
 	class TextEngine : public Engine<Text> {
 	public:
-		TextEngine() {}
 		void draw(Text*);
 
 	private:
