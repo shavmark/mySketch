@@ -58,7 +58,7 @@ namespace Software2552 {
 	// this way its easier to manage things
 	//http://openframeworks.cc/documentation/types/ofColor/#show_fromHsb
 	// there is a lot we can do
-	class ColorSet {
+	class ColorSet : public Animator {
 	public:
 		enum ColorType {
 			Warm, Cool,Stark, Pastel, LightValue, DarkValue, MediumValue, Random
@@ -79,6 +79,9 @@ namespace Software2552 {
 		int getCount() const {
 			return get<1>(state);
 		}
+		void operator++ () {
+			std::get<1>(state) = std::get<1>(state) + 1;
+		}
 		const ofColor& getForeground() const {
 			return get<2>(state);
 		}
@@ -87,9 +90,6 @@ namespace Software2552 {
 		}
 		const ofColor& getFontColor() const {
 			return get<4>(state);
-		}
-		void operator++ () {
-			std::get<1>(state) = std::get<1>(state) + 1;
 		}
 		bool operator> (const ColorSet& rhs) {
 			return getCount() > rhs.getCount();
@@ -188,6 +188,7 @@ namespace Software2552 {
 			// there must always be at least one color
 			setup();
 		}
+		void update();
 		// call getNext at start up and when ever colors should change
 		// do not break colors up or thins will not match
 		// get next color based on type and usage count
@@ -538,7 +539,7 @@ namespace Software2552 {
 		// remove items that are timed out
 		void removeExpiredItems() {
 			get().erase(std::remove_if(get().begin(), get().end(),
-				Graphic::staticOKToRemove), get().end());
+				Animator::staticOKToRemove), get().end());
 		}
 
 		void cleanup() {
@@ -546,7 +547,7 @@ namespace Software2552 {
 		}
 		bool dataAvailable();
 		void bumpWaits(uint64_t wait);
-		float getLongestWaitTime();
+		uint64_t getLongestWaitTime();
 		//		std::shared_ptr<Video> sp1 =
 //			std::dynamic_pointer_cast<Video>(graphicsHelpers[0]);
 		/* example

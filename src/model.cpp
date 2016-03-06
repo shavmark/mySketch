@@ -135,6 +135,7 @@ namespace Software2552 {
 		background.draw(&colors); // bugbug object at some point may want its own colors
 	}
 	void TheSet::update() {
+		colors.update();
 		background.update(&colors);// bugbug object at some point may want its own colors
 		if (refresh()) {
 			colors.getNextColors(ColorSet::ColorType::Warm);
@@ -149,6 +150,15 @@ namespace Software2552 {
 			return true;
 		}
 		return false;
+	}
+	void Colors::update() {
+		refresh(); //bugbug does every object need to code around this?
+		for (auto& d : data) {
+			d.refresh();
+		}
+		// remove expired colors
+		data.erase(std::remove_if(data.begin(), data.end(),
+			Animator::staticOKToRemove), data.end());
 	}
 
 	bool PlayItem::read(const Json::Value &data) {
@@ -166,7 +176,7 @@ namespace Software2552 {
 	}
 	
 
-	float GraphicEngines::getLongestWaitTime() {
+	uint64_t GraphicEngines::getLongestWaitTime() {
 		return findMaxWait();
 	}
 
