@@ -152,13 +152,15 @@ namespace Software2552 {
 		return false;
 	}
 	void Colors::update() {
-		refresh(); //bugbug does every object need to code around this?
-		for (auto& d : data) {
-			d.refresh();
+		if (refresh()) {
+			// clean up deleted items every so often
+			for (auto& d : data) {
+				d.refresh();
+			}
+			// remove expired colors
+			data.erase(std::remove_if(data.begin(), data.end(),
+				Animator::staticOKToRemove), data.end());
 		}
-		// remove expired colors
-		data.erase(std::remove_if(data.begin(), data.end(),
-			Animator::staticOKToRemove), data.end());
 	}
 
 	bool PlayItem::read(const Json::Value &data) {
@@ -420,30 +422,6 @@ namespace Software2552 {
 	Scene::Scene() {
 		engines = nullptr;
 	}
-	Animator::Animator() {
-		startTime = 0;
-		expired = false;
-		paused = false;
-		duration = 0; // infinite bugbug duraiton and wait not full baked in yet
-		wait = 0;
-		rate = 2000;// 2 seconds while developing, but much longer later bugbug set in json
-	}
-	bool Animator::refresh() {
-		uint64_t t = ofGetElapsedTimeMillis() - startTime;//test
-
-		if (t < getWait()) {
-			return true;// waiting to start
-		}
-		if (t > duration) {
-			expired = true;
-			return false;
-		}
-		if (t > refreshRate()) {
-			startTime = ofGetElapsedTimeMillis();
-			return true;
-		}
-		return false;
-	}
 	ColorSet& Colors::get() {
 		// if first time in set things up
 		if (smallest < 0) {
@@ -576,40 +554,6 @@ namespace Software2552 {
 
 		return true;
 	}
-	void Animator::play() {
-		paused = false;
-		startReadHead();
-	}
-
-	void Animator::pause() {
-		float elapsed = ofGetElapsedTimef();
-		// if beyond wait time 
-		// else hold wait time even after pause
-		if (elapsed - (startTime + wait) > 0) {
-			wait = 0; // ignore wait time upon return
-		}
-		paused = true;
-	}
-
-	bool Animator::staticOKToRemove(shared_ptr<Animator> me) {
-		// duration == 0 means never go away, and start == 0 means we have not started yet
-		if (me->duration == 0 || me->startTime == 0) {
-			return false; // no time out ever, or we have not started yet
-		}
-		if (me->expired) {
-			return true;
-		}
-		float elapsed = ofGetElapsedTimef() - me->startTime;
-		if (me->wait > elapsed) {
-			return false;
-		}
-		if (me->duration > elapsed) {
-			return false;
-		}
-		return true;
-
-	}
-
 	Graphic::Graphic() : ReferencedItem() {
 		//bugbug add a pause where time is suspended, add in rew, play, stop etc also
 		height = 0;
@@ -626,28 +570,11 @@ namespace Software2552 {
 		READFLOAT(height, data);
 		READSTRING(locationPath, data);
 		READFLOAT(volume, data);
-		READFLOAT(duration, data);
-		READFLOAT(wait, data);
+		readJsonValue(getDuration(), data["duration"]);
+		readJsonValue(getWait(), data["wait"]);
 		startingPoint.read(data["startingPoint"]);
 
 		return true;
-	}
-
-
-	bool Animator::okToDraw() {
-		if (paused || isExpired()) {
-			return false;
-		}
-		float elapsed = ofGetElapsedTimef();
-		// example: ElapsedTime = 100, start = 50, wait = 100, duration 10
-		if (elapsed - (startTime + wait) > 0) {
-			if (duration == 0) {
-				return true; // draw away
-			}
-			// ok to start but only if we are less than duration
-			return (elapsed < startTime + wait + duration);
-		}
-		return false;
 	}
 
 

@@ -96,7 +96,7 @@ namespace Software2552 {
 		}
 		// return true if less than, and both of the desired type or Random
 		bool lessThan(const ColorSet& j, ColorType type) {
-			if (type != Random && getType() != j.getType()) {
+			if (isExpired() || (type != Random && getType() != j.getType())) {
 				return false;
 			}
 			return *this > j; 
@@ -339,11 +339,6 @@ namespace Software2552 {
 		Graphic();
 
 		bool read(const Json::Value &data);
-
-		// for use in remove_if
-		virtual void setup() {}
-		virtual void draw() {}
-		virtual void update() {}
 		
 		GraphicID id() { return myID; }
 		int getWidth() { return width; }
@@ -539,7 +534,7 @@ namespace Software2552 {
 		// remove items that are timed out
 		void removeExpiredItems() {
 			get().erase(std::remove_if(get().begin(), get().end(),
-				Animator::staticOKToRemove), get().end());
+				Animator::staticOKToRemovePtr), get().end());
 		}
 
 		void cleanup() {
