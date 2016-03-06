@@ -84,7 +84,22 @@ namespace Software2552 {
 	};
 	class BackgroundEngine  {
 	public:
+		BackgroundEngine() { start = ofGetElapsedTimeMillis(); }
 		void draw();
+		// how often to redraw the background etc
+		//bugbug this should become data in the model once figured
+		// out
+		uint64_t refreshBackGroundRate() { return 2000; /*ms*/}
+		// return true if its time to redraw based on count
+		bool refreshBackGround() {
+			if ((ofGetElapsedTimeMillis() - start) > refreshBackGroundRate()) {
+				start = ofGetElapsedTimeMillis();
+				return true;
+			}
+			return false;
+		}
+	private:
+		uint64_t start;
 
 	};
 	class ParticlesEngine : public Engine<Particles> {

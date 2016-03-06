@@ -9,7 +9,7 @@ namespace Software2552 {
 	}
 	void BackgroundEngine::draw(){
 		//bugbug make this time based using color list
-		ofGradientMode mode = OF_GRADIENT_LINEAR;
+		ofGradientMode mode;
 		switch ((int)ofRandom(0, 3)) {
 		case 0:
 			mode = OF_GRADIENT_LINEAR;
@@ -21,12 +21,12 @@ namespace Software2552 {
 			mode = OF_GRADIENT_BAR;
 			break;
 		}
-		ofBackgroundGradient(Settings::getForeground(),
-			Settings::getBackground(), OF_GRADIENT_CIRCULAR);
+		ofBackgroundGradient(getCurrentColors().getForeground(),
+			getCurrentColors().getBackground(), mode);
 	}
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();
-		ofSetColor(Settings::getFontColor());
+		ofSetColor(getCurrentColors().getFontColor());
 		t->getFont().drawString(t->getText(), t->getStartingPoint().x, t->getStartingPoint().y);
 		ofPopStyle();
 	}
@@ -180,7 +180,7 @@ namespace Software2552 {
 		part.draw();
 		//ofEnableBlendMode(OF_BLENDMODE_ALPHA);
 		ofPopStyle();
-		particles->getFont().drawStringAsShapes("Known years native people were in MN before first treaty (12,000)", 1900, 480);
+		//particles->getFont().drawStringAsShapes("Known years native people were in MN before first treaty (12,000)", 1900, 480);
 	}
 	void ParticlesEngine::update(Particles*particles) {
 		years += 10;

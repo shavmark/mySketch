@@ -2,11 +2,10 @@
 
 #include "2552software.h"
 #include "draw.h"
-#include <unordered_map>
+
 // json driven model
 
 namespace Software2552 {
-
 	// model helpers
 
 	void echoValue(const Json::Value &data, bool isError = false);
@@ -62,66 +61,131 @@ namespace Software2552 {
 	class ColorSet {
 	public:
 		enum ColorType {
-			Warm, Cool,Stark, LightValue, DarkValue, MediumValue, Random
+			Warm, Cool,Stark, Pastel, LightValue, DarkValue, MediumValue, Random
 		};
 
 		ColorSet() {
-			state = std::make_tuple(Stark, ofColor(0, 0, 0), ofColor(255, 255, 255), ofColor(0, 0, 0));
+			set(Stark, ofColor(0, 0, 0), ofColor(255, 255, 255), ofColor(0, 0, 0));
 		}
 		ColorSet(const ColorType type, const ofColor&foreground, const ofColor&background, const ofColor&text) {
-			state = std::make_tuple(type, foreground, background, text);
+			set(type, foreground, background, text);
 		}
-		ColorType getType() {
+		void set(const ColorType type, const ofColor&foreground, const ofColor&background, const ofColor&text) {
+			state = std::make_tuple(type, 0, foreground, background, text);
+		}
+		ColorType getType() const {
 			return get<0>(state);
 		}
-		ofColor getForeground() {
+		int getCount() const {
 			return get<1>(state);
 		}
-		ofColor getBackground() {
+		const ofColor& getForeground() const {
 			return get<2>(state);
 		}
-		ofColor getFontColor() {
+		const ofColor& getBackground() const {
 			return get<3>(state);
+		}
+		const ofColor& getFontColor() const {
+			return get<4>(state);
+		}
+		void operator++ () {
+			std::get<1>(state) = std::get<1>(state) + 1;
+		}
+		bool operator> (const ColorSet& rhs) {
+			return getCount() > rhs.getCount();
+		}
+		// return true if less than, and both of the desired type or Random
+		bool lessThan(const ColorSet& j, ColorType type) {
+			if (type != Random && getType() != j.getType()) {
+				return false;
+			}
+			return *this > j; 
+		}
+		ColorSet& operator=(const ColorSet& rhs) {
+			state = rhs.state;
+			return *this;
 		}
 	private:
 		// never want to seperate or we will not match
-		tuple<ColorType, ofColor, ofColor, ofColor> state;
+		// where does value come in? maybe convert from color to hue, sat/val?
+		tuple<ColorType, int, ofColor, ofColor, ofColor> state;
 	};
 	class Colors {
 	public:
 		Colors() {
 			setup(); 
 		}
-		//bugbug we should let the json go by warms, cools, lights, darks so colors match the scene
-		ColorSet get(ColorSet::ColorType type= ColorSet::Warm) {
-			int i = ofRandom(data.size() * 1000); // should tend to change color less often
-			int mod = i % data.size();
-			for (const auto &w : data) {
-				if (w.first == type)
-				{
-					return w.second; // bugbug do not stop on first match
+		// call getNext at start up and when ever colors should change
+		const ColorSet& get() {
+			if (smallest < 0){
+				getNext();
+			}
+			++data[smallest];
+			return data[smallest];
+		}
+		// do not break colors up or thins will not match
+		const ofColor& getForeground() { return get().getForeground(); }
+		const ofColor& getFontColor() { return get().getFontColor(); }
+		const ofColor& getBackground() { return get().getBackground(); }
+		// bugbug enable this in json?
+		void useWarms() {
+
+		}
+		void useCools() {
+
+		}
+		void useLights() {
+
+		}
+		void useDarks() {
+
+		}
+
+		// get next color based on type and usage count
+		// example: type==cool gets the next cool type, type=Random gets any next color
+		void getNext(ColorSet::ColorType type= ColorSet::Warm) {
+			// find smallest of type
+			smallest = 0; // code assume some data loaded
+			for (int i = 0; i < data.size(); ++i) {
+				if (data[smallest].lessThan(data[i], type)) {
+					smallest = i;
 				}
 			}
+			//std::vector<ColorSet>::iterator result = std::min_element(std::begin(data), std::end(data));
+			//ColorSet cs = *std::min_element(data.begin(), data.end() - 1, ColorSet::searchfn);
+			//if (result != data.end()) {
+				//return *result;
+			//}
 		}
 	private:
 		// foreground, background, font
-		std::unordered_map<ColorSet::ColorType, ColorSet> data;
+		vector<ColorSet> data;
+		int smallest;//index of smallest value
 		//vector <ColorSet> warm;
 		// make a bunch of colors that match using various techniques
 		void setup() {
-			data.insert(std::pair<ColorSet::ColorType, ColorSet>(ColorSet::Warm, ColorSet(ColorSet::Stark, ofColor(255, 0, 0), ofColor(255, 255, 255), ofColor(255, 255, 255))));
+			smallest = -1;//index of smallest value
+			ColorSet cs = ColorSet(ColorSet::Warm,
+					ofColor(255, 0, 0), ofColor(0, 255, 0),ofColor(0, 0, 255));
+			data.push_back(cs);
+
 			ofColor fore, back, text;
 			fore.fromHsb(200, 100, 40); // just made this up for now
 			back.fromHsb(100, 100, 50);
 			text.fromHsb(200, 100, 100);
-			data.insert(std::pair<ColorSet::ColorType, ColorSet>(ColorSet::Cool, ColorSet(ColorSet::Stark, fore, back, text)));
+			cs.set(ColorSet::Warm, fore, back, text);
 
-			fore.fromHsb(200, 100, 40); // just made this up for now
-			back.fromHsb(100, 100, 50);
-			text.fromHsb(200, 100, 100);
-			data.insert(std::pair<ColorSet::ColorType, ColorSet>(ColorSet::Stark, ColorSet(ColorSet::Stark, fore, back, text)));
+//			ColorSet cs2 = ColorSet(ColorSet::Warm,
+	//			ofColor::aliceBlue, ofColor::crimson, ofColor::antiqueWhite);
+			ColorSet cs2 = ColorSet(ColorSet::Warm,
+				ofColor(0, 255, 0), ofColor(100, 255, 0), ofColor(255, 255, 255));
+			data.push_back(cs2);
+
 		}
 	};
+	Colors& getSharedColors();
+	const ColorSet& getCurrentColors();
+	void nextColor(ColorSet::ColorType type = ColorSet::Warm);
 	// color support of explict color is needed
 	class Color : public ColorBase<ofColor> {
 	public:
@@ -264,24 +328,6 @@ namespace Software2552 {
 			logVerbose(notes);
 		}
 #endif
-		static Colors& getColors() { return colors; }
-		// do not break colors up or thins will not match
-		static ofColor getForeground() { return colors.get().getForeground(); }
-		static ofColor getFontColor() { return colors.get().getFontColor(); }
-		static ofColor getBackground() { return colors.get().getBackground(); }
-		// bugbug enable this in json
-		void useWarms() {
-
-		}
-		void useCools() {
-
-		}
-		void useLights() {
-
-		}
-		void useDarks() {
-
-		}
 
 	protected:
 		Font   font;
@@ -292,7 +338,6 @@ namespace Software2552 {
 		void setSettings(const Settings& rhs);
 
 	private:
-		static Colors colors;
 		void init() {
 			//Poco::Timespan totalTime = 1 * 1000 * 1000;
 		}

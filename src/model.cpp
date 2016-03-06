@@ -3,7 +3,17 @@
 namespace Software2552 {
 	// helpers
 	
-	Colors Settings::colors;
+	static Colors colors;
+
+	Colors& getSharedColors() {
+		return colors;
+	}
+	void nextColor(ColorSet::ColorType type){
+		getSharedColors().getNext(type);
+	}
+	const ColorSet& getCurrentColors() {
+		return getSharedColors().get();
+	}
 
 	//bugbug todo weave into errors, even on release mode as anyone can break a json file
 	void echoValue(const Json::Value &data, bool isError) {
@@ -293,7 +303,7 @@ namespace Software2552 {
 			player.setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
 		player.setFont(getFontPointer());
-		player.setColor(getFontColor());
+		player.setColor(getCurrentColors().getFontColor());
 		player.setPosition(getStartingPoint().x, getStartingPoint().y);
 
 		return true;
