@@ -45,6 +45,42 @@ namespace Software2552 {
 	private:
 	};
 
+	// supports animation
+	class Animator {
+	public:
+		Animator();
+		//bugbug code for a bit then put in read/data in a derived class
+		// defined in model..
+		uint64_t refreshRate() { return rate; /*ms*/ }
+		void setRefreshRate(uint64_t rateIn) { rate = rateIn; };
+		bool refresh();
+		void startReadHead() {
+			startTime = ofGetElapsedTimeMillis();
+		}
+		bool isExpired() const { return expired; }
+		static bool staticOKToRemove(shared_ptr<Animator> me);
+		bool okToDraw();
+		virtual void pause();
+		virtual void play();
+		virtual void stop() {	}
+		// how long to wait
+		virtual void getTimeBeforeStart(uint64_t& t) {
+			setIfGreater(t, getDuration() + getWait());
+		}
+		uint64_t getDuration() { return duration; }
+		uint64_t getWait() { return wait; }
+		void setWait(uint64_t waitIn) { wait = waitIn; }
+		void addWait(uint64_t waitIn) { wait += waitIn; }
+		bool paused;
+		uint64_t  duration; // life time of object, 0 means forever
+		uint64_t  wait;     // time to wait before drawing
+
+	private:
+		uint64_t startTime;
+		uint64_t rate;// refresh rate
+		bool expired; // object is expired
+	};
+
 
 
 	// can be, but does not need to be, a base class as its all static and can just be called, could not even be a class I suppose

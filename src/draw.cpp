@@ -7,26 +7,36 @@ namespace Software2552 {
 	void VideoEngine::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
+	void BackgroundEngine::setup(Colors* color) { 
+		mode = OF_GRADIENT_LINEAR; 
+		setRefreshRate(6000);// just set something different while in dev
+	}
+	// colors and background change over time but not at the same time
 	void BackgroundEngine::update(Colors*colors) {
 		if (colors->refresh()) {
-			colors->getNextColors();//bugbug figure out color scheme
+			colors->getNextColors();
 		}
+		//bugbug can add other back grounds like a video loop, sound
+		// picture, any graphic etc
+		if (refresh()) {
+			switch ((int)ofRandom(0, 3)) {
+			case 0:
+				mode = OF_GRADIENT_LINEAR;
+				break;
+			case 1:
+				mode = OF_GRADIENT_CIRCULAR;
+				break;
+			case 2:
+				mode = OF_GRADIENT_BAR;
+				break;
+			}
+		}
+
 	}
 
 	void BackgroundEngine::draw(Colors* colors){
-		//bugbug make this time based using color list
-		ofGradientMode mode;
-		switch ((int)ofRandom(0, 3)) {
-		case 0:
-			mode = OF_GRADIENT_LINEAR;
-			break;
-		case 1:
-			mode = OF_GRADIENT_CIRCULAR;
-			break;
-		case 2:
-			mode = OF_GRADIENT_BAR;
-			break;
-		}
+		//bugbug make this time based 
+		
 		ofBackgroundGradient(colors->getCurrentColors().getForeground(),
 			colors->getCurrentColors().getBackground(), mode);
 	}

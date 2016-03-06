@@ -72,7 +72,7 @@ namespace Software2552 {
 
 	};
 	template<typename T>
-	class Engine {
+	class Engine : public Animator {
 	public:
 		// fill in the ones you need in derived classes
 		virtual void draw(T*) {};
@@ -82,12 +82,14 @@ namespace Software2552 {
 		virtual void stop() {};
 		virtual void pause() {};
 	};
+
 	class BackgroundEngine : public Engine<Colors> {
 	public:
+		void setup(Colors* color);
 		void draw(Colors* color);
 		void update(Colors*color);
 	private:
-
+		ofGradientMode mode;
 	};
 	class ParticlesEngine : public Engine<Particles> {
 	public:

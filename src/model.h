@@ -180,38 +180,6 @@ namespace Software2552 {
 		shared_ptr<ofxSmartFont> font;
 	};
 
-	// supports animation
-	class Animator {
-	public:
-		Animator();
-		//bugbug code for a bit then put in read/data
-		uint64_t refreshRate() { return 6000; /*ms*/ }
-		bool refresh();
-		void startReadHead() {
-			startTime = ofGetElapsedTimeMillis();
-		}
-		bool isExpired() const {	return expired;	}
-		static bool staticOKToRemove(shared_ptr<Animator> me);
-		bool okToDraw();
-		virtual void pause();
-		virtual void play();
-		virtual void stop() {	}
-		// how long to wait
-		virtual void getTimeBeforeStart(uint64_t& t) {
-			setIfGreater(t, getDuration() + getWait());
-		}
-		uint64_t getDuration() { return duration; }
-		uint64_t getWait() { return wait; }
-		void setWait(uint64_t waitIn) { wait = waitIn; }
-		void addWait(uint64_t waitIn) { wait += waitIn; }
-		bool paused;
-		uint64_t  duration; // life time of object, 0 means forever
-		uint64_t  wait;     // time to wait before drawing
-
-	private:
-		uint64_t startTime;
-		bool expired; // object is expired
-	};
 
 	// colors animate in that they change with time
 	class Colors : public Animator {
