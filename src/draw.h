@@ -85,6 +85,7 @@ namespace Software2552 {
 
 	class BackgroundEngine : public Engine<Colors> {
 	public:
+		BackgroundEngine(){ mode = OF_GRADIENT_LINEAR; }
 		void setup(Colors* color);
 		void draw(Colors* color);
 		void update(Colors*color);

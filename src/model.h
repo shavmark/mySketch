@@ -196,6 +196,8 @@ namespace Software2552 {
 		static ColorSet& getNextColors(ColorSet::ColorType type = ColorSet::Warm);
 		// there must always be at least one color
 		static ColorSet& getCurrentColors() { return get(); }
+		static void setSmallest(int i) { smallest = i; }
+		static int  getSmallest() { return smallest; }
 	private:
 		// foreground, background, font
 		static ColorSet& get();
@@ -398,7 +400,9 @@ namespace Software2552 {
 	public:
 		bool read(const Json::Value &data);
 		void draw() {
-			player.draw(getStartingPoint().x, getStartingPoint().y);
+			if (okToDraw()) {
+				player.draw(getStartingPoint().x, getStartingPoint().y);
+			}
 		}
 		void update() {
 			player.update();
@@ -410,7 +414,9 @@ namespace Software2552 {
 
 		bool read(const Json::Value &data);
 		void draw() {
-			player.draw(this);
+			if (okToDraw()) {
+				player.draw(this);
+			}
 		}
 		void setup() {
 			player.setup(this);
@@ -425,7 +431,9 @@ namespace Software2552 {
 	public:
 		bool read(const Json::Value &data);
 		void draw() {
-			player.draw(this);
+			if (okToDraw()) {
+				player.draw(this);
+			}
 		}
 		void update() {
 			player.update(this);
@@ -440,7 +448,9 @@ namespace Software2552 {
 
 		bool read(const Json::Value &data);
 		void draw() {
-			player.draw(getStartingPoint().x, getStartingPoint().y);
+			if (okToDraw()) {
+				player.draw(getStartingPoint().x, getStartingPoint().y);
+			}
 		}
 	};
 
@@ -461,7 +471,13 @@ namespace Software2552 {
 			player.update();
 		};
 		void draw() {
-			player.draw(this);
+			if (okToDraw()) {
+				player.setPaused(false);
+				player.draw(this);
+			}
+			else {
+				player.setPaused(true);
+			}
 		}
 		void pause() {
 			Graphic::pause();

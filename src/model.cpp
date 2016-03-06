@@ -129,10 +129,13 @@ namespace Software2552 {
 	}
 	void TheSet::setup() {
 		ofSetFrameRate(framerate);
+		colors.getNextColors(ColorSet::ColorType::Warm);
 		startReadHead();
 	}
 	void TheSet::draw() {
-		background.draw(&colors); // bugbug object at some point may want its own colors
+		if (okToDraw()) {
+			background.draw(&colors); // bugbug object at some point may want its own colors
+		}
 	}
 	void TheSet::update() {
 		colors.update();
@@ -424,30 +427,30 @@ namespace Software2552 {
 	}
 	ColorSet& Colors::get() {
 		// if first time in set things up
-		if (smallest < 0) {
+		if (getSmallest() < 0) {
 			// if there is data
 			if (data.size() > 0) {
 				getNextColors(); // sets smallest as needed
 			}
 		}
 		// no data or no match found in data
-		if (smallest < 0) {
+		if (getSmallest() < 0) {
 			return ColorSet();// start with defaults
 		}
-		++data[smallest];
-		return data[smallest];
+		++data[getSmallest()];
+		return data[getSmallest()];
 	}
 	// get next color based on type and usage count
 	// example: type==cool gets the next cool type, type=Random gets any next color
 	ColorSet& Colors::getNextColors(ColorSet::ColorType type) {
 		// find smallest of type
-		smallest = 0; // code assume some data loaded
+		setSmallest(0); // code assume some data loaded
 		for (int i = 0; i < data.size(); ++i) {
-			if (data[smallest].lessThan(data[i], type)) {
-				smallest = i;
+			if (data[getSmallest()].lessThan(data[i], type)) {
+				setSmallest(i);
 			}
 		}
-		return data[smallest];
+		return data[getSmallest()];
 		//std::vector<ColorSet>::iterator result = std::min_element(std::begin(data), std::end(data));
 		//ColorSet cs = *std::min_element(data.begin(), data.end() - 1, ColorSet::searchfn);
 		//if (result != data.end()) {
@@ -458,7 +461,7 @@ namespace Software2552 {
 	void Colors::setup() {
 		// there must always be at least one color
 		// set up if there is no data
-		if (smallest < 0) {
+		if (getSmallest() < 0) {
 			//bugbug at some point maybe read from json
 			ColorSet cs = ColorSet(ColorSet::Warm,
 				ofColor(255, 0, 0), ofColor(0, 255, 0), ofColor(0, 0, 255));
@@ -473,7 +476,7 @@ namespace Software2552 {
 			//			ColorSet cs2 = ColorSet(ColorSet::Warm,
 			//			ofColor::aliceBlue, ofColor::crimson, ofColor::antiqueWhite);
 			ColorSet cs2 = ColorSet(ColorSet::Warm,
-				ofColor(0, 255, 0), ofColor(100, 255, 0), ofColor(255, 255, 255));
+				ofColor(0, 255, 0), ofColor(0, 0, 255), ofColor(255, 255, 255));
 			data.push_back(cs2);
 		}
 	}

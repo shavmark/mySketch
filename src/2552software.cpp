@@ -78,11 +78,11 @@ namespace Software2552 {
 	}
 	void Animator::update() {
 		if (ofGetElapsedTimeMillis() - startTime > duration) {
-			expired = true;
+			expired = duration != 0; // duration of 0 means no expiration
 		}
 	}
 	void Animator::play() {
-		paused = false;
+		stopped = paused = false;
 		startReadHead();
 	}
 	// not coded yet
@@ -122,19 +122,26 @@ namespace Software2552 {
 	}
 
 	bool Animator::okToDraw() {
-		if (paused || isExpired()) {
+		if (paused || stopped || isExpired()) {
 			return false;
 		}
-		float elapsed = ofGetElapsedTimef();
-		// example: ElapsedTime = 100, start = 50, wait = 100, duration 10
-		if (elapsed - (startTime + wait) > 0) {
-			if (duration == 0) {
-				return true; // draw away
-			}
-			// ok to start but only if we are less than duration
-			return (elapsed < startTime + wait + duration);
+		// if still in wait threshold
+		uint64_t t = ofGetElapsedTimeMillis()- startTime;
+		if (t < wait) {
+			return false; // in wait mode, nothing else to do
 		}
-		return false;
+		wait = 0; // skip all future usage of wait once we start
+		// duration 0 means always draw
+		if (duration == 0) {
+			return true; 
+		}
+		if (t < duration) {
+			return true;
+		}
+		else {
+			expired = true;
+			return false;
+		}
 	}
 
 
@@ -143,6 +150,7 @@ namespace Software2552 {
 		startTime = 0;
 		expired = false;
 		paused = false;
+		stopped = false;
 		duration = 0; // infinite bugbug duraiton and wait not full baked in yet
 		wait = 0;
 		rate = 2000;// 2 seconds while developing, but much longer later bugbug set in json
@@ -154,10 +162,13 @@ namespace Software2552 {
 		if (t < getWait()) {
 			return false;// waiting to start
 		}
-		if (t > duration) {
-			expired = true;
+		wait = 0; // skip all future usage of wait once we start
+		// check for expired flag 
+		if (duration > 0 && t > duration) {
+			expired = true; // duration of 0 means no expiration
 			return false;
 		}
+		// at this point we can start the time over w/o a wait
 		if (t > refreshRate()) {
 			startTime = ofGetElapsedTimeMillis();
 			return true;

@@ -35,8 +35,6 @@ namespace Software2552 {
 	}
 
 	void BackgroundEngine::draw(Colors* colors){
-		//bugbug make this time based 
-		
 		ofBackgroundGradient(colors->getCurrentColors().getForeground(),
 			colors->getCurrentColors().getBackground(), mode);
 	}

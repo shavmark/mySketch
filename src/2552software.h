@@ -64,7 +64,7 @@ namespace Software2552 {
 		virtual void draw() {}
 		virtual void pause();
 		virtual void play();
-		virtual void stop() {	}
+		virtual void stop() { stopped = true; }
 		// how long to wait
 		virtual void getTimeBeforeStart(uint64_t& t) {
 			setIfGreater(t, getDuration() + getWait());
@@ -74,12 +74,13 @@ namespace Software2552 {
 		void setWait(uint64_t waitIn) { wait = waitIn; }
 		void addWait(uint64_t waitIn) { wait += waitIn; }
 	private:
-		bool		paused;
 		uint64_t	duration; // life time of object, 0 means forever
 		uint64_t	wait;     // time to wait before drawing
 		uint64_t	startTime;
 		uint64_t	rate;// refresh rate
 		bool		expired; // object is expired
+		bool		stopped;
+		bool		paused;
 	};
 
 
