@@ -86,6 +86,7 @@ namespace Software2552 {
 	public:
 		BackgroundEngine() { start = ofGetElapsedTimeMillis(); }
 		void draw(const ColorSet* color);
+		void update(const ColorSet*color);
 		// how often to redraw the background etc
 		//bugbug this should become data in the model once figured
 		// out

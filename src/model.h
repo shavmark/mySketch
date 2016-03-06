@@ -110,84 +110,6 @@ namespace Software2552 {
 		// where does value come in? maybe convert from color to hue, sat/val?
 		tuple<ColorType, int, ofColor, ofColor, ofColor> state;
 	};
-	class Colors {
-	public:
-		Colors() {
-			setup(); 
-		}
-		// call getNext at start up and when ever colors should change
-		const ColorSet& get() {
-			if (smallest < 0){
-				getNext();
-			}
-			++data[smallest];
-			return data[smallest];
-		}
-		// do not break colors up or thins will not match
-		const ofColor& getForeground() { return get().getForeground(); }
-		const ofColor& getFontColor() { return get().getFontColor(); }
-		const ofColor& getBackground() { return get().getBackground(); }
-		// bugbug enable this in json?
-		void useWarms() {
-
-		}
-		void useCools() {
-
-		}
-		void useLights() {
-
-		}
-		void useDarks() {
-
-		}
-
-		// get next color based on type and usage count
-		// example: type==cool gets the next cool type, type=Random gets any next color
-		const ColorSet& getNext(ColorSet::ColorType type= ColorSet::Warm) {
-			// find smallest of type
-			smallest = 0; // code assume some data loaded
-			for (int i = 0; i < data.size(); ++i) {
-				if (data[smallest].lessThan(data[i], type)) {
-					smallest = i;
-				}
-			}
-			return data[smallest];
-			//std::vector<ColorSet>::iterator result = std::min_element(std::begin(data), std::end(data));
-			//ColorSet cs = *std::min_element(data.begin(), data.end() - 1, ColorSet::searchfn);
-			//if (result != data.end()) {
-				//return *result;
-			//}
-		}
-	private:
-		// foreground, background, font
-		vector<ColorSet> data;
-		int smallest;//index of smallest value
-		//vector <ColorSet> warm;
-		// make a bunch of colors that match using various techniques
-		void setup() {
-			smallest = -1;//index of smallest value
-			ColorSet cs = ColorSet(ColorSet::Warm,
-					ofColor(255, 0, 0), ofColor(0, 255, 0),ofColor(0, 0, 255));
-			data.push_back(cs);
-
-			ofColor fore, back, text;
-			fore.fromHsb(200, 100, 40); // just made this up for now
-			back.fromHsb(100, 100, 50);
-			text.fromHsb(200, 100, 100);
-			cs.set(ColorSet::Warm, fore, back, text);
-
-//			ColorSet cs2 = ColorSet(ColorSet::Warm,
-	//			ofColor::aliceBlue, ofColor::crimson, ofColor::antiqueWhite);
-			ColorSet cs2 = ColorSet(ColorSet::Warm,
-				ofColor(0, 255, 0), ofColor(100, 255, 0), ofColor(255, 255, 255));
-			data.push_back(cs2);
-
-		}
-	};
-	// helper functions
-	Colors& getSharedColors();
-	const ColorSet& getCurrentColors();
-	const ColorSet& nextColor(ColorSet::ColorType type = ColorSet::Warm);
 
 	// color support of explict color is needed
 	class Color : public ColorBase<ofColor> {
@@ -248,53 +170,100 @@ namespace Software2552 {
 #define defaultFontFile "fonts/Raleway-Thin.ttf"
 #define defaultFontName "Raleway-Thin"
 
+	//bugbug do we want to expire fonts? maybe in 2.0
 	class Font  { 
 	public:
-		ofTrueTypeFont& get() { 
-			if (font == nullptr) {
-				getPointer();
-			}
-			if (font != nullptr) {
-				return font->ttf;
-			}
-			ofTrueTypeFont font2;
-			return font2; // default
-		}
-		shared_ptr<ofxSmartFont> getPointer() {
-			if (font == nullptr) {
-				font = ofxSmartFont::get(defaultFontFile, defaultFontSize);
-				if (font == nullptr) {
-					// name is not unqiue, just a helper of some kind I guess
-					font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);
-				}
-			}
-			if (font == nullptr) {
-				logErrorString("font is null");
-			}
-			return font;
-		}
+		ofTrueTypeFont& get();
+		shared_ptr<ofxSmartFont> getPointer();
 		bool read(const Json::Value &data);
 	private:
 		shared_ptr<ofxSmartFont> font;
 	};
 
-	class TheSet {
+	// supports animation
+	class Animator {
 	public:
-		bool read(const Json::Value &data) {
-			floatColor colorAmbient(light.getAmbientColor());
-			colorAmbient.read(data["ambientColor"]);
-			light.setAmbientColor(colorAmbient.get());
+		Animator();
+		//bugbug code for a bit then put in read/data
+		uint64_t refreshRate() { return 6000; /*ms*/ }
+		bool refresh();
+		void startReadHead() {
+			startTime = ofGetElapsedTimeMillis();
+		}
+		bool isExpired() const {	return expired;	}
+		static bool staticOKToRemove(shared_ptr<Animator> me);
+		bool okToDraw();
+		virtual void pause();
+		virtual void play();
+		virtual void stop() {	}
+		// how long to wait
+		virtual void getTimeBeforeStart(uint64_t& t) {
+			setIfGreater(t, getDuration() + getWait());
+		}
+		uint64_t getDuration() { return duration; }
+		uint64_t getWait() { return wait; }
+		void setWait(uint64_t waitIn) { wait = waitIn; }
+		void addWait(uint64_t waitIn) { wait += waitIn; }
+		bool paused;
+		uint64_t  duration; // life time of object, 0 means forever
+		uint64_t  wait;     // time to wait before drawing
 
-			floatColor colorDiffuse(light.getDiffuseColor());
-			colorAmbient.read(data["diffuseColor"]);
-			light.setDiffuseColor(colorDiffuse.get());
+	private:
+		uint64_t startTime;
+		bool expired; // object is expired
+	};
+
+	// colors animate in that they change with time
+	class Colors : public Animator {
+	public:
+		Colors() : Animator(){
+			// there must always be at least one color
+			setup();
+		}
+		// call getNext at start up and when ever colors should change
+		// do not break colors up or thins will not match
+		// get next color based on type and usage count
+		// example: type==cool gets the next cool type, type=Random gets any next color
+		static ColorSet& getNextColors(ColorSet::ColorType type = ColorSet::Warm);
+		// there must always be at least one color
+		static ColorSet& getCurrentColors() { return get(); }
+	private:
+		// foreground, background, font
+		static ColorSet& get();
+		static vector<ColorSet> data;
+		static int smallest;//index of smallest value
+		void setup();
+	};
+
+	// one set per 
+	class TheSet : public Animator {
+	public:
+		TheSet() {
+			framerate = 60;
+		}
+		void setup();
+		void draw();
+		void update();
+
+		bool read(const Json::Value &data) {
+			//floatColor colorAmbient(light.getAmbientColor());
+			//colorAmbient.read(data["ambientColor"]);
+			//light.setAmbientColor(colorAmbient.get());
+
+			//floatColor colorDiffuse(light.getDiffuseColor());
+			//colorAmbient.read(data["diffuseColor"]);
+			//light.setDiffuseColor(colorDiffuse.get());
 			return true;
 		}
 
 		/// use pointers if data set gets too large
 
-		ofLight	light;
-		ofEasyCam camera;
+		BackgroundEngine background; // there is only one background, but it can have different settings
+		int framerate; // only one framerate
+		vector<ofLight>	light;
+		vector<ofEasyCam> camera;
+		ColorSet color; // current set color 
+
 	};
 	//  settings get copied a lot as they are the default data for all classes so they need to stay small
 	class Settings {
@@ -397,19 +366,13 @@ namespace Software2552 {
 	};
 
 	// basic graphic like SUN etc to add flavor
-	class Graphic : public ReferencedItem {
+	class Graphic : public ReferencedItem, public Animator {
 	public:
 		Graphic();
 
 		bool read(const Json::Value &data);
 
 		// for use in remove_if
-		static bool staticOKToRemove(shared_ptr<Graphic> me);
-		virtual void pause();
-		void startReadHead();
-		virtual void play();
-		virtual void stop() {	}
-		bool okToDraw();
 		virtual void setup() {}
 		virtual void draw() {}
 		virtual void update() {}
@@ -419,13 +382,6 @@ namespace Software2552 {
 		int getHeight() { return height; }
 		string &getLocation() { return locationPath; }
 		float  getVolume() { return volume; }
-		virtual void getTimeBeforeStart(float& f) {
-			setIfGreater(f, getDuration() + getWait());
-		}
-		float getDuration() { return duration; }
-		float getWait() { return wait; }
-		void setWait(float waitIn) { wait = waitIn; }
-		void addWait(float waitIn) { wait += waitIn; }
 		Point3D& getStartingPoint() { return startingPoint; }
 
 #if _DEBUG
@@ -442,10 +398,6 @@ namespace Software2552 {
 		int height;
 		string locationPath; // remote or local bugbug maybe make a better name?  not sure
 		float volume;
-		float start;
-		bool paused;
-		float  duration; // life time of object, 0 means forever
-		float  wait;     // time to wait before drawing
 		Point3D startingPoint; // starting point of object for drawing
 
 	private:
@@ -475,7 +427,10 @@ namespace Software2552 {
 		T player;
 	};
 
-	// some objects just use the OpenFrameworks objects if things are basic enough
+	
+	class Background : public ThePlayer<BackgroundEngine> {
+	};
+		// some objects just use the OpenFrameworks objects if things are basic enough
 	class Image : public ThePlayer<ofImage> {
 	public:
 		bool read(const Json::Value &data);
@@ -559,7 +514,7 @@ namespace Software2552 {
 		}
 
 		// 
-		virtual float getTimeBeforeStart(float f = 0);
+		virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
 		string test;
 	};
 
@@ -576,7 +531,7 @@ namespace Software2552 {
 	class GraphicEngines {
 	public:
 
-		void bumpWait(float wait) {
+		void bumpWait(uint64_t wait) {
 			for (auto& t : get()) {
 				t->addWait(wait);
 			}
@@ -606,8 +561,8 @@ namespace Software2552 {
 				t->update();
 			}
 		}
-		float findMaxWait() {
-			float f = 0;
+		uint64_t findMaxWait() {
+			uint64_t f = 0;
 			for (auto& t : get()) {
 				setIfGreater(f, t->getDuration() + t->getWait());
 			}
@@ -623,7 +578,7 @@ namespace Software2552 {
 			removeExpiredItems();
 		}
 		bool dataAvailable();
-		void bumpWaits(float wait);
+		void bumpWaits(uint64_t wait);
 		float getLongestWaitTime();
 		//		std::shared_ptr<Video> sp1 =
 //			std::dynamic_pointer_cast<Video>(graphicsHelpers[0]);
@@ -643,21 +598,9 @@ namespace Software2552 {
 
 	class Scene : public Settings {
 	public:
-		Scene(const string&keynameIn) {
-			keyname = keynameIn;
-			engines = nullptr;
-		}
-		Scene() {
-			engines = nullptr;
-		}
-		void setEngine(shared_ptr<GraphicEngines> enginesIn = nullptr) {
-			if (enginesIn == nullptr) {
-				engines = std::make_shared<GraphicEngines>();
-			}
-			else {
-				engines = enginesIn;
-			}
-		}
+		Scene(const string&keynameIn);
+		Scene();
+		void setEngine(shared_ptr<GraphicEngines> enginesIn = nullptr);
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		bool read(const Json::Value &data);
 		template<typename T> void createTimeLineItems(const Json::Value &data, const string& key);

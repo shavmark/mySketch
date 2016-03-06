@@ -3,17 +3,8 @@
 namespace Software2552 {
 	// helpers
 	
-	static Colors colors;
-
-	Colors& getSharedColors() {
-		return colors;
-	}
-	const ColorSet& nextColor(ColorSet::ColorType type){
-		return getSharedColors().getNext(type);
-	}
-	const ColorSet& getCurrentColors() {
-		return getSharedColors().get();
-	}
+	vector<ColorSet> Colors::data; // one set of colors to assure matching color themes
+	int Colors::smallest=-1;
 
 	//bugbug todo weave into errors, even on release mode as anyone can break a json file
 	void echoValue(const Json::Value &data, bool isError) {
@@ -136,6 +127,22 @@ namespace Software2552 {
 		}
 		return false;
 	}
+	void TheSet::setup() {
+		ofSetFrameRate(framerate);
+		color = Colors::getCurrentColors();
+		startReadHead();
+	}
+	void TheSet::draw() {
+		background.draw(&color);
+	}
+	void TheSet::update() {
+		background.update(&color);
+		if (refresh()) {
+			Colors::getNextColors(ColorSet::ColorType::Warm);
+			color = Colors::getCurrentColors(); // save color as other objects can for a new color
+		}
+	}
+
 	bool Image::read(const Json::Value &data) {
 		if (Graphic::read(data)) {
 			if (getLocation().size() > 0) {
@@ -303,7 +310,7 @@ namespace Software2552 {
 			player.setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
 		player.setFont(getFontPointer());
-		player.setColor(getCurrentColors().getFontColor());
+		player.setColor(Colors::getCurrentColors().getFontColor());
 		player.setPosition(getStartingPoint().x, getStartingPoint().y);
 
 		return true;
@@ -329,20 +336,21 @@ namespace Software2552 {
 			logErrorString("setup audio Player");
 		}
 	}
-	float Video::getTimeBeforeStart(float f) {
+	uint64_t Video::getTimeBeforeStart(uint64_t t) {
 
 		// if json sets a wait use it
 		if (getWait() > 0) {
-			setIfGreater(f, getWait());
+			setIfGreater(t, getWait());
 		}
 		else {
 			// will need to load it now to get the true lenght
 			if (!getPlayer().isLoaded()) {
 				getPlayer().load(getLocation());
 			}
-			setIfGreater(f, getPlayer().getDuration());
+			uint64_t duration = getPlayer().getDuration();
+			setIfGreater(t, duration);
 		}
-		return f;
+		return t;
 	}
 
 	void Video::setup() {
@@ -365,7 +373,7 @@ namespace Software2552 {
 		player.setVolume(getVolume());
 		return true;
 	}
-	void GraphicEngines::bumpWaits(float wait) {
+	void GraphicEngines::bumpWaits(uint64_t wait) {
 		if (!wait) {
 			return;
 		}
@@ -397,6 +405,126 @@ namespace Software2552 {
 
 		return false;
 	}
+	Scene::Scene(const string&keynameIn) {
+		keyname = keynameIn;
+		engines = nullptr;
+	}
+	Scene::Scene() {
+		engines = nullptr;
+	}
+	Animator::Animator() {
+		startTime = 0;
+		expired = false;
+		paused = false;
+		duration = 0; // infinite bugbug duraiton and wait not full baked in yet
+		wait = 0;
+	}
+	bool Animator::refresh() {
+		uint64_t t = ofGetElapsedTimeMillis() - startTime;//test
+
+		if (t < getWait()) {
+			return true;// waiting to start
+		}
+		if (t > duration) {
+			expired = true;
+			return false;
+		}
+		if (t > refreshRate()) {
+			startTime = ofGetElapsedTimeMillis();
+			return true;
+		}
+		return false;
+	}
+	ColorSet& Colors::get() {
+		// if first time in set things up
+		if (smallest < 0) {
+			// if there is data
+			if (data.size() > 0) {
+				getNextColors(); // sets smallest as needed
+			}
+		}
+		// no data or no match found in data
+		if (smallest < 0) {
+			return ColorSet();// start with defaults
+		}
+		++data[smallest];
+		return data[smallest];
+	}
+	// get next color based on type and usage count
+	// example: type==cool gets the next cool type, type=Random gets any next color
+	ColorSet& Colors::getNextColors(ColorSet::ColorType type) {
+		// find smallest of type
+		smallest = 0; // code assume some data loaded
+		for (int i = 0; i < data.size(); ++i) {
+			if (data[smallest].lessThan(data[i], type)) {
+				smallest = i;
+			}
+		}
+		return data[smallest];
+		//std::vector<ColorSet>::iterator result = std::min_element(std::begin(data), std::end(data));
+		//ColorSet cs = *std::min_element(data.begin(), data.end() - 1, ColorSet::searchfn);
+		//if (result != data.end()) {
+		//return *result;
+		//}
+	}
+	// make a bunch of colors that match using various techniques
+	void Colors::setup() {
+		// there must always be at least one color
+		// set up if there is no data
+		if (smallest < 0) {
+			//bugbug at some point maybe read from json
+			ColorSet cs = ColorSet(ColorSet::Warm,
+				ofColor(255, 0, 0), ofColor(0, 255, 0), ofColor(0, 0, 255));
+			data.push_back(cs);
+
+			ofColor fore, back, text;
+			fore.fromHsb(200, 100, 40); // just made this up for now
+			back.fromHsb(100, 100, 50);
+			text.fromHsb(200, 100, 100);
+			cs.set(ColorSet::Warm, fore, back, text);
+
+			//			ColorSet cs2 = ColorSet(ColorSet::Warm,
+			//			ofColor::aliceBlue, ofColor::crimson, ofColor::antiqueWhite);
+			ColorSet cs2 = ColorSet(ColorSet::Warm,
+				ofColor(0, 255, 0), ofColor(100, 255, 0), ofColor(255, 255, 255));
+			data.push_back(cs2);
+		}
+	}
+
+	ofTrueTypeFont& Font::get() {
+		if (font == nullptr) {
+			getPointer();
+		}
+		if (font != nullptr) {
+			return font->ttf;
+		}
+		ofTrueTypeFont font2;
+		return font2; // default
+	}
+
+	shared_ptr<ofxSmartFont> Font::getPointer() {
+		if (font == nullptr) {
+			font = ofxSmartFont::get(defaultFontFile, defaultFontSize);
+			if (font == nullptr) {
+				// name is not unqiue, just a helper of some kind I guess
+				font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);
+			}
+		}
+		if (font == nullptr) {
+			logErrorString("font is null");
+		}
+		return font;
+	}
+
+	void Scene::setEngine(shared_ptr<GraphicEngines> enginesIn) {
+		if (enginesIn == nullptr) {
+			engines = std::make_shared<GraphicEngines>();
+		}
+		else {
+			engines = enginesIn;
+		}
+	}
+
 	// read as many jason files as needed, each becomes a deck
 	bool Act::read(const string& fileName) {
 		
@@ -439,30 +567,30 @@ namespace Software2552 {
 
 		return true;
 	}
-	void Graphic::startReadHead() {
-		start = ofGetElapsedTimef(); // set a base line of time
-	}
-	void Graphic::play() {
+	void Animator::play() {
 		paused = false;
 		startReadHead();
 	}
 
-	void Graphic::pause() {
+	void Animator::pause() {
 		float elapsed = ofGetElapsedTimef();
 		// if beyond wait time 
 		// else hold wait time even after pause
-		if (elapsed - (start + wait) > 0) {
+		if (elapsed - (startTime + wait) > 0) {
 			wait = 0; // ignore wait time upon return
 		}
 		paused = true;
 	}
 
-	bool Graphic::staticOKToRemove(shared_ptr<Graphic> me) {
+	bool Animator::staticOKToRemove(shared_ptr<Animator> me) {
 		// duration == 0 means never go away, and start == 0 means we have not started yet
-		if (me->duration == 0 || me->start == 0) {
+		if (me->duration == 0 || me->startTime == 0) {
 			return false; // no time out ever, or we have not started yet
 		}
-		float elapsed = ofGetElapsedTimef() - me->start;
+		if (me->expired) {
+			return true;
+		}
+		float elapsed = ofGetElapsedTimef() - me->startTime;
 		if (me->wait > elapsed) {
 			return false;
 		}
@@ -477,13 +605,8 @@ namespace Software2552 {
 		//bugbug add a pause where time is suspended, add in rew, play, stop etc also
 		height = 0;
 		width = 0;
-		start = 0;
-		paused = false;
 		volume = 0.5;
 		myID = ofGetSystemTimeMicros();
-		duration = 0;
-		wait = 0;
-
 	}
 	// always return true as these are optional items
 	bool Graphic::read(const Json::Value &data) {
@@ -502,18 +625,18 @@ namespace Software2552 {
 	}
 
 
-	bool Graphic::okToDraw() {
-		if (paused) {
+	bool Animator::okToDraw() {
+		if (paused || isExpired()) {
 			return false;
 		}
 		float elapsed = ofGetElapsedTimef();
 		// example: ElapsedTime = 100, start = 50, wait = 100, duration 10
-		if (elapsed - (start + wait) > 0) {
+		if (elapsed - (startTime + wait) > 0) {
 			if (duration == 0) {
 				return true; // draw away
 			}
 			// ok to start but only if we are less than duration
-			return (elapsed < start + wait + duration);
+			return (elapsed < startTime + wait + duration);
 		}
 		return false;
 	}

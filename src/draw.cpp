@@ -7,6 +7,12 @@ namespace Software2552 {
 	void VideoEngine::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
+	void BackgroundEngine::update(const ColorSet*color) {
+		if (refreshBackGround()) {
+			Colors::getNextColors();//bugbug figure out color scheme
+		}
+	}
+
 	void BackgroundEngine::draw(const ColorSet* color){
 		//bugbug make this time based using color list
 		ofGradientMode mode;
@@ -26,7 +32,7 @@ namespace Software2552 {
 	}
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();
-		ofSetColor(getCurrentColors().getFontColor());
+		ofSetColor(Colors::getCurrentColors().getFontColor());
 		t->getFont().drawString(t->getText(), t->getStartingPoint().x, t->getStartingPoint().y);
 		ofPopStyle();
 	}
