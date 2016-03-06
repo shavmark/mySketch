@@ -262,8 +262,7 @@ namespace Software2552 {
 		int framerate; // only one framerate
 		vector<ofLight>	light;
 		vector<ofEasyCam> camera;
-		ColorSet color; // current set color 
-
+		Colors colors;
 	};
 	//  settings get copied a lot as they are the default data for all classes so they need to stay small
 	class Settings {

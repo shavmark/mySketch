@@ -10,7 +10,7 @@ namespace Software2552 {
 	class Particles;
 	class Video;
 	class Settings;
-	class ColorSet;
+	class Colors;
 	// drawing related items start here
 	class BaseClass2552WithDrawing : public BaseClass {
 	public:
@@ -82,25 +82,11 @@ namespace Software2552 {
 		virtual void stop() {};
 		virtual void pause() {};
 	};
-	class BackgroundEngine : public Engine<ColorSet> {
+	class BackgroundEngine : public Engine<Colors> {
 	public:
-		BackgroundEngine() { start = ofGetElapsedTimeMillis(); }
-		void draw(const ColorSet* color);
-		void update(const ColorSet*color);
-		// how often to redraw the background etc
-		//bugbug this should become data in the model once figured
-		// out
-		uint64_t refreshBackGroundRate() { return 2000; /*ms*/}
-		// return true if its time to redraw based on count
-		bool refreshBackGround() {
-			if ((ofGetElapsedTimeMillis() - start) > refreshBackGroundRate()) {
-				start = ofGetElapsedTimeMillis();
-				return true;
-			}
-			return false;
-		}
+		void draw(Colors* color);
+		void update(Colors*color);
 	private:
-		uint64_t start;
 
 	};
 	class ParticlesEngine : public Engine<Particles> {

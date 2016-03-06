@@ -7,13 +7,13 @@ namespace Software2552 {
 	void VideoEngine::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
-	void BackgroundEngine::update(const ColorSet*color) {
-		if (refreshBackGround()) {
-			Colors::getNextColors();//bugbug figure out color scheme
+	void BackgroundEngine::update(Colors*colors) {
+		if (colors->refresh()) {
+			colors->getNextColors();//bugbug figure out color scheme
 		}
 	}
 
-	void BackgroundEngine::draw(const ColorSet* color){
+	void BackgroundEngine::draw(Colors* colors){
 		//bugbug make this time based using color list
 		ofGradientMode mode;
 		switch ((int)ofRandom(0, 3)) {
@@ -27,8 +27,8 @@ namespace Software2552 {
 			mode = OF_GRADIENT_BAR;
 			break;
 		}
-		ofBackgroundGradient(color->getForeground(),
-			color->getBackground(), mode);
+		ofBackgroundGradient(colors->getCurrentColors().getForeground(),
+			colors->getCurrentColors().getBackground(), mode);
 	}
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();

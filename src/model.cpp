@@ -129,17 +129,15 @@ namespace Software2552 {
 	}
 	void TheSet::setup() {
 		ofSetFrameRate(framerate);
-		color = Colors::getCurrentColors();
 		startReadHead();
 	}
 	void TheSet::draw() {
-		background.draw(&color);
+		background.draw(&colors); // bugbug object at some point may want its own colors
 	}
 	void TheSet::update() {
-		background.update(&color);
+		background.update(&colors);// bugbug object at some point may want its own colors
 		if (refresh()) {
-			Colors::getNextColors(ColorSet::ColorType::Warm);
-			color = Colors::getCurrentColors(); // save color as other objects can for a new color
+			colors.getNextColors(ColorSet::ColorType::Warm);
 		}
 	}
 
