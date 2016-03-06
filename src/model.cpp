@@ -8,8 +8,8 @@ namespace Software2552 {
 	Colors& getSharedColors() {
 		return colors;
 	}
-	void nextColor(ColorSet::ColorType type){
-		getSharedColors().getNext(type);
+	const ColorSet& nextColor(ColorSet::ColorType type){
+		return getSharedColors().getNext(type);
 	}
 	const ColorSet& getCurrentColors() {
 		return getSharedColors().get();

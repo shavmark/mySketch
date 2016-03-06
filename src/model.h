@@ -143,7 +143,7 @@ namespace Software2552 {
 
 		// get next color based on type and usage count
 		// example: type==cool gets the next cool type, type=Random gets any next color
-		void getNext(ColorSet::ColorType type= ColorSet::Warm) {
+		const ColorSet& getNext(ColorSet::ColorType type= ColorSet::Warm) {
 			// find smallest of type
 			smallest = 0; // code assume some data loaded
 			for (int i = 0; i < data.size(); ++i) {
@@ -151,6 +151,7 @@ namespace Software2552 {
 					smallest = i;
 				}
 			}
+			return data[smallest];
 			//std::vector<ColorSet>::iterator result = std::min_element(std::begin(data), std::end(data));
 			//ColorSet cs = *std::min_element(data.begin(), data.end() - 1, ColorSet::searchfn);
 			//if (result != data.end()) {
@@ -183,9 +184,11 @@ namespace Software2552 {
 
 		}
 	};
+	// helper functions
 	Colors& getSharedColors();
 	const ColorSet& getCurrentColors();
-	void nextColor(ColorSet::ColorType type = ColorSet::Warm);
+	const ColorSet& nextColor(ColorSet::ColorType type = ColorSet::Warm);
+
 	// color support of explict color is needed
 	class Color : public ColorBase<ofColor> {
 	public:

@@ -10,7 +10,7 @@ namespace Software2552 {
 	class Particles;
 	class Video;
 	class Settings;
-
+	class ColorSet;
 	// drawing related items start here
 	class BaseClass2552WithDrawing : public BaseClass {
 	public:
@@ -82,10 +82,10 @@ namespace Software2552 {
 		virtual void stop() {};
 		virtual void pause() {};
 	};
-	class BackgroundEngine  {
+	class BackgroundEngine : public Engine<ColorSet> {
 	public:
 		BackgroundEngine() { start = ofGetElapsedTimeMillis(); }
-		void draw();
+		void draw(const ColorSet* color);
 		// how often to redraw the background etc
 		//bugbug this should become data in the model once figured
 		// out
