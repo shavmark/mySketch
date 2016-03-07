@@ -118,6 +118,7 @@ namespace Software2552 {
 	class TextEngine : public Engine<Text> {
 	public:
 		void draw(Text*);
+		static void draw(const string &s, int x, int y);
 
 	private:
 	};

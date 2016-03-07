@@ -126,7 +126,7 @@ namespace Software2552 {
 	}
 	void TheSet::setup() {
 		ofSetFrameRate(framerate);
-		colors.getNextColors(ColorSet::ColorGroup::Modern);
+		colors.getNextColors();
 		startReadHead();
 	}
 	void TheSet::draw() {
@@ -138,7 +138,7 @@ namespace Software2552 {
 		colors.update();
 		background.update(&colors);// bugbug object at some point may want its own colors
 		if (refresh()) {
-			colors.getNextColors(ColorSet::ColorGroup::Modern);
+			colors.getNextColors();
 		}
 	}
 
