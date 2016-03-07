@@ -7,7 +7,7 @@ namespace Software2552 {
 	void VideoEngine::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
-	void BackgroundEngine::setup(Colors* color) { 
+	void BackgroundEngine::setup(Colors* colors) { 
 		mode = OF_GRADIENT_LINEAR; 
 		setRefreshRate(6000);// just set something different while in dev
 	}
