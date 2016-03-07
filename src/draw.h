@@ -1,7 +1,7 @@
 #pragma once
 #include "2552software.h"
 #include "ofxBox2d.h"
-
+#include "color.h"
 // home of custom drawing
 
 namespace Software2552 {

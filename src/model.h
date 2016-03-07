@@ -1,6 +1,7 @@
 #pragma once
 
 #include "2552software.h"
+#include "color.h"
 #include "draw.h"
 
 // json driven model
@@ -35,99 +36,6 @@ namespace Software2552 {
 	public:
 		bool read(const Json::Value &data);
 	};
-	template <class T> class ColorBase {
-	public:
-		ColorBase() {}
-		ColorBase(const T& colorIn) {
-			color = colorIn;
-		}
-		bool read(const Json::Value &data) {
-			readJsonValue(color.r, data["r"]);
-			readJsonValue(color.g, data["g"]);
-			readJsonValue(color.g, data["b"]);
-			return true;
-		}
-		operator T() {
-			return color;
-		}
-		T& get() { return color; }
-	protected:
-		T color;
-	};
-	// matching colors, this class controls colors, no data or others selected colors
-	// this way its easier to manage things
-	//http://openframeworks.cc/documentation/types/ofColor/#show_fromHsb
-	// there is a lot we can do
-	class ColorSet : public Animator {
-	public:
-		enum ColorType {
-			Warm, Cool,Stark, Pastel, LightValue, DarkValue, MediumValue, Random
-		};
-
-		ColorSet() {
-			set(Stark, ofColor(0, 0, 0), ofColor(255, 255, 255), ofColor(0, 0, 0));
-		}
-		ColorSet(const ColorType type, const ofColor&foreground, const ofColor&background, const ofColor&text) {
-			set(type, foreground, background, text);
-		}
-		void set(const ColorType type, const ofColor&foreground, const ofColor&background, const ofColor&text) {
-			state = std::make_tuple(type, 0, foreground, background, text);
-		}
-		ColorType getType() const {
-			return get<0>(state);
-		}
-		int getCount() const {
-			return get<1>(state);
-		}
-		void operator++ () {
-			std::get<1>(state) = std::get<1>(state) + 1;
-		}
-		const ofColor& getForeground() const {
-			return get<2>(state);
-		}
-		const ofColor& getBackground() const {
-			return get<3>(state);
-		}
-		const ofColor& getFontColor() const {
-			return get<4>(state);
-		}
-		bool operator> (const ColorSet& rhs) {
-			return getCount() > rhs.getCount();
-		}
-		// return true if less than, and both of the desired type or Random
-		bool lessThan(const ColorSet& j, ColorType type) {
-			if (isExpired() || (type != Random && getType() != j.getType())) {
-				return false;
-			}
-			return *this > j; 
-		}
-		ColorSet& operator=(const ColorSet& rhs) {
-			state = rhs.state;
-			return *this;
-		}
-	private:
-		// never want to seperate or we will not match
-		// where does value come in? maybe convert from color to hue, sat/val?
-		tuple<ColorType, int, ofColor, ofColor, ofColor> state;
-	};
-
-	// color support of explict color is needed
-	class Color : public ColorBase<ofColor> {
-	public:
-		Color() :ColorBase() {
-		}
-		Color(const ofColor& color) :ColorBase(color) {
-		}
-	};
-	class floatColor : public ColorBase<ofFloatColor> {
-	public:
-		floatColor() :ColorBase() {
-		}
-		floatColor(const ofFloatColor& color):ColorBase(color){
-		}
-
-	};
-	
 	//http://pocoproject.org/slides/070-DateAndTime.pdf
 	class DateAndTime : public Poco::DateTime {
 	public:
@@ -180,31 +88,6 @@ namespace Software2552 {
 		shared_ptr<ofxSmartFont> font;
 	};
 
-
-	// colors animate in that they change with time
-	class Colors : public Animator {
-	public:
-		Colors() : Animator(){
-			// there must always be at least one color
-			setup();
-		}
-		void update();
-		// call getNext at start up and when ever colors should change
-		// do not break colors up or thins will not match
-		// get next color based on type and usage count
-		// example: type==cool gets the next cool type, type=Random gets any next color
-		static ColorSet& getNextColors(ColorSet::ColorType type = ColorSet::Warm);
-		// there must always be at least one color
-		static ColorSet& getCurrentColors() { return get(); }
-		static void setSmallest(int i) { smallest = i; }
-		static int  getSmallest() { return smallest; }
-	private:
-		// foreground, background, font
-		static ColorSet& get();
-		static vector<ColorSet> data;
-		static int smallest;//index of smallest value
-		void setup();
-	};
 
 	// one set per 
 	class TheSet : public Animator {

@@ -279,6 +279,7 @@ C:\Users\mark\Documents\of_v0.9.1_vs_release\addons\ofxJson\libs\jsoncpp\include
     <ClCompile Include="..\..\..\addons\ofxsmartfont\src\ofxSmartFont.cpp" />
     <ClCompile Include="notes.cpp" />
     <ClCompile Include="src\2552software.cpp" />
+    <ClCompile Include="src\color.cpp" />
     <ClCompile Include="src\timeline.cpp" />
     <ClCompile Include="src\draw.cpp" />
     <ClCompile Include="src\kinect2552.cpp" />
@@ -410,6 +411,7 @@ C:\Users\mark\Documents\of_v0.9.1_vs_release\addons\ofxJson\libs\jsoncpp\include
     <ClInclude Include="..\..\..\addons\ofxParagraph\src\ofxParagraph.h" />
     <ClInclude Include="..\..\..\addons\ofxsmartfont\src\ofxSmartFont.h" />
     <ClInclude Include="src\2552software.h" />
+    <ClInclude Include="src\color.h" />
     <ClInclude Include="src\timeline.h" />
     <ClInclude Include="src\draw.h" />
     <ClInclude Include="src\kinect2552.h" />

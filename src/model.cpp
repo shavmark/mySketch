@@ -3,9 +3,6 @@
 namespace Software2552 {
 	// helpers
 	
-	vector<ColorSet> Colors::data; // one set of colors to assure matching color themes
-	int Colors::smallest=-1;
-
 	//bugbug todo weave into errors, even on release mode as anyone can break a json file
 	void echoValue(const Json::Value &data, bool isError) {
 		//Json::Value::Members m = data.getMemberNames();
@@ -425,62 +422,6 @@ namespace Software2552 {
 	Scene::Scene() {
 		engines = nullptr;
 	}
-	ColorSet& Colors::get() {
-		// if first time in set things up
-		if (getSmallest() < 0) {
-			// if there is data
-			if (data.size() > 0) {
-				getNextColors(); // sets smallest as needed
-			}
-		}
-		// no data or no match found in data
-		if (getSmallest() < 0) {
-			return ColorSet();// start with defaults
-		}
-		++data[getSmallest()];
-		return data[getSmallest()];
-	}
-	// get next color based on type and usage count
-	// example: type==cool gets the next cool type, type=Random gets any next color
-	ColorSet& Colors::getNextColors(ColorSet::ColorType type) {
-		// find smallest of type
-		setSmallest(0); // code assume some data loaded
-		for (int i = 0; i < data.size(); ++i) {
-			if (data[getSmallest()].lessThan(data[i], type)) {
-				setSmallest(i);
-			}
-		}
-		return data[getSmallest()];
-		//std::vector<ColorSet>::iterator result = std::min_element(std::begin(data), std::end(data));
-		//ColorSet cs = *std::min_element(data.begin(), data.end() - 1, ColorSet::searchfn);
-		//if (result != data.end()) {
-		//return *result;
-		//}
-	}
-	// make a bunch of colors that match using various techniques
-	void Colors::setup() {
-		// there must always be at least one color
-		// set up if there is no data
-		if (getSmallest() < 0) {
-			//bugbug at some point maybe read from json
-			ColorSet cs = ColorSet(ColorSet::Warm,
-				ofColor(255, 0, 0), ofColor(0, 255, 0), ofColor(0, 0, 255));
-			data.push_back(cs);
-
-			ofColor fore, back, text;
-			fore.fromHsb(200, 100, 40); // just made this up for now
-			back.fromHsb(100, 100, 50);
-			text.fromHsb(200, 100, 100);
-			cs.set(ColorSet::Warm, fore, back, text);
-
-			//			ColorSet cs2 = ColorSet(ColorSet::Warm,
-			//			ofColor::aliceBlue, ofColor::crimson, ofColor::antiqueWhite);
-			ColorSet cs2 = ColorSet(ColorSet::Warm,
-				ofColor(0, 255, 0), ofColor(0, 0, 255), ofColor(255, 255, 255));
-			data.push_back(cs2);
-		}
-	}
-
 	ofTrueTypeFont& Font::get() {
 		if (font == nullptr) {
 			getPointer();
