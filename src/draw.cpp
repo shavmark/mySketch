@@ -35,12 +35,16 @@ namespace Software2552 {
 	}
 
 	void BackgroundEngine::draw(Colors* colors){
-		ofBackgroundGradient(colors->getCurrentColors().getForeground(),
-			colors->getCurrentColors().getBackground(), mode);
+		ofBackgroundGradient(ofColor::fromHex(colors->getCurrentColors().getForeground()),
+			ofColor::fromHex(colors->getCurrentColors().getBackground()), mode);
+		TextEngine textout;
+		Text text;
+		text.setText("print");
+		textout.draw(&text);
 	}
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();
-		ofSetColor(Colors::getCurrentColors().getFontColor());
+		ofSetHexColor(Colors::getCurrentColors().getFontColor());
 		t->getFont().drawString(t->getText(), t->getStartingPoint().x, t->getStartingPoint().y);
 		ofPopStyle();
 	}

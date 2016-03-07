@@ -315,6 +315,9 @@ namespace Software2552 {
 		bool read(const Json::Value &data);
 		void draw();
 		string& getText() { return text; }
+		void setText(const string&t) {
+			text = t;
+		}
 	private:
 		string text;
 	};
