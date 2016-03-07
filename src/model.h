@@ -313,14 +313,7 @@ namespace Software2552 {
 	class Text : public ThePlayer<TextEngine> {
 	public:
 		bool read(const Json::Value &data);
-		void draw() {
-			if (okToDraw()) {
-				player.draw(this);
-			}
-		}
-		void update() {
-			player.update(this);
-		};
+		void draw();
 		string& getText() { return text; }
 	private:
 		string text;
@@ -328,13 +321,8 @@ namespace Software2552 {
 
 	class Paragraph : public ThePlayer<ofxParagraph> {
 	public:
-
 		bool read(const Json::Value &data);
-		void draw() {
-			if (okToDraw()) {
-				player.draw(getStartingPoint().x, getStartingPoint().y);
-			}
-		}
+		void draw();
 	};
 
 

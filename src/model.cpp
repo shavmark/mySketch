@@ -289,6 +289,21 @@ namespace Software2552 {
 		}
 		return true;
 	}
+	void Text::draw() {
+		if (okToDraw()) {
+			player.draw(this);
+		}
+	}
+
+	void Paragraph::draw() {
+		if (okToDraw()) {
+			player.setFont(getFontPointer());
+			player.setColor(Colors::getCurrentColors().getFontColor());
+			player.setPosition(getStartingPoint().x, getStartingPoint().y);
+			player.draw(getStartingPoint().x, getStartingPoint().y);
+		}
+	}
+
 	// return true if text read in
 	bool Paragraph::read(const Json::Value &data) {
 
@@ -319,9 +334,6 @@ namespace Software2552 {
 		else if (alignment == "right") { //bugbug ignore case
 			player.setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
-		player.setFont(getFontPointer());
-		player.setColor(Colors::getCurrentColors().getFontColor());
-		player.setPosition(getStartingPoint().x, getStartingPoint().y);
 
 		return true;
 	}
