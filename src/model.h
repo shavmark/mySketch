@@ -93,7 +93,7 @@ namespace Software2552 {
 	class TheSet : public Animator {
 	public:
 		TheSet() {
-			framerate = 60;
+			framerate = 30;
 		}
 		void setup();
 		void draw();

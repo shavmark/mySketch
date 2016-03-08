@@ -7,6 +7,7 @@ namespace Software2552 {
 	int Colors::smallest = -1;
 	std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int> Colors::colorTable;
 	ColorSet::ColorGroup Colors::defaultGroup= ColorSet::ColorGroup::Random;
+	ColorSet Colors::defaultColorSet;
 
 	// get a color set
 	ColorSet& Colors::get() {
@@ -109,67 +110,73 @@ namespace Software2552 {
 
 	//http://www.creativecolorschemes.com/resources/free-color-schemes/art-deco-color-scheme.shtml
 	void Colors::setup() {
-		std::array<int, COLORNAME_COUNT> modern = 
-			{ 0x003F53, 0x3994B3, 0x64B1D1, 0x00626D, 0x079CBA, 0x60CDD9, 0x003E6B, 
-			  0x0073A0, 0xBAECE9, 0xD0FC0E, 0xFDB075, 0xFFD76E, 0x4D5E6C, 0x858E9C, 0xCCD1D5 };
-		std::array<int, COLORNAME_COUNT> smart =
-		{ 0x312659, 0x373B81, 0x425096, 0x0D60A5, 0x297BC6, 0x3EA0ED, 0x169FAD,
-			0x30C1D8, 0x7FE3F7, 0xB01116, 0xD71920, 0xFEAB07, 0xFED341, 0xFFDA7A, 0xFFEEBC };
-		std::array<int, COLORNAME_COUNT> extreme =
-		{ 0x023D7B, 0x1B4C8C, 0x448BE3, 0x025B8F, 0x088BB3, 0x02CAE6, 0xC61630,
-			0xFE243E, 0xFE3951, 0xF03624, 0xF3541B, 0xFE872B, 0x8FD173, 0xB7B96B, 0xAD985F };
-		std::array<int, COLORNAME_COUNT> earthtone =
-		{ 0x493829, 0x816C5B, 0xA9A18C, 0x613318, 0x855723, 0xB99C6B, 0x8F3B1B,
-			0xD57500, 0xDBCA69, 0x404F24, 0x668D3C, 0xBDD09F, 0x4E6172, 0x83929F, 0xA3ADB8 };
 
-		setupBasicColors(ColorSet::Modern, modern);
-		add(ColorSet::Modern, A, B, Black);
-		add(ColorSet::Modern, E, D);
-		add(ColorSet::Modern, N, M);
-		add(ColorSet::Modern, G, H, Black);
-		add(ColorSet::Modern, D, M); 
-		add(ColorSet::Modern, D, B, Black);
-		add(ColorSet::Modern, J, A);
-		add(ColorSet::Modern, M, A);
-		add(ColorSet::Modern, H, N, L);
-		add(ColorSet::Modern, H, N, Black);
-		add(ColorSet::Modern, O, C, Black);
-		add(ColorSet::Modern, I, F, Black);
-		add(ColorSet::Modern, K, N, Black);
+		// only needs to be setup one time since its static data
+		if (data.size() == 0) { 
+			std::array<int, COLORNAME_COUNT> modern =
+			{ 0x003F53, 0x3994B3, 0x64B1D1, 0x00626D, 0x079CBA, 0x60CDD9, 0x003E6B,
+				0x0073A0, 0xBAECE9, 0xD0FC0E, 0xFDB075, 0xFFD76E, 0x4D5E6C, 0x858E9C, 0xCCD1D5 };
+			std::array<int, COLORNAME_COUNT> smart =
+			{ 0x312659, 0x373B81, 0x425096, 0x0D60A5, 0x297BC6, 0x3EA0ED, 0x169FAD,
+				0x30C1D8, 0x7FE3F7, 0xB01116, 0xD71920, 0xFEAB07, 0xFED341, 0xFFDA7A, 0xFFEEBC };
+			std::array<int, COLORNAME_COUNT> extreme =
+			{ 0x023D7B, 0x1B4C8C, 0x448BE3, 0x025B8F, 0x088BB3, 0x02CAE6, 0xC61630,
+				0xFE243E, 0xFE3951, 0xF03624, 0xF3541B, 0xFE872B, 0x8FD173, 0xB7B96B, 0xAD985F };
+			std::array<int, COLORNAME_COUNT> earthtone =
+			{ 0x493829, 0x816C5B, 0xA9A18C, 0x613318, 0x855723, 0xB99C6B, 0x8F3B1B,
+				0xD57500, 0xDBCA69, 0x404F24, 0x668D3C, 0xBDD09F, 0x4E6172, 0x83929F, 0xA3ADB8 };
 
-		setupBasicColors(ColorSet::Smart, smart);
-		add(ColorSet::Smart, B, E, Black);
-		add(ColorSet::Smart, A, G, Black);
-		add(ColorSet::Smart, F, M, Black);
-		add(ColorSet::Smart, J, N);
-		add(ColorSet::Smart, N, D, Black);
-		add(ColorSet::Smart, H, K, Black);
-		add(ColorSet::Smart, B, L, Black);
-		add(ColorSet::Smart, M, A, Black);
-		add(ColorSet::Smart, B, E, Blue);
-		add(ColorSet::Smart, O, M, Black);
-		add(ColorSet::Smart, D, J, Blue);
-		add(ColorSet::Smart, E, H, Black);
+			setupBasicColors(ColorSet::Modern, modern);
+			add(ColorSet::Modern, A, B, Black);
+			add(ColorSet::Modern, E, D);
+			add(ColorSet::Modern, N, M);
+			add(ColorSet::Modern, G, H, Black);
+			add(ColorSet::Modern, D, M);
+			add(ColorSet::Modern, D, B, Black);
+			add(ColorSet::Modern, J, A);
+			add(ColorSet::Modern, M, A);
+			add(ColorSet::Modern, H, N, L);
+			add(ColorSet::Modern, H, N, Black);
+			add(ColorSet::Modern, O, C, Black);
+			add(ColorSet::Modern, I, F, Black);
+			add(ColorSet::Modern, K, N, Black);
 
-		setupBasicColors(ColorSet::Extreme, extreme);
-		add(ColorSet::Smart, B, K);
-		add(ColorSet::Smart, E, M, Black);
-		add(ColorSet::Smart, G, D);
-		add(ColorSet::Smart, D, O, Black);
-		add(ColorSet::Smart, F, I, Black);
-		add(ColorSet::Smart, H, K, Black);
-		add(ColorSet::Smart, L, C, Black);
+			setupBasicColors(ColorSet::Smart, smart);
+			add(ColorSet::Smart, B, E, Black);
+			add(ColorSet::Smart, A, G, Black);
+			add(ColorSet::Smart, F, M, Black);
+			add(ColorSet::Smart, J, N);
+			add(ColorSet::Smart, N, D, Black);
+			add(ColorSet::Smart, H, K, Black);
+			add(ColorSet::Smart, B, L, Black);
+			add(ColorSet::Smart, M, A, Black);
+			add(ColorSet::Smart, B, E, Blue);
+			add(ColorSet::Smart, O, M, Black);
+			add(ColorSet::Smart, D, J, Blue);
+			add(ColorSet::Smart, E, H, Black);
 
-		setupBasicColors(ColorSet::EarthTone, earthtone);
-		add(ColorSet::Modern, D, B);
-		add(ColorSet::Modern, E, A);
-		add(ColorSet::Modern, J, I);
-		add(ColorSet::Modern, F, N);
-		add(ColorSet::Modern, D, H);
-		add(ColorSet::Modern, H, J);
-		add(ColorSet::Modern, N, J);
-		add(ColorSet::Modern, A, H);
-		add(ColorSet::Modern, I, K);
+			setupBasicColors(ColorSet::Extreme, extreme);
+			add(ColorSet::Smart, B, K);
+			add(ColorSet::Smart, E, M, Black);
+			add(ColorSet::Smart, G, D);
+			add(ColorSet::Smart, D, O, Black);
+			add(ColorSet::Smart, F, I, Black);
+			add(ColorSet::Smart, H, K, Black);
+			add(ColorSet::Smart, L, C, Black);
+
+			setupBasicColors(ColorSet::EarthTone, earthtone);
+			add(ColorSet::Modern, D, B);
+			add(ColorSet::Modern, E, A);
+			add(ColorSet::Modern, J, I);
+			add(ColorSet::Modern, F, N);
+			add(ColorSet::Modern, D, H);
+			add(ColorSet::Modern, H, J);
+			add(ColorSet::Modern, N, J);
+			add(ColorSet::Modern, A, H);
+			add(ColorSet::Modern, I, K);
+
+			defaultColorSet = ColorSet(ColorSet::ColorGroup::Default, White, Black, White);
+		}
 
 #if 0
 			//http://www.creativecolorschemes.com/resources/free-color-schemes/art-deco-color-scheme.shtml

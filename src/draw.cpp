@@ -46,6 +46,36 @@ namespace Software2552 {
 		font.get().drawString(s, x, y);
 		ofPopStyle();
 	}
+	void MeshEngine::setup(ColorSet*colors) {
+		//setMode(OF_PRIMITIVE_POINTS);
+		setMode(OF_PRIMITIVE_LINES);
+		//setMode(OF_PRIMITIVE_LINE_STRIP);
+		//setMode(OF_PRIMITIVE_LINE_LOOP);
+		enableColors();
+		enableIndices();
+		ofVec3f top(100.0, 50.0, 0.0);
+		ofVec3f left(50.0, 150.0, 0.0);
+		ofVec3f right(150.0, 150.0, 0.0);
+		addVertex(top);
+		addColor(ofFloatColor::fromHex(colors->getForeground()));
+
+		addVertex(left);
+		addColor(ofFloatColor::fromHex(colors->getBackground()));
+
+		addVertex(right);
+		//bugbug this is where we add in more colors, lets see how many before we make 
+		// changes, but somthing like Color1, Color2 etc
+		addColor(ofFloatColor::fromHex(colors->getFontColor()));
+
+		addIndex(0);
+		addIndex(1);
+		addIndex(1);
+		addIndex(2);
+		addIndex(2);
+		addIndex(0);
+
+	}
+
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();
 		ofSetHexColor(Colors::getCurrentColors().getFontColor());

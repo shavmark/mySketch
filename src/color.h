@@ -10,7 +10,7 @@ namespace Software2552 {
 	class ColorSet : public Animator {
 	public:
 		enum ColorGroup {
-			Modern, Smart, Extreme, EarthTone, Random//only modern so far, ArtDeco, Warm, Cool, Stark, Pastel, LightValue, DarkValue, MediumValue, Random
+			Modern, Smart, Extreme, EarthTone, BuiltIn, Default, Random//only modern so far, ArtDeco, Warm, Cool, Stark, Pastel, LightValue, DarkValue, MediumValue, Random
 		};
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
@@ -76,6 +76,12 @@ namespace Software2552 {
 		};
 #define COLORNAME_COUNT 15
 		void update();
+		// get basic colors like white, black, blue
+		static ColorSet& getDefaultColor() {
+			// show match any color set, use for things like popups
+			++defaultColorSet; // still track count 
+			return defaultColorSet;
+		}
 		// call getNext at start up and when ever colors should change
 		// do not break colors up or thins will not match
 		// get next color based on type and usage count
@@ -89,6 +95,7 @@ namespace Software2552 {
 	private:
 		// foreground, background, font
 		static ColorSet& get();
+		static ColorSet defaultColorSet;
 		static std::map<std::pair <ColorSet::ColorGroup, ColorName>, int> colorTable; // key,hex pair
 		static vector<ColorSet> data;
 		static int smallest;//index of smallest value
