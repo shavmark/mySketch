@@ -11,6 +11,7 @@ namespace Software2552 {
 	class Video;
 	class Settings;
 	class Colors;
+
 	// drawing related items start here
 	class BaseClass2552WithDrawing : public BaseClass {
 	public:
@@ -29,6 +30,69 @@ namespace Software2552 {
 	};
 
 
+	template<typename T>
+	class Engine : public Animator {
+	public:
+		// fill in the ones you need in derived classes
+		virtual void draw(T*) {};
+		virtual void update(T*) {};
+		virtual void setup(T*) {};
+		virtual void play() {};
+		virtual void stop() {};
+		virtual void pause() {};
+	};
+
+	class MeshEngine : public ofMesh {
+	public:
+		void draw(ColorSet*colors) {
+			setMode(OF_PRIMITIVE_POINTS);
+			enableColors();
+
+			ofVec3f top(100.0, 50.0, 0.0);
+			ofVec3f left(50.0, 150.0, 0.0);
+			ofVec3f right(150.0, 150.0, 0.0);
+
+			addVertex(top);
+			addColor(ofFloatColor::fromHex(colors->getForeground())); 
+
+			addVertex(left);
+			addColor(ofFloatColor::fromHex(colors->getBackground()));
+
+			addVertex(right);
+			//bugbug this is where we add in more colors, lets see how many before we make 
+			// changes, but somthing like Color1, Color2 etc
+			addColor(ofFloatColor::fromHex(colors->getFontColor()));
+		}
+	private:
+	};
+
+	class BackgroundEngine : public Engine<Colors> {
+	public:
+		BackgroundEngine(){ mode = OF_GRADIENT_LINEAR; }
+		void setup(Colors* color);
+		void draw(Colors* color);
+		void update(Colors*color);
+	private:
+		ofGradientMode mode;
+	};
+	class CharacterEngine : public Engine<Character> {
+	public:
+
+	private:
+	};
+	// put advanced drawing in these objects
+	class VideoEngine :public ofVideoPlayer {
+	public:
+		void draw(Video*v);
+	private:
+	};
+	class TextEngine : public Engine<Text> {
+	public:
+		void draw(Text*);
+		static void draw(const string &s, int x, int y);
+
+	private:
+	};
 	//  ofxBox2dParticleSystem Created by Atsushi Tadokoro on 8/23/14.  Pulled here to break free and use standard ofxbox2d plugin
 	class ofxBox2dParticleSystem : public ofxBox2dBaseShape {
 
@@ -70,57 +134,6 @@ namespace Software2552 {
 		void applyForce(int32 particle_index, const ofVec2f& force);
 		void applyForce(int32 particle_index, float force_x, float force_y);
 
-	};
-	template<typename T>
-	class Engine : public Animator {
-	public:
-		// fill in the ones you need in derived classes
-		virtual void draw(T*) {};
-		virtual void update(T*) {};
-		virtual void setup(T*) {};
-		virtual void play() {};
-		virtual void stop() {};
-		virtual void pause() {};
-	};
-
-	class BackgroundEngine : public Engine<Colors> {
-	public:
-		BackgroundEngine(){ mode = OF_GRADIENT_LINEAR; }
-		void setup(Colors* color);
-		void draw(Colors* color);
-		void update(Colors*color);
-	private:
-		ofGradientMode mode;
-	};
-	class ParticlesEngine : public Engine<Particles> {
-	public:
-		void draw(Particles*particles);
-		void update(Particles*particles);
-		void setup(Particles*particles);
-		int years;
-	private:
-		// use contains for multiple objects or complicated objects
-		ofxBox2dParticleSystem part;
-		ofxBox2d box2d;
-	};
-	
-	class CharacterEngine : public Engine<Character> {
-	public:
-
-	private:
-	};
-	// put advanced drawing in these objects
-	class VideoEngine :public ofVideoPlayer {
-	public:
-		void draw(Video*v);
-	private:
-	};
-	class TextEngine : public Engine<Text> {
-	public:
-		void draw(Text*);
-		static void draw(const string &s, int x, int y);
-
-	private:
 	};
 
 }

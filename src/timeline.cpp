@@ -59,6 +59,8 @@ namespace Software2552 {
 	// keep as fast as possible
 	void Timeline::draw() {
 		theSet.draw();
+		ColorSet color = Colors::getCurrentColors();
+		mesh.draw(&color);
 		return;
 		for (auto& a : acts) {
 			for (auto& item : a.getPlayList()) {

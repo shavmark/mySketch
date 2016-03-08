@@ -24,6 +24,7 @@ namespace Software2552 {
 				t.play();
 			}
 		}
+		MeshEngine mesh; // just for now bugbug, move into class hiearchey when ready
 		TheSet theSet;//bugbug code for a while, then if it makes sense json this
 		vector<Act> acts; // timeline is a series of acts
 						  // objects in model, timing code in model, colors from json

@@ -292,24 +292,6 @@ namespace Software2552 {
 		};
 	};
 	
-	class Particles : public ThePlayer<ParticlesEngine> {
-	public:
-
-		bool read(const Json::Value &data);
-		void draw() {
-			if (okToDraw()) {
-				player.draw(this);
-			}
-		}
-		void setup() {
-			player.setup(this);
-		};
-		void update() {
-			player.update(this);
-		};
-	private:
-	};
-
 	class Text : public ThePlayer<TextEngine> {
 	public:
 		bool read(const Json::Value &data);

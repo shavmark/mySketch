@@ -153,7 +153,7 @@ namespace Software2552 {
 		stopped = false;
 		duration = 0; // infinite bugbug duraiton and wait not full baked in yet
 		wait = 0;
-		rate = 2000;// 2 seconds while developing, but much longer later bugbug set in json
+		rate = 20000;// 20 seconds while developing, but much longer later bugbug set in json
 	}
 	// return true if a refresh was done
 	bool Animator::refresh() {
