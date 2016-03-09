@@ -45,41 +45,91 @@ namespace Software2552 {
 	// basic mesh stuff
 	class MeshEngine : public ofMesh {
 	public:
-		void setup(ColorSet*colors);
+		void setup(Colors*colors);
 	private:
 	};
 	//http://openframeworks.cc/ofBook/chapters/generativemesh.html
 	class MoreMesh : public MeshEngine {
 	public:
-		void setup(ColorSet*colors);
+		void setup();
 		void draw();
 	private:
 		ofImage image;
 		ofEasyCam easyCam;
 		ofLight light;
+
 	};
 	class SceneLearn {
 	public:
 		void setup() {
+			// turn on smooth lighting //
+			ofSetSmoothLighting(true);
+
+			center.set(ofGetWidth()*.5, ofGetHeight()*.5, 0);
+
+			// Point lights emit light in all directions //
+			// set the diffuse color, color reflected from the light source //
+			light.setDirectional();
+			// specular color, the highlight/shininess color //
+			light.setSpecularColor(ofColor(255.f, 255.f, 255.f));
+			light.setPosition(center.x, center.y, 0);
+
+			// shininess is a value between 0 - 128, 128 being the most shiny //
+			boxMaterial.setShininess(64);
+
+			materialColor.setBrightness(250.f);
+			materialColor.setSaturation(200);
+
 			light.setup();
 			light.setPosition(-100, 200, 0);
 			ofEnableDepthTest();
 			boxMaterial.setDiffuseColor(ofFloatColor::red);
-			boxMaterial.setShininess(0.02);
+			//boxMaterial.setShininess(0.02);
+			roadMaterial.setDiffuseColor(ofFloatColor::gray);
+			roadMaterial.setShininess(0.01);
+
+			box.move(200, 0, -200);
+			sphere.setParent(box);
+			sphere.move(-100, 0, 0);
 		}
 
 		void draw() {
+			ofSetColor(light.getDiffuseColor());
+
+			// enable lighting //
+			ofEnableLighting();
+			// the position of the light must be updated every frame, 
+			// call enable() so that it can update itself //
+			light.enable();
 			cam.begin();
+			roadMaterial.begin();
+			roadMaterial.end();
 			boxMaterial.begin();
 			box.draw();
+			sphere.draw();
 			boxMaterial.end();
-			// here you will draw your object
 			cam.end();
+			// turn off lighting //
+			ofDisableLighting();
+		}
+		void update() {
+
+			light.setDiffuseColor(Colors::getLight());
+
+			materialColor.setHue(Colors::getHue(Colors::backColor));
+			// the light highlight of the material //
+			boxMaterial.setSpecularColor(materialColor);
+
 		}
 		ofLight light;
 		ofEasyCam cam;
 		ofBoxPrimitive box;
 		ofMaterial boxMaterial;
+		ofMaterial  roadMaterial;
+		ofSpherePrimitive sphere;
+		ofVec3f center;
+		ofColor materialColor;
+    
 
 	};
 
@@ -91,6 +141,7 @@ namespace Software2552 {
 		void update(Colors*color);
 	private:
 		ofGradientMode mode;
+
 		//ofBackgroundHex this is an option too bugbug enable background type
 	};
 	class RoleCharacter : public Role<Character> {
@@ -102,6 +153,7 @@ namespace Software2552 {
 	class RoleVideo :public ofVideoPlayer {
 	public:
 		void draw(Video*v);
+		
 	private:
 	};
 	class RoleText : public Role<Text> {

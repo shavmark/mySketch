@@ -9,7 +9,7 @@
 //--------------------------------------------------------------
 void ofStoryTellerApp::setup(){
 	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
-	timeline.readAct("json.json");
+	//timeline.readAct("json.json");
 	timeline.setup();
 	timeline.play();
 	//paragraphs.build(ofGetWidth());

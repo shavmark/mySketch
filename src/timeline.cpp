@@ -37,8 +37,7 @@ namespace Software2552 {
 		scene.setup();
 		return;
 		theSet.setup();
-		ColorSet color = Colors::getFirstColor(ColorSet::ColorGroup::Black);
-		mesh.setup(&color);
+		mesh.setup();
 		return;
 
 		for (auto& a : acts) {

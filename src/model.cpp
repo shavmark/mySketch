@@ -292,7 +292,7 @@ namespace Software2552 {
 	void Paragraph::draw() {
 		if (okToDraw()) {
 			player.setFont(getFontPointer());
-			player.setColor(Colors::getCurrentColors().getFontColor());
+			player.setColor(Colors::getFontColor());
 			player.setPosition(getStartingPoint().x, getStartingPoint().y);
 			player.draw(getStartingPoint().x, getStartingPoint().y);
 		}

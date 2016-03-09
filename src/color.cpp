@@ -100,6 +100,16 @@ namespace Software2552 {
 			);
 		data.push_back(s);
 	}
+	bool ColorSet::lessThan(const ColorSet& j, ColorGroup group) {
+		if (isExpired() || (group != Random && getGroup() != j.getGroup())) {
+			return false;
+		}
+		return *this > j;
+	}
+	ColorSet& ColorSet::operator=(const ColorSet& rhs) {
+		*this = rhs;
+		return *this;
+	}
 
 	//http://www.creativecolorschemes.com/resources/free-color-schemes/art-deco-color-scheme.shtml
 	void Colors::setup() {

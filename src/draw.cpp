@@ -4,6 +4,7 @@
 // this is the drawing  module where most drawing work is done
 
 namespace Software2552 {
+	// add this one http://clab.concordia.ca/?page_id=944
 	void RoleVideo::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
@@ -37,18 +38,18 @@ namespace Software2552 {
 	void RoleBackground::draw(Colors* colors){
 		//ofBackgroundHex this is an option too bugbug enable background type
 
-		ofBackgroundGradient(ofColor::fromHex(colors->getCurrentColors().getForeground()),
-			ofColor::fromHex(colors->getCurrentColors().getBackground()), mode);
+		ofBackgroundGradient(ofColor::fromHex(colors->getForeground()),
+			ofColor::fromHex(colors->getBackground()), mode);
 		RoleText::draw("print", 100,200);
 	}
 	void RoleText::draw(const string &s, int x, int y) {
 		ofPushStyle();
-		ofSetHexColor(Colors::getCurrentColors().getFontColor());
+		Colors::setFontColor();
 		Font font;
 		font.get().drawString(s, x, y);
 		ofPopStyle();
 	}
-	void MeshEngine::setup(ColorSet*colors) {
+	void MeshEngine::setup(Colors*colors) {
 		//setMode(OF_PRIMITIVE_POINTS);
 		setMode(OF_PRIMITIVE_LINES);
 		//setMode(OF_PRIMITIVE_LINE_STRIP);
@@ -59,15 +60,15 @@ namespace Software2552 {
 		ofVec3f left(50.0, 150.0, 0.0);
 		ofVec3f right(150.0, 150.0, 0.0);
 		addVertex(top);
-		addColor(ofFloatColor::fromHex(colors->getForeground()));
+		addColor(colors->getFloatColor(Colors::foreColor));
 
 		addVertex(left);
-		addColor(ofFloatColor::fromHex(colors->getBackground()));
+		addColor(colors->getFloatColor(Colors::backColor));
 
 		addVertex(right);
 		//bugbug this is where we add in more colors, lets see how many before we make 
 		// changes, but somthing like Color1, Color2 etc
-		addColor(ofFloatColor::fromHex(colors->getFontColor()));
+		addColor(colors->getFloatColor(Colors::fontColor));
 
 		addIndex(0);
 		addIndex(1);
@@ -77,7 +78,7 @@ namespace Software2552 {
 		addIndex(0);
 
 	}
-	void MoreMesh::setup(ColorSet*colors) {
+	void MoreMesh::setup() {
 		image.load("stars.png");
 		image.resize(200, 200); // use less data
 		setMode(OF_PRIMITIVE_LINES);
@@ -133,7 +134,7 @@ namespace Software2552 {
 	}
 	void RoleText::draw(Text* t) {
 		ofPushStyle();
-		ofSetHexColor(Colors::getCurrentColors().getFontColor());
+		ofSetHexColor(Colors::getForeground());
 		t->getFont().drawString(t->getText(), t->getStartingPoint().x, t->getStartingPoint().y);
 		ofPopStyle();
 	}

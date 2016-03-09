@@ -1,5 +1,7 @@
 #pragma once
 #include "2552software.h"
+#include <cstdarg>
+
 namespace Software2552 {
 	// matching colors, this class controls colors, no data or others selected colors
 	// this way its easier to manage things
@@ -15,58 +17,50 @@ namespace Software2552 {
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
 		// just use multiple ColorSets, find out more as we continue on
-		ColorSet() {
-			set(Modern, 0xffff, 0x0000, 0xffff);
+		ColorSet(const ColorGroup groupIn = Default) {
+			set(group, 3, 0xffff, 0x0000, 0xffff);
 		}
-		ColorSet(const ColorGroup type) {
-			set(type, 0x0000, 0x0000, 0xffff);
+		ColorSet(const ColorGroup group, int color1, int color2, int color3) {
+			set(group, 3, color1, color2, color3);
 		}
-		ColorSet(const ColorGroup type, int foreground, int background, int text) {
-			set(type, foreground, background, text);
+		void set(const ColorGroup groupIn, int c, int color...) {
+			group = groupIn;
+			count = 0;
+			colors.clear();
+
+			va_list args;
+			va_start(args, color);
+			for (int i = 0; i < c; ++i) {
+				colors.push_back(va_arg(args, int));
+			}
+			va_end(args);
 		}
-		void set(const ColorGroup type, int foreground, int background, int text) {
-			state = std::make_tuple(type, 0, foreground, background, text);
-		}
-		ColorGroup getType() const {
-			return get<0>(state);
+		ColorGroup getGroup() const {
+			return group;
 		}
 		int getCount() const {
-			return get<1>(state);
+			return count;
 		}
 		void operator++ () {
-			std::get<1>(state) = std::get<1>(state) + 1;
+			++count;
 		}
-		const int getForeground() const {
-			return get<2>(state);
-		}
-		const int getBackground() const {
-			return get<3>(state);
-		}
-		const int getFontColor() const {
-			return get<4>(state);
+		int getHex(int index) const  {
+			return colors[index];
 		}
 		bool operator> (const ColorSet& rhs) {
 			return getCount() > rhs.getCount();
 		}
 		bool operator== (const ColorSet& rhs) {
-			return getType() == rhs.getType();
+			return getGroup() == rhs.getGroup();
 		}
 		// return true if less than, and both of the desired type or Random
-		bool lessThan(const ColorSet& j, ColorGroup type) {
-			if (isExpired() || (type != Random && getType() != j.getType())) {
-				return false;
-			}
-			return *this > j;
-		}
-		ColorSet& operator=(const ColorSet& rhs) {
-			state = rhs.state;
-			return *this;
-		}
-
+		bool lessThan(const ColorSet& j, ColorGroup type);
+		ColorSet& operator=(const ColorSet& rhs);
+		int size() { return colors.size(); }
 	private:
-		// never want to seperate or we will not match
-		// where does value come in? maybe convert from color to hue, sat/val?
-		tuple<ColorGroup, int, int, int, int> state;
+		ColorGroup group;
+		int count; // usage count
+		vector<int> colors; //hex values of all matching colors
 	};
 	// colors animate in that they change with time
 	class Colors : public Animator {
@@ -78,8 +72,52 @@ namespace Software2552 {
 		//modeled after http://www.creativecolorschemes.com/products/ccs1/rgbColorGuide.shtml
 		// A-O are just names of customer colors, other values double as hex values
 		enum ColorName {
-			A= 0xfffffff, B, C, D, E, F, G, H, I, J, K, L, M, N, O, White= 0xffff, Black = 0x0, Blue = 0x0000FF
+			// make sure A-O are just names, the other names are hex values
+			A= 0xfffff00, B, C, D, E, F, G, H, I, J, K, L, M, N, O, White= 0xffff, Black = 0x0, Blue = 0x0000FF
 		};
+		// known colors, these are indexs into the color data
+		enum ColorUse {
+			foreColor=0,
+			backColor = 1,
+			fontColor = 2,
+			lightColor = 2
+		};
+		// hue helpers, example getHue(getBackground())
+		static float getSaturation(int index) {
+			return ofColor().fromHex(getCurrentColors().getHex(index)).getSaturation();
+		}
+		static float getBrightness(int index) {
+			return ofColor().fromHex(getCurrentColors().getHex(index)).getBrightness();
+		}
+		static float getHue(int index) {
+			return ofColor().fromHex(getCurrentColors().getHex(index)).getHue();
+		}
+		static ofColor getOfColor(int index) {
+			return ofColor().fromHex(getCurrentColors().getHex(index));
+		}
+		static ofFloatColor getFloatColor(int index) {
+			return ofFloatColor().fromHex(getCurrentColors().getHex(index));
+		}
+		// more like painting
+		static float getHueAngle(int index)	{
+			return ofColor().fromHex(getCurrentColors().getHex(index)).getHueAngle();
+		}
+
+		static int getForeground() {
+			return getCurrentColors().getHex(foreColor);
+		}
+		static int getLight() {
+			return getFontColor();
+		}
+		static  int getBackground() {
+			return getCurrentColors().getHex(backColor);
+		}
+		static  int getFontColor() {
+			if (getCurrentColors().size() < fontColor) {
+				return getForeground(); // no need to force a font color
+			}
+			return getCurrentColors().getHex(fontColor);
+		}
 #define COLORNAME_COUNT 15
 		void update();
 		// get the default color for example, the find could return more than one but this function
@@ -91,6 +129,16 @@ namespace Software2552 {
 				return *itr;
 			}
 			return ColorSet(); // always do something
+		}
+		// set current font color
+		static void setFontColor() {
+			ofSetHexColor(getFontColor());
+		}
+		static void setForegroundColor() {
+			ofSetHexColor(getForeground());
+		}
+		static void setBackgroundColor() {
+			ofSetBackgroundColorHex(getBackground());
 		}
 		// call getNext at start up and when ever colors should change
 		// do not break colors up or thins will not match
