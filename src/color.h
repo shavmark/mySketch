@@ -12,16 +12,20 @@ namespace Software2552 {
 	class ColorSet : public Animator {
 	public:
 		enum ColorGroup {
-			Modern, Smart, Extreme, EarthTone, BuiltIn, Default, Black, White, Blue, Random//only modern so far, ArtDeco, Warm, Cool, Stark, Pastel, LightValue, DarkValue, MediumValue, Random
+			Modern, Smart, Extreme, EarthTone, BuiltIn, Default, Black, White, Blue, RedBlue, Random//only modern so far, ArtDeco, Warm, Cool, Stark, Pastel, LightValue, DarkValue, MediumValue, Random
 		};
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
 		// just use multiple ColorSets, find out more as we continue on
 		ColorSet(const ColorGroup groupIn = Default) {
-			set(group, 3, 0xffff, 0x0000, 0xffff);
+			set(group, 4, 0xffff, 0x0000, 0xffff, 0x000);
 		}
-		ColorSet(const ColorGroup group, int color1, int color2, int color3) {
-			set(group, 3, color1, color2, color3);
+		ColorSet(const ColorGroup group, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4) {
+			// always store as hex
+			set(group, 4, color1.getHex(), color2.getHex(), color3.getHex(), color4.getHex());
+		}
+		ColorSet(const ColorGroup group, int color1, int color2, int color3, int color4) {
+			set(group, 4, color1, color2, color3, color4);
 		}
 		void set(const ColorGroup groupIn, int c, int color...) {
 			group = groupIn;
@@ -70,17 +74,17 @@ namespace Software2552 {
 			setup();
 		}
 		//modeled after http://www.creativecolorschemes.com/products/ccs1/rgbColorGuide.shtml
-		// A-O are just names of customer colors, other values double as hex values
+		// just names of customer colors, when paired they are a color set
 		enum ColorName {
 			// make sure A-O are just names, the other names are hex values
-			A= 0xfffff00, B, C, D, E, F, G, H, I, J, K, L, M, N, O, White= 0xffff, Black = 0x0, Blue = 0x0000FF
+			A, B, C, D, E, F, G, H, I, J, K, L, M, N, O
 		};
 		// known colors, these are indexs into the color data
 		enum ColorUse {
 			foreColor=0,
 			backColor = 1,
 			fontColor = 2,
-			lightColor = 2
+			lightColor = 3
 		};
 		// hue helpers, example getHue(getBackground())
 		static float getSaturation(int index) {
@@ -159,7 +163,9 @@ namespace Software2552 {
 		void setup();
 		int find(ColorSet::ColorGroup group, ColorName name);
 		void setupBasicColors(ColorSet::ColorGroup type, std::array<int, COLORNAME_COUNT>);
-		void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, ColorName text= White);
+		void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, ColorName text, ColorName light);
+		void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& light);
+		void Colors::add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& light);
 		void Colors::AddColorRow(ColorSet::ColorGroup group, ColorName name, int val);
 	};
 

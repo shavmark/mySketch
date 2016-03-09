@@ -64,6 +64,7 @@ namespace Software2552 {
 		int i = find(group, name);
 
 	}
+	// use the build the sets 
 	void Colors::setupBasicColors(ColorSet::ColorGroup group, std::array<int, COLORNAME_COUNT>a) {
 		// fixed list 
 
@@ -83,21 +84,37 @@ namespace Software2552 {
 		AddColorRow(group, N, a[13]);
 		AddColorRow(group, O, a[14]);
 	}
-	void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, ColorName text) {
-		int textColor; // default
-
-		if (text == Black || text == White || text == Blue) {
-			textColor = text;
-		}
-		else  {
-			textColor = find(group, text);
-		}
+	void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, ColorName text, ColorName light) {
 
 		ColorSet s = ColorSet(group,
 			find(group, fore),
 			find(group, back),
-			textColor
+			find(group, text),
+			find(group, light)
 			);
+
+		data.push_back(s);
+	}
+	void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& light) {
+
+		ColorSet s = ColorSet(group,
+			find(group, fore),
+			find(group, back),
+			text.getHex(),
+			light.getHex()
+			);
+
+		data.push_back(s);
+	}
+	void Colors::add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& light) {
+
+		ColorSet s = ColorSet(group,
+			fore.getHex(),
+			back.getHex(),
+			text.getHex(),
+			light.getHex()
+			);
+
 		data.push_back(s);
 	}
 	bool ColorSet::lessThan(const ColorSet& j, ColorGroup group) {
@@ -130,60 +147,62 @@ namespace Software2552 {
 				0xD57500, 0xDBCA69, 0x404F24, 0x668D3C, 0xBDD09F, 0x4E6172, 0x83929F, 0xA3ADB8 };
 
 			setupBasicColors(ColorSet::Modern, modern);
-			add(ColorSet::Modern, A, B, Black);
-			add(ColorSet::Modern, E, D);
-			add(ColorSet::Modern, N, M);
-			add(ColorSet::Modern, G, H, Black);
-			add(ColorSet::Modern, D, M);
-			add(ColorSet::Modern, D, B, Black);
-			add(ColorSet::Modern, J, A);
-			add(ColorSet::Modern, M, A);
-			add(ColorSet::Modern, H, N, L);
-			add(ColorSet::Modern, H, N, Black);
-			add(ColorSet::Modern, O, C, Black);
-			add(ColorSet::Modern, I, F, Black);
-			add(ColorSet::Modern, K, N, Black);
+			add(ColorSet::Modern, A, B, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, E, D, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, N, M, ofColor::white, ofColor::white);
+			add(ColorSet::Modern, G, H, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, D, M, ofColor::white, ofColor::white);
+			add(ColorSet::Modern, D, B, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, J, A, ofColor::white, ofColor::white);
+			add(ColorSet::Modern, M, A, ofColor::white, ofColor::white);
+			add(ColorSet::Modern, H, N, L, ofColor::white);
+			add(ColorSet::Modern, H, N, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, O, C, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, I, F, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, K, N, ofColor::black, ofColor::white);
 
 			setupBasicColors(ColorSet::Smart, smart);
-			add(ColorSet::Smart, B, E, Black);
-			add(ColorSet::Smart, A, G, Black);
-			add(ColorSet::Smart, F, M, Black);
-			add(ColorSet::Smart, J, N);
-			add(ColorSet::Smart, N, D, Black);
-			add(ColorSet::Smart, H, K, Black);
-			add(ColorSet::Smart, B, L, Black);
-			add(ColorSet::Smart, M, A, Black);
-			add(ColorSet::Smart, B, E, Blue);
-			add(ColorSet::Smart, O, M, Black);
-			add(ColorSet::Smart, D, J, Blue);
-			add(ColorSet::Smart, E, H, Black);
+			add(ColorSet::Smart, B, E, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, A, G, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, F, M, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, J, N, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, N, D, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, H, K, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, B, L, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, M, A, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, B, E, ofColor::blue, ofColor::white);
+			add(ColorSet::Smart, O, M, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, D, J, ofColor::blue, ofColor::white);
+			add(ColorSet::Smart, E, H, ofColor::black, ofColor::white);
 
 			setupBasicColors(ColorSet::Extreme, extreme);
-			add(ColorSet::Smart, B, K);
-			add(ColorSet::Smart, E, M, Black);
-			add(ColorSet::Smart, G, D);
-			add(ColorSet::Smart, D, O, Black);
-			add(ColorSet::Smart, F, I, Black);
-			add(ColorSet::Smart, H, K, Black);
-			add(ColorSet::Smart, L, C, Black);
+			add(ColorSet::Smart, B, K, ofColor::white, ofColor::white);
+			add(ColorSet::Smart, E, M, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, G, D, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, D, O, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, F, I, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, H, K, ofColor::black, ofColor::white);
+			add(ColorSet::Smart, L, C, ofColor::black, ofColor::white);
 
 			setupBasicColors(ColorSet::EarthTone, earthtone);
-			add(ColorSet::Modern, D, B);
-			add(ColorSet::Modern, E, A);
-			add(ColorSet::Modern, J, I);
-			add(ColorSet::Modern, F, N);
-			add(ColorSet::Modern, D, H);
-			add(ColorSet::Modern, H, J);
-			add(ColorSet::Modern, N, J);
-			add(ColorSet::Modern, A, H);
-			add(ColorSet::Modern, I, K);
-			add(ColorSet::Modern, Black, C); // just a demo of using the built in colors
+			add(ColorSet::Modern, D, B, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, E, A, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, J, I, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, F, N, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, D, H, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, H, J, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, N, J, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, A, H, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, I, K, ofColor::black, ofColor::white);
+			add(ColorSet::Modern, ofColor::green, C, ofColor::black, ofColor::white); // just a demo of using the built in colors
 
 			// setup the built in colors
-			data.push_back(ColorSet(ColorSet::ColorGroup::Blue, White, Blue, White));
-			data.push_back(ColorSet(ColorSet::ColorGroup::Black, Black, White, Black));
-			data.push_back(ColorSet(ColorSet::ColorGroup::White, White, Black, White));
-			data.push_back(ColorSet(ColorSet::ColorGroup::Default, White, Black, White));
+			add(ColorSet::Blue, ofColor::lightBlue, ofColor::white, ofColor::blue, ofColor::white);
+			add(ColorSet::Black, ofColor::black, ofColor::white, ofColor::blue, ofColor::white); 
+			add(ColorSet::White, ofColor::white, ofColor::black, ofColor::blue, ofColor::white); 
+			add(ColorSet::RedBlue, ofColor::red, ofColor::lightCoral, ofColor::blue, ofColor::indianRed);
+			add(ColorSet::Default, ofColor::red, ofColor::blue, ofColor::white, ofColor::green);
+
 		}
 
 #if 0

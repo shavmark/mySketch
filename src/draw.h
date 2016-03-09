@@ -45,7 +45,7 @@ namespace Software2552 {
 	// basic mesh stuff
 	class MeshEngine : public ofMesh {
 	public:
-		void setup(Colors*colors);
+		void setup();
 	private:
 	};
 	//http://openframeworks.cc/ofBook/chapters/generativemesh.html
@@ -71,7 +71,7 @@ namespace Software2552 {
 			// set the diffuse color, color reflected from the light source //
 			light.setDirectional();
 			// specular color, the highlight/shininess color //
-			light.setSpecularColor(ofColor(255.f, 255.f, 255.f));
+			light.setSpecularColor(Colors::getFloatColor(Colors::lightColor));
 			light.setPosition(center.x, center.y, 0);
 
 			// shininess is a value between 0 - 128, 128 being the most shiny //
@@ -83,9 +83,10 @@ namespace Software2552 {
 			light.setup();
 			light.setPosition(-100, 200, 0);
 			ofEnableDepthTest();
-			boxMaterial.setDiffuseColor(ofFloatColor::red);
+			
+			boxMaterial.setDiffuseColor(Colors::getFloatColor(Colors::backColor));
 			//boxMaterial.setShininess(0.02);
-			roadMaterial.setDiffuseColor(ofFloatColor::gray);
+			roadMaterial.setDiffuseColor(Colors::getFloatColor(Colors::foreColor));
 			roadMaterial.setShininess(0.01);
 
 			box.move(200, 0, -200);

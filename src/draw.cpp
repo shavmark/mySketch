@@ -49,7 +49,7 @@ namespace Software2552 {
 		font.get().drawString(s, x, y);
 		ofPopStyle();
 	}
-	void MeshEngine::setup(Colors*colors) {
+	void MeshEngine::setup() {
 		//setMode(OF_PRIMITIVE_POINTS);
 		setMode(OF_PRIMITIVE_LINES);
 		//setMode(OF_PRIMITIVE_LINE_STRIP);
@@ -60,15 +60,15 @@ namespace Software2552 {
 		ofVec3f left(50.0, 150.0, 0.0);
 		ofVec3f right(150.0, 150.0, 0.0);
 		addVertex(top);
-		addColor(colors->getFloatColor(Colors::foreColor));
+		addColor(Colors::getFloatColor(Colors::foreColor));
 
 		addVertex(left);
-		addColor(colors->getFloatColor(Colors::backColor));
+		addColor(Colors::getFloatColor(Colors::backColor));
 
 		addVertex(right);
 		//bugbug this is where we add in more colors, lets see how many before we make 
 		// changes, but somthing like Color1, Color2 etc
-		addColor(colors->getFloatColor(Colors::fontColor));
+		addColor(Colors::getFloatColor(Colors::fontColor));
 
 		addIndex(0);
 		addIndex(1);
