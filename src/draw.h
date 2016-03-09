@@ -42,10 +42,20 @@ namespace Software2552 {
 		virtual void pause() {};
 	};
 
+	// basic mesh stuff
 	class MeshEngine : public ofMesh {
 	public:
 		void setup(ColorSet*colors);
 	private:
+	};
+	//http://openframeworks.cc/ofBook/chapters/generativemesh.html
+	class MoreMesh : public MeshEngine {
+	public:
+		void setup(ColorSet*colors);
+		void draw();
+	private:
+		ofImage image;
+		ofEasyCam easyCam;
 	};
 
 	class BackgroundEngine : public Engine<Colors> {
@@ -56,6 +66,7 @@ namespace Software2552 {
 		void update(Colors*color);
 	private:
 		ofGradientMode mode;
+		//ofBackgroundHex this is an option too bugbug enable background type
 	};
 	class CharacterEngine : public Engine<Character> {
 	public:

@@ -7,7 +7,6 @@ namespace Software2552 {
 	int Colors::smallest = -1;
 	std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int> Colors::colorTable;
 	ColorSet::ColorGroup Colors::defaultGroup= ColorSet::ColorGroup::Random;
-	ColorSet Colors::defaultColorSet;
 
 	// get a color set
 	ColorSet& Colors::get() {
@@ -100,12 +99,6 @@ namespace Software2552 {
 			textColor
 			);
 		data.push_back(s);
-		ColorSet s2 = ColorSet(group,
-			find(group, back),
-			find(group, fore),
-			textColor
-			);
-		data.push_back(s2);
 	}
 
 	//http://www.creativecolorschemes.com/resources/free-color-schemes/art-deco-color-scheme.shtml
@@ -174,8 +167,13 @@ namespace Software2552 {
 			add(ColorSet::Modern, N, J);
 			add(ColorSet::Modern, A, H);
 			add(ColorSet::Modern, I, K);
+			add(ColorSet::Modern, Black, C); // just a demo of using the built in colors
 
-			defaultColorSet = ColorSet(ColorSet::ColorGroup::Default, White, Black, White);
+			// setup the built in colors
+			data.push_back(ColorSet(ColorSet::ColorGroup::Blue, White, Blue, White));
+			data.push_back(ColorSet(ColorSet::ColorGroup::Black, Black, White, Black));
+			data.push_back(ColorSet(ColorSet::ColorGroup::White, White, Black, White));
+			data.push_back(ColorSet(ColorSet::ColorGroup::Default, White, Black, White));
 		}
 
 #if 0

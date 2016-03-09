@@ -10,13 +10,16 @@ namespace Software2552 {
 	class ColorSet : public Animator {
 	public:
 		enum ColorGroup {
-			Modern, Smart, Extreme, EarthTone, BuiltIn, Default, Random//only modern so far, ArtDeco, Warm, Cool, Stark, Pastel, LightValue, DarkValue, MediumValue, Random
+			Modern, Smart, Extreme, EarthTone, BuiltIn, Default, Black, White, Blue, Random//only modern so far, ArtDeco, Warm, Cool, Stark, Pastel, LightValue, DarkValue, MediumValue, Random
 		};
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
 		// just use multiple ColorSets, find out more as we continue on
 		ColorSet() {
 			set(Modern, 0xffff, 0x0000, 0xffff);
+		}
+		ColorSet(const ColorGroup type) {
+			set(type, 0x0000, 0x0000, 0xffff);
 		}
 		ColorSet(const ColorGroup type, int foreground, int background, int text) {
 			set(type, foreground, background, text);
@@ -44,6 +47,9 @@ namespace Software2552 {
 		}
 		bool operator> (const ColorSet& rhs) {
 			return getCount() > rhs.getCount();
+		}
+		bool operator== (const ColorSet& rhs) {
+			return getType() == rhs.getType();
 		}
 		// return true if less than, and both of the desired type or Random
 		bool lessThan(const ColorSet& j, ColorGroup type) {
@@ -76,11 +82,15 @@ namespace Software2552 {
 		};
 #define COLORNAME_COUNT 15
 		void update();
-		// get basic colors like white, black, blue
-		static ColorSet& getDefaultColor() {
-			// show match any color set, use for things like popups
-			++defaultColorSet; // still track count 
-			return defaultColorSet;
+		// get the default color for example, the find could return more than one but this function
+		// is used to get the one offs like Default and Black etc
+		static ColorSet getFirstColor(ColorSet::ColorGroup group = ColorSet::Default) {
+			std::vector<ColorSet>::iterator itr = std::find(data.begin(), data.end(), ColorSet(group));
+			if (itr != data.end()) {
+				++(*itr); // reflect usage
+				return *itr;
+			}
+			return ColorSet(); // always do something
 		}
 		// call getNext at start up and when ever colors should change
 		// do not break colors up or thins will not match
@@ -95,7 +105,6 @@ namespace Software2552 {
 	private:
 		// foreground, background, font
 		static ColorSet& get();
-		static ColorSet defaultColorSet;
 		static std::map<std::pair <ColorSet::ColorGroup, ColorName>, int> colorTable; // key,hex pair
 		static vector<ColorSet> data;
 		static int smallest;//index of smallest value

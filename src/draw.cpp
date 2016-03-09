@@ -35,6 +35,8 @@ namespace Software2552 {
 	}
 
 	void BackgroundEngine::draw(Colors* colors){
+		//ofBackgroundHex this is an option too bugbug enable background type
+
 		ofBackgroundGradient(ofColor::fromHex(colors->getCurrentColors().getForeground()),
 			ofColor::fromHex(colors->getCurrentColors().getBackground()), mode);
 		TextEngine::draw("print", 100,200);
@@ -75,7 +77,60 @@ namespace Software2552 {
 		addIndex(0);
 
 	}
+	void MoreMesh::setup(ColorSet*colors) {
+		image.load("stars.png");
+		image.resize(200, 200); // use less data
+		setMode(OF_PRIMITIVE_LINES);
+		enableColors();
 
+		float intensityThreshold = 150.0;
+		int w = image.getWidth();
+		int h = image.getHeight();
+		for (int x = 0; x<w; ++x) {
+			for (int y = 0; y<h; ++y) {
+				ofColor c = image.getColor(x, y);
+				float intensity = c.getLightness();
+				if (intensity >= intensityThreshold) {
+					float saturation = c.getSaturation();
+					float z = ofMap(saturation, 0, 255, -100, 100);
+					// We shrunk our image by a factor of 4, so we need to multiply our pixel
+					// locations by 4 in order to have our mesh cover the openFrameworks window
+					ofVec3f pos(x * 4, y * 4,z);
+					addVertex(pos);
+					// When addColor(...), the mesh will automatically convert
+					// the ofColor to an ofFloatColor
+					addColor(c);
+				}
+			}
+		}
+		// Let's add some lines!
+		float connectionDistance = 30;
+		int numVerts = getNumVertices();
+		for (int a = 0; a < numVerts; ++a) {
+			ofVec3f verta = getVertex(a);
+			for (int b = a + 1; b < numVerts; ++b) {
+				ofVec3f vertb = getVertex(b);
+				float distance = verta.distance(vertb);
+				if (distance <= connectionDistance) {
+					// In OF_PRIMITIVE_LINES, every pair of vertices or indices will be
+					// connected to form a line
+					addIndex(a);
+					addIndex(b);
+				}
+			}
+		}
+	}
+	void MoreMesh::draw(){
+		ofColor centerColor = ofColor(85, 78, 68);
+		ofColor edgeColor(0, 0, 0);
+		ofBackgroundGradient(centerColor, edgeColor, OF_GRADIENT_CIRCULAR);
+		easyCam.begin();
+		ofPushMatrix();
+		ofTranslate(-ofGetWidth() / 2, -ofGetHeight() / 2);
+		ofMesh::draw();
+		ofPopMatrix();
+		easyCam.end();
+	}
 	void TextEngine::draw(Text* t) {
 		ofPushStyle();
 		ofSetHexColor(Colors::getCurrentColors().getFontColor());

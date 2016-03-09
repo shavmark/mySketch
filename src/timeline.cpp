@@ -35,7 +35,7 @@ namespace Software2552 {
 	}
 	void Timeline::setup() {
 		theSet.setup();
-		ColorSet& color = Colors::getDefaultColor();
+		ColorSet color = Colors::getFirstColor(ColorSet::ColorGroup::Black);
 		mesh.setup(&color);
 		return;
 
@@ -60,7 +60,7 @@ namespace Software2552 {
 
 	// keep as fast as possible
 	void Timeline::draw() {
-		theSet.draw();
+		//theSet.draw();
 		mesh.draw();
 		return;
 		for (auto& a : acts) {
