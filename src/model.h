@@ -112,7 +112,7 @@ namespace Software2552 {
 
 		/// use pointers if data set gets too large
 
-		BackgroundEngine background; // there is only one background, but it can have different settings
+		RoleBackground background; // there is only one background, but it can have different settings
 		int framerate; // only one framerate
 		vector<ofLight>	light;
 		vector<ofEasyCam> camera;
@@ -253,7 +253,7 @@ namespace Software2552 {
 	};
 
 	// an actor if you will
-	template <class T> class ThePlayer : public Graphic
+	template <class T> class Actor : public Graphic
 	{
 	public:
 		virtual bool read(const Json::Value &data) = 0;
@@ -276,10 +276,10 @@ namespace Software2552 {
 	};
 
 	
-	class Background : public ThePlayer<BackgroundEngine> {
+	class Background : public Actor<RoleBackground> {
 	};
 		// some objects just use the OpenFrameworks objects if things are basic enough
-	class Image : public ThePlayer<ofImage> {
+	class Image : public Actor<ofImage> {
 	public:
 		bool read(const Json::Value &data);
 		void draw() {
@@ -292,7 +292,7 @@ namespace Software2552 {
 		};
 	};
 	
-	class Text : public ThePlayer<TextEngine> {
+	class Text : public Actor<RoleText> {
 	public:
 		bool read(const Json::Value &data);
 		void draw();
@@ -304,7 +304,7 @@ namespace Software2552 {
 		string text;
 	};
 
-	class Paragraph : public ThePlayer<ofxParagraph> {
+	class Paragraph : public Actor<ofxParagraph> {
 	public:
 		bool read(const Json::Value &data);
 		void draw();
@@ -312,13 +312,13 @@ namespace Software2552 {
 
 
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
-	class Audio : public ThePlayer<ofSoundPlayer> {
+	class Audio : public Actor<ofSoundPlayer> {
 	public:
 		bool read(const Json::Value &data);
 		void setup();
 	};
 
-	class Video : public ThePlayer<VideoEngine> {
+	class Video : public Actor<RoleVideo> {
 	public:
 
 		bool read(const Json::Value &data);
@@ -354,7 +354,7 @@ namespace Software2552 {
 	};
 
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
-	class Character : public ThePlayer<CharacterEngine> {
+	class Character : public Actor<RoleCharacter> {
 	public:
 
 		bool read(const Json::Value &data);

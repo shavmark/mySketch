@@ -34,6 +34,8 @@ namespace Software2552 {
 		}
 	}
 	void Timeline::setup() {
+		scene.setup();
+		return;
 		theSet.setup();
 		ColorSet color = Colors::getFirstColor(ColorSet::ColorGroup::Black);
 		mesh.setup(&color);
@@ -61,7 +63,8 @@ namespace Software2552 {
 	// keep as fast as possible
 	void Timeline::draw() {
 		//theSet.draw();
-		mesh.draw();
+		//mesh.draw();
+		scene.draw();
 		return;
 		for (auto& a : acts) {
 			for (auto& item : a.getPlayList()) {

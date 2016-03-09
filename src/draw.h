@@ -31,7 +31,7 @@ namespace Software2552 {
 
 
 	template<typename T>
-	class Engine : public Animator {
+	class Role : public Animator {
 	public:
 		// fill in the ones you need in derived classes
 		virtual void draw(T*) {};
@@ -56,11 +56,36 @@ namespace Software2552 {
 	private:
 		ofImage image;
 		ofEasyCam easyCam;
+		ofLight light;
+	};
+	class SceneLearn {
+	public:
+		void setup() {
+			light.setup();
+			light.setPosition(-100, 200, 0);
+			ofEnableDepthTest();
+			boxMaterial.setDiffuseColor(ofFloatColor::red);
+			boxMaterial.setShininess(0.02);
+		}
+
+		void draw() {
+			cam.begin();
+			boxMaterial.begin();
+			box.draw();
+			boxMaterial.end();
+			// here you will draw your object
+			cam.end();
+		}
+		ofLight light;
+		ofEasyCam cam;
+		ofBoxPrimitive box;
+		ofMaterial boxMaterial;
+
 	};
 
-	class BackgroundEngine : public Engine<Colors> {
+	class RoleBackground : public Role<Colors> {
 	public:
-		BackgroundEngine(){ mode = OF_GRADIENT_LINEAR; }
+		RoleBackground(){ mode = OF_GRADIENT_LINEAR; }
 		void setup(Colors* color);
 		void draw(Colors* color);
 		void update(Colors*color);
@@ -68,65 +93,23 @@ namespace Software2552 {
 		ofGradientMode mode;
 		//ofBackgroundHex this is an option too bugbug enable background type
 	};
-	class CharacterEngine : public Engine<Character> {
+	class RoleCharacter : public Role<Character> {
 	public:
 
 	private:
 	};
 	// put advanced drawing in these objects
-	class VideoEngine :public ofVideoPlayer {
+	class RoleVideo :public ofVideoPlayer {
 	public:
 		void draw(Video*v);
 	private:
 	};
-	class TextEngine : public Engine<Text> {
+	class RoleText : public Role<Text> {
 	public:
 		void draw(Text*);
 		static void draw(const string &s, int x, int y);
 
 	private:
-	};
-	//  ofxBox2dParticleSystem Created by Atsushi Tadokoro on 8/23/14.  Pulled here to break free and use standard ofxbox2d plugin
-	class ofxBox2dParticleSystem : public ofxBox2dBaseShape {
-
-	private:
-		b2World * b2dworld;
-
-	public:
-		b2ParticleSystemDef particleSystemDef;
-		b2ParticleSystem* particleSystem;
-		ofVboMesh mesh;
-		float particleSize;
-		float lifetime;
-		ofColor color;
-		b2ParticleFlag flag;
-		ofImage textureImage;
-		bool useTexture;
-
-		ofxBox2dParticleSystem();
-		void setup(b2World * b2dworld);
-		void setup(b2World * b2dworld, int maxCount);
-		void setup(b2World * b2world, int maxCount, float lifetime, float radius, float particleSize, ofColor color);
-		void draw();
-
-		int32 createParticle(ofVec2f position, ofVec2f velocity);
-		int32 createParticle(float position_x, float position_y, float velocisty_x, float velocisty_y);
-
-		void createRectParticleGroup(ofVec2f position, ofVec2f size, ofColor color);
-		void createCircleParticleGroup(ofVec2f position, float radius, ofColor color);
-
-		void loadImage(string fileName);
-
-		void setRadius(float radius);
-		void setParticleLifetime(float lifetime);
-		void setColor(ofColor color);
-		void setParticleFlag(b2ParticleFlag flag);
-
-		int getParticleCount();
-
-		void applyForce(int32 particle_index, const ofVec2f& force);
-		void applyForce(int32 particle_index, float force_x, float force_y);
-
 	};
 
 }

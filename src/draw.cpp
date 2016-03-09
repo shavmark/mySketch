@@ -4,15 +4,15 @@
 // this is the drawing  module where most drawing work is done
 
 namespace Software2552 {
-	void VideoEngine::draw(Video*v) {
+	void RoleVideo::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
 	}
-	void BackgroundEngine::setup(Colors* colors) { 
+	void RoleBackground::setup(Colors* colors) { 
 		mode = OF_GRADIENT_LINEAR; 
 		setRefreshRate(60000);// just set something different while in dev
 	}
 	// colors and background change over time but not at the same time
-	void BackgroundEngine::update(Colors*colors) {
+	void RoleBackground::update(Colors*colors) {
 		if (colors->refresh()) {
 			colors->getNextColors();
 		}
@@ -34,14 +34,14 @@ namespace Software2552 {
 
 	}
 
-	void BackgroundEngine::draw(Colors* colors){
+	void RoleBackground::draw(Colors* colors){
 		//ofBackgroundHex this is an option too bugbug enable background type
 
 		ofBackgroundGradient(ofColor::fromHex(colors->getCurrentColors().getForeground()),
 			ofColor::fromHex(colors->getCurrentColors().getBackground()), mode);
-		TextEngine::draw("print", 100,200);
+		RoleText::draw("print", 100,200);
 	}
-	void TextEngine::draw(const string &s, int x, int y) {
+	void RoleText::draw(const string &s, int x, int y) {
 		ofPushStyle();
 		ofSetHexColor(Colors::getCurrentColors().getFontColor());
 		Font font;
@@ -131,7 +131,7 @@ namespace Software2552 {
 		ofPopMatrix();
 		easyCam.end();
 	}
-	void TextEngine::draw(Text* t) {
+	void RoleText::draw(Text* t) {
 		ofPushStyle();
 		ofSetHexColor(Colors::getCurrentColors().getFontColor());
 		t->getFont().drawString(t->getText(), t->getStartingPoint().x, t->getStartingPoint().y);
