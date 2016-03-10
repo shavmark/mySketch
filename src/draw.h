@@ -59,85 +59,130 @@ namespace Software2552 {
 		ofLight light;
 
 	};
+	class Sphere : public ofSpherePrimitive {
+	public:
+		void draw() {
+			// currenting thinking we let color operate on its own via its class
+			ofSetColor(ofColor::white); 
+			if (wireFrame) {
+				drawWireframe();
+			}
+			else {
+				ofSpherePrimitive::draw();
+			}
+			//drawFaces();
+			//drawVertices();
+		}
+		void setForTexture(float w, float h) {
+			mapTexCoords(0, h, w, 0);
+			rotate(180, 0, 1, 0);// flip for camera
+
+		}
+		bool setWireframe(bool b = true) { wireFrame = b; }
+	private:
+		bool wireFrame = false;
+	};
+	class Camera : public ofEasyCam {
+	public:
+		void setOrbit() {
+			float time = ofGetElapsedTimef();
+			float longitude = 10 * time;
+			float latitude = 10 * sin(time*0.8);
+			float radius = 600 + 50 * sin(time*0.4);
+			orbit(longitude, latitude, radius, ofPoint(0, 0, 0));
+		}
+	};
+	class Fbo : public ofFbo {
+	public:
+	};
+
+	class TextureVideo : public ofTexture {
+	public:
+		void update() {
+			player.update();
+		}
+		void create(const string& name, float w, float h) {
+			player.loadMovie(name);
+			player.play();
+		}
+		float getWidth() { return player.getTextureReference().getWidth(); }
+		float getHeight() { return player.getTextureReference().getHeight(); }
+	private:
+		ofVideoPlayer player;
+	};
+	class TextureFromImage : public ofTexture {
+	public:
+		void setup() {
+		}
+		void create(const string& name, float w, float h) {
+			// create texture
+			ofLoadImage(*this, name);
+			fbo.allocate(w,h, GL_RGB);
+			fbo.begin();//fbo does drawing
+			ofSetColor(ofColor::white); // no image color change when using white
+			draw(0, 0, w,h);
+			fbo.end();// normal drawing resumes
+		}
+		float getWidth() { return fbo.getWidth(); }
+		float getHeight() { return fbo.getHeight(); }
+		void bind() { fbo.getTextureReference().bind(); }
+		void unbind() { fbo.getTextureReference().unbind(); }
+		
+	private:
+		Fbo	fbo;
+
+	};
+	class Light : public ofLight {
+	public:
+	};
+	class Material : public ofMaterial {
+	public:
+	};
 	class SceneLearn {
 	public:
 		void setup() {
-			// turn on smooth lighting //
-			ofSetSmoothLighting(true);
-
-			center.set(ofGetWidth()*.5, ofGetHeight()*.5, 0);
-
-			// Point lights emit light in all directions //
-			// set the diffuse color, color reflected from the light source //
-			light.setDirectional();
-			// specular color, the highlight/shininess color //
-			ColorSet set = Colors::getFirstColor(ColorSet::RedBlue);
-			ofColor y = ofColor().fromHex(set.getHex(3));
-			ofFloatColor x = Colors::getFloatColor(Colors::lightColor);
-			ofColor y2 = Colors::getOfColor(Colors::lightColor);
-			light.setSpecularColor(x);
-			//setDiffuseColor
-			light.setPosition(center.x, center.y, 0);
-
-			// shininess is a value between 0 - 128, 128 being the most shiny //
-			boxMaterial.setShininess(64);
-
-			materialColor.setBrightness(250.f);
-			materialColor.setSaturation(200);
-
-			light.setup();
-			light.setPosition(-100, 200, 0);
-			ofEnableDepthTest();
-			
-			x = Colors::getFloatColor(Colors::backColor);
-			boxMaterial.setDiffuseColor(Colors::getFloatColor(Colors::backColor));
-			//boxMaterial.setShininess(0.02);
-			roadMaterial.setDiffuseColor(Colors::getFloatColor(Colors::foreColor));
-			roadMaterial.setShininess(0.01);
-
-			box.move(200, 0, -200);
-			sphere.setParent(box);
-			sphere.move(-100, 0, 0);
-		}
-
-		void draw() {
-			ofSetColor(light.getDiffuseColor());
-
-			// enable lighting //
-			ofEnableLighting();
-			// the position of the light must be updated every frame, 
-			// call enable() so that it can update itself //
-			light.enable();
-			cam.begin();
-			roadMaterial.begin();
-			roadMaterial.end();
-			boxMaterial.begin();
-			box.draw();
-			sphere.draw();
-			boxMaterial.end();
-			cam.end();
-			// turn off lighting //
-			ofDisableLighting();
+			texture.create("hubble1.jpg", ofGetWidth(), ofGetHeight());
+			video.create("Clyde.mp4", ofGetWidth(), ofGetHeight());
+			sphere.set(250, 40);
+			sphere.setForTexture(texture.getWidth(), texture.getHeight());
 		}
 		void update() {
-			
-			light.setDiffuseColor(Colors::getFloatColor(Colors::lightColor));
-
-			materialColor.setHue(Colors::getHue(Colors::backColor));
-			// the light highlight of the material //
-			boxMaterial.setSpecularColor(materialColor);
-
+			video.update();
 		}
-		ofLight light;
-		ofEasyCam cam;
-		ofBoxPrimitive box;
-		ofMaterial boxMaterial;
-		ofMaterial  roadMaterial;
-		ofSpherePrimitive sphere;
-		ofVec3f center;
-		ofColor materialColor;
-    
+		void draw() {
+			draw2d();
+			draw3d();
+		}
+		void draw2d() {
+			//fbo.draw(0, 0, ofGetWidth(), ofGetHeight());// fbo now drawing
+		}
+		void draw3d() {
+			texture.bind();
+			light.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, ofGetWidth());
+			light.enable();
+			material.begin();
+			ofEnableDepthTest();
 
+			camera.setOrbit();
+			camera.begin();
+			sphere.draw();
+			camera.end();
+
+			ofDisableDepthTest();
+			material.end();
+			light.disable();
+			ofDisableLighting();
+			texture.unbind();
+		}
+	private:
+		// things a scene can have (infinte list really)
+		Sphere	sphere;
+		Camera	camera;
+		Light	light;
+		ofImage	image; // dervied class hides virtual
+		Material material;
+		TextureFromImage texture;
+		TextureVideo video;
 	};
 
 	class RoleBackground : public Role<Colors> {

@@ -67,7 +67,7 @@ namespace Software2552 {
 	// use the build the sets 
 	void Colors::setupBasicColors(ColorSet::ColorGroup group, std::array<int, COLORNAME_COUNT>a) {
 		// fixed list 
-
+		//bugbug allow any number of colors per group, these 14 are special sets from the book
 		AddColorRow(group, A, a[0]);
 		AddColorRow(group, B, a[1]);
 		AddColorRow(group, C, a[2]);
