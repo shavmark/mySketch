@@ -28,14 +28,14 @@ namespace Software2552 {
 	}
 	// get next color based on type and usage count
 	// example: type==cool gets the next cool type, type=Random gets any next color
-	ColorSet& Colors::getNextColors(ColorSet::ColorGroup type) {
+	ColorSet& Colors::getNextColors(ColorSet::ColorGroup group) {
 		if (smallest < 0) {
 			smallest = 0; // show we started
 		}
 		// find smallest of type
 		//setSmallest(0); // code assume some data loaded
 		for (int i = 0; i < data.size(); ++i) {
-			if (data[getSmallest()].lessThan(data[i], type)) {
+			if (data[getSmallest()].lessThan(data[i], group)) {
 				setSmallest(i);
 			}
 		}
@@ -97,6 +97,7 @@ namespace Software2552 {
 	}
 	void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& light) {
 
+		int h = light.getHex();
 		ColorSet s = ColorSet(group,
 			find(group, fore),
 			find(group, back),

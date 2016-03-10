@@ -17,27 +17,33 @@ namespace Software2552 {
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
 		// just use multiple ColorSets, find out more as we continue on
-		ColorSet(const ColorGroup groupIn) {
-			set(groupIn, 4, ofColor(ofColor::blue).getHex(), ofColor(ofColor::orangeRed).getHex(), ofColor(ofColor::azure).getHex());
+		ColorSet(const ColorGroup& groupIn) {
+			setGroup(groupIn);
+			// always set a color to avoid bad errors
+			setSetcolors(4, ofColor(ofColor::blue).getHex(), ofColor(ofColor::orangeRed).getHex(), ofColor(ofColor::azure).getHex());
 		}
-		ColorSet(const ColorGroup groupIn, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4) {
+		ColorSet(const ColorGroup& groupIn, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4) {
 			// always store as hex
-			set(groupIn, 4, color1.getHex(), color2.getHex(), color3.getHex(), color4.getHex());
+			setGroup(groupIn);
+			setSetcolors(4, color1.getHex(), color2.getHex(), color3.getHex(), color4.getHex());
 		}
-		ColorSet(const ColorGroup groupIn, int color1, int color2, int color3, int color4) {
-			set(groupIn, 4, color1, color2, color3, color4);
+		ColorSet(const ColorGroup&groupIn, int color1, int color2, int color3, int color4) {
+			setGroup(groupIn);
+			setSetcolors(4, color1, color2, color3, color4);
 		}
-		void set(const ColorGroup groupIn, int c, int color...) {
-			group = groupIn;
-			count = 0;
+		void setSetcolors(int c, ...) {
+			count = 0;  //usage count
 			colors.clear();
 
 			va_list args;
-			va_start(args, color);
+			va_start(args, c);
 			for (int i = 0; i < c; ++i) {
 				colors.push_back(va_arg(args, int));
 			}
 			va_end(args);
+		}
+		void setGroup(const ColorGroup&groupin) {
+			group = groupin;
 		}
 		ColorGroup getGroup() const {
 			return group;
