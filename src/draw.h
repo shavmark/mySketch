@@ -59,6 +59,7 @@ namespace Software2552 {
 		ofLight light;
 
 	};
+
 	class Sphere : public ofSpherePrimitive {
 	public:
 		void draw() {
@@ -73,15 +74,15 @@ namespace Software2552 {
 			//drawFaces();
 			//drawVertices();
 		}
-		void setForTexture(float w, float h) {
-			mapTexCoords(0, h, w, 0);
-			rotate(180, 0, 1, 0);// flip for camera
-
+		void setForTexture(ofTexture& texture) {
+			mapTexCoordsFromTexture(texture);
+			//rotate(180, 0, 1, 0);// flip for camera
 		}
-		bool setWireframe(bool b = true) { wireFrame = b; }
+		void setWireframe(bool b = true) { wireFrame = b; }
 	private:
 		bool wireFrame = true;
 	};
+
 	class Camera : public ofEasyCam {
 	public:
 		void setOrbit() {
@@ -96,34 +97,28 @@ namespace Software2552 {
 	public:
 	};
 
-	class TextureVideo  {
+	class TextureVideo : public ofVideoPlayer {
 	public:
-		void update() {
-			player.update();
-		}
 		void create(const string& name, float w, float h) {
-			player.loadMovie(name);
-			player.play();
+			loadMovie(name);
+			play();
 		}
-		float getWidth() { return player.getWidth(); }
-		float getHeight() { return player.getHeight(); }
 		bool bind() { 
-			if (player.isInitialized() && player.isUsingTexture()) {
-				player.getTexture().bind();
+			if (isInitialized() && isUsingTexture()) {
+				getTexture().bind();
 				return true;
 			}
 			return false;
 		}
 		bool unbind() {
-			if (player.isInitialized() && player.isUsingTexture()) {
-				player.getTexture().unbind();
+			if (isInitialized() && isUsingTexture()) {
+				getTexture().unbind();
 				return true;
 			}
 			return false;
 		}
 		
 	private:
-		ofVideoPlayer player;
 	};
 	class TextureFromImage : public ofTexture {
 	public:
@@ -156,26 +151,18 @@ namespace Software2552 {
 	class SceneLearn {
 	public:
 		void setup() {
-			texture.create("hubble1.jpg", ofGetWidth(), ofGetHeight());
-			video.create("Clyde.mp4", ofGetWidth(), ofGetHeight());
-			sphere.set(250, 180);
-			sphere.setForTexture(video.getWidth(), video.getHeight());
+			//bugbug can we set size at update?
+			texture.create("hubble1.jpg", ofGetWidth()/2, ofGetHeight() / 2) ;
+			pictureSphere.setForTexture(texture);
 
-			ofEnableAlphaBlending();
-			ofEnableSmoothing();
-			ofSetGlobalAmbientColor(ofColor(0, 0, 0));
-			ofSetSmoothLighting(true);
-			spot.setDiffuseColor(ofFloatColor(255.0, 0.0, 0.0f));
-			spot.setSpecularColor(ofColor(0, 0, 255));
-			spot.setSpotlight();
-			spot.setSpotConcentration(5);
-			spot.setSpotlightCutOff(10);
-			spot.setPosition(0, 0, 300);
+			video.create("Clyde.mp4", ofGetWidth() / 2, ofGetHeight() / 2);
 
-			//material.setSpecularColor(ofColor(255, 255, 255, 255));
-			//material.setEmissiveColor(ofColor(0, 0, 0, 255));
-			//material.setDiffuseColor(ofColor(255, 255, 255, 255));
-			material.setAmbientColor(ofColor(255, 255, 255, 255));
+			videoSphere.set(250, 150);
+			pictureSphere.set(100, 40);
+			pictureSphere.setWireframe(false);
+			videoSphere.move(ofVec3f(0, 0, 0));
+			pictureSphere.move(ofVec3f(ofGetWidth()-(video.getWidth()),0, 0));
+
 		}
 		void update() {
 			video.update();
@@ -188,37 +175,39 @@ namespace Software2552 {
 			//fbo.draw(0, 0, ofGetWidth(), ofGetHeight());// fbo now drawing
 		}
 		void draw3d() {
+			if (video.isFrameNew()) {
+				videoSphere.setForTexture(video.getTexture());
+			}
+			ofSetSmoothLighting(true);
 			ofBackgroundGradient(ofColor::blue, ofColor::aqua, OF_GRADIENT_BAR);
 			video.bind();
 			light.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, ofGetWidth());
 			light.enable();
-			spot.enable();
 			material.begin();
 			ofEnableDepthTest();
 			camera.setOrbit();
+
 			camera.begin();
-			sphere.draw();
+			videoSphere.draw();
+			video.unbind();
+			texture.bind();
+			pictureSphere.draw();
+			texture.unbind();
 			camera.end();
 
 			ofDisableDepthTest();
 			material.end();
 			light.disable();
-			spot.disable();
-			ofSetColor(spot.getDiffuseColor());
-			spot.draw();
 			ofDisableLighting();
-			video.unbind();
 		}
 	private:
 		// things a scene can have (infinte list really)
-		Sphere	sphere;
+		Sphere	videoSphere, pictureSphere;
 		Camera	camera;
 		Light	light;
-		ofImage	image; // dervied class hides virtual
 		Material material;
 		TextureFromImage texture;
 		TextureVideo video;
-		ofLight spot;
 	};
 
 	class RoleBackground : public Role<Colors> {

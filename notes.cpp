@@ -1,4 +1,5 @@
 // store notes here
+//https://github.com/petewerner/generative
 //https://github.com/ResEnv/SensorTape
 //http://hubblesite.org/gallery/album/star/
 //https://twitter.com/ofxaddons
