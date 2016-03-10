@@ -17,15 +17,15 @@ namespace Software2552 {
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
 		// just use multiple ColorSets, find out more as we continue on
-		ColorSet(const ColorGroup groupIn = Default) {
-			set(group, 4, 0xffff, 0x0000, 0xffff, 0x000);
+		ColorSet(const ColorGroup groupIn) {
+			set(groupIn, 4, ofColor(ofColor::blue).getHex(), ofColor(ofColor::orangeRed).getHex(), ofColor(ofColor::azure).getHex());
 		}
-		ColorSet(const ColorGroup group, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4) {
+		ColorSet(const ColorGroup groupIn, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4) {
 			// always store as hex
-			set(group, 4, color1.getHex(), color2.getHex(), color3.getHex(), color4.getHex());
+			set(groupIn, 4, color1.getHex(), color2.getHex(), color3.getHex(), color4.getHex());
 		}
-		ColorSet(const ColorGroup group, int color1, int color2, int color3, int color4) {
-			set(group, 4, color1, color2, color3, color4);
+		ColorSet(const ColorGroup groupIn, int color1, int color2, int color3, int color4) {
+			set(groupIn, 4, color1, color2, color3, color4);
 		}
 		void set(const ColorGroup groupIn, int c, int color...) {
 			group = groupIn;
@@ -132,7 +132,7 @@ namespace Software2552 {
 				++(*itr); // reflect usage
 				return *itr;
 			}
-			return ColorSet(); // always do something
+			return ColorSet(group); // always do something
 		}
 		// set current font color
 		static void setFontColor() {

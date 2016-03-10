@@ -135,11 +135,11 @@ namespace Software2552 {
 		}
 	}
 	void TheSet::update() {
-		colors.update();
-		background.update(&colors);// bugbug object at some point may want its own colors
-		if (refresh()) {
-			colors.getNextColors();
-		}
+		//bugbug work on this later colors.update();
+		//background.update(&colors);// bugbug object at some point may want its own colors
+		//if (refresh()) {
+			//colors.getNextColors();
+		//}
 	}
 
 	bool Image::read(const Json::Value &data) {

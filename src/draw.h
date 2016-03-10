@@ -71,7 +71,12 @@ namespace Software2552 {
 			// set the diffuse color, color reflected from the light source //
 			light.setDirectional();
 			// specular color, the highlight/shininess color //
-			light.setSpecularColor(Colors::getFloatColor(Colors::lightColor));
+			ColorSet set = Colors::getFirstColor(ColorSet::RedBlue);
+			ofColor y = ofColor().fromHex(set.getHex(3));
+			ofFloatColor x = Colors::getFloatColor(Colors::lightColor);
+			ofColor y2 = Colors::getOfColor(Colors::lightColor);
+			light.setSpecularColor(x);
+			//setDiffuseColor
 			light.setPosition(center.x, center.y, 0);
 
 			// shininess is a value between 0 - 128, 128 being the most shiny //
@@ -84,6 +89,7 @@ namespace Software2552 {
 			light.setPosition(-100, 200, 0);
 			ofEnableDepthTest();
 			
+			x = Colors::getFloatColor(Colors::backColor);
 			boxMaterial.setDiffuseColor(Colors::getFloatColor(Colors::backColor));
 			//boxMaterial.setShininess(0.02);
 			roadMaterial.setDiffuseColor(Colors::getFloatColor(Colors::foreColor));
@@ -114,8 +120,8 @@ namespace Software2552 {
 			ofDisableLighting();
 		}
 		void update() {
-
-			light.setDiffuseColor(Colors::getLight());
+			
+			light.setDiffuseColor(Colors::getFloatColor(Colors::lightColor));
 
 			materialColor.setHue(Colors::getHue(Colors::backColor));
 			// the light highlight of the material //

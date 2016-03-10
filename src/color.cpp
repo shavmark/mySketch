@@ -6,7 +6,7 @@ namespace Software2552 {
 	vector<ColorSet> Colors::data; // one set of colors to assure matching color themes
 	int Colors::smallest = -1;
 	std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int> Colors::colorTable;
-	ColorSet::ColorGroup Colors::defaultGroup= ColorSet::ColorGroup::Random;
+	ColorSet::ColorGroup Colors::defaultGroup= ColorSet::ColorGroup::Default;
 
 	// get a color set
 	ColorSet& Colors::get() {
@@ -19,7 +19,7 @@ namespace Software2552 {
 		}
 		// no data or no match found in data
 		if (getSmallest() < 0) {
-			return ColorSet();// start with defaults
+			return ColorSet(defaultGroup);// start with defaults
 		}
 		++data[getSmallest()];
 		//int i = getSmallest();// for testing
