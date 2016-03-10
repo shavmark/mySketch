@@ -34,6 +34,7 @@ namespace Software2552 {
 		}
 	}
 	void Timeline::setup() {
+		ofSetFrameRate(60);
 		scene.setup();
 		return;
 		theSet.setup();
@@ -48,7 +49,8 @@ namespace Software2552 {
 	}
 	// keep this super fast
 	void Timeline::update() { 
-		theSet.update();
+		scene.update();
+		//theSet.update();
 		return;
 
 		for (auto& a : acts) {
