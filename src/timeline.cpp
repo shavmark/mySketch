@@ -8,10 +8,10 @@ namespace Software2552 {
 
 	}
 	// read one act and save it to the list of acts (ie a story)
-	bool Timeline::readAct(const string& path) {
+	bool Timeline::readScript(const string& path) {
 		// read in story then let those objects go free as they are set in enumerate(Setup)
 		Act act;
-		if (act.read(path)) {
+		if (act.readFromScript(path)) {
 			acts.push_back(act);
 			return true;
 		}

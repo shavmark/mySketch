@@ -182,7 +182,7 @@ namespace Software2552 {
 		ColorBase(const T& colorIn) {
 			color = colorIn;
 		}
-		bool read(const Json::Value &data) {
+		bool readFromScript(const Json::Value &data) {
 			readJsonValue(color.r, data["r"]);
 			readJsonValue(color.g, data["g"]);
 			readJsonValue(color.g, data["b"]);

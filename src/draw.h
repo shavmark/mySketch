@@ -76,7 +76,7 @@ namespace Software2552 {
 		}
 		void setForTexture(ofTexture& texture) {
 			mapTexCoordsFromTexture(texture);
-			//rotate(180, 0, 1, 0);// flip for camera
+			rotate(180, 0, 1, 0);// flip for camera
 		}
 		void setWireframe(bool b = true) { wireFrame = b; }
 	private:
@@ -156,12 +156,14 @@ namespace Software2552 {
 			pictureSphere.setForTexture(texture);
 
 			video.create("Clyde.mp4", ofGetWidth() / 2, ofGetHeight() / 2);
-
-			videoSphere.set(250, 150);
+			///next draw video in fbo (put in video class) http://clab.concordia.ca/?page_id=944
+			videoSphere.set(250, 80);
 			pictureSphere.set(100, 40);
 			pictureSphere.setWireframe(false);
 			videoSphere.move(ofVec3f(0, 0, 0));
 			pictureSphere.move(ofVec3f(ofGetWidth()-(video.getWidth()),0, 0));
+			material.setShininess(120);
+			//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 
 		}
 		void update() {
@@ -169,12 +171,15 @@ namespace Software2552 {
 		}
 		void draw() {
 			draw2d();
+			ofPushStyle();
 			draw3d();
+			ofPopStyle();
 		}
 		void draw2d() {
 			//fbo.draw(0, 0, ofGetWidth(), ofGetHeight());// fbo now drawing
 		}
 		void draw3d() {
+			
 			if (video.isFrameNew()) {
 				videoSphere.setForTexture(video.getTexture());
 			}
@@ -183,7 +188,6 @@ namespace Software2552 {
 			video.bind();
 			light.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, ofGetWidth());
 			light.enable();
-			material.begin();
 			ofEnableDepthTest();
 			camera.setOrbit();
 
@@ -191,12 +195,13 @@ namespace Software2552 {
 			videoSphere.draw();
 			video.unbind();
 			texture.bind();
+			material.begin();
 			pictureSphere.draw();
+			material.end();
 			texture.unbind();
 			camera.end();
 
 			ofDisableDepthTest();
-			material.end();
 			light.disable();
 			ofDisableLighting();
 		}

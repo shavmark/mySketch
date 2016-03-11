@@ -15,7 +15,7 @@ namespace Software2552 {
 		void play();
 
 
-		bool readAct(const string& path);
+		bool readScript(const string& path);
 
 	private:
 		// stat all objects in vector to playing

@@ -73,7 +73,7 @@ namespace Software2552 {
 	{
 		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
 			T item;
-			item.read(data[j]);
+			item.readFromScript(data[j]);
 			vec.push_back(item);
 		}
 	}
@@ -142,8 +142,8 @@ namespace Software2552 {
 		//}
 	}
 
-	bool Image::read(const Json::Value &data) {
-		if (Graphic::read(data)) {
+	bool Picture::readFromScript(const Json::Value &data) {
+		if (Graphic::readFromScript(data)) {
 			if (getLocation().size() > 0) {
 				player.load(getLocation());//bugbug if things get too slow etc do not load here
 			}
@@ -163,11 +163,11 @@ namespace Software2552 {
 		}
 	}
 
-	bool PlayItem::read(const Json::Value &data) {
+	bool PlayItem::readFromScript(const Json::Value &data) {
 		READSTRING(keyname, data);
 		return true;
 	}
-	bool Playlist::read(const Json::Value &data) {
+	bool Playlist::readFromScript(const Json::Value &data) {
 		parse<PlayItem>(list, data["playList"]);
 		return true;
 	}
@@ -183,16 +183,16 @@ namespace Software2552 {
 	}
 
 	// return true if there is some data 
-	bool ReferencedItem::read(const Json::Value &data) {
+	bool ReferencedItem::readFromScript(const Json::Value &data) {
 
-		if (Dates::read(data)) {
+		if (Dates::readFromScript(data)) {
 
 			parse<Reference>(references, data["references"]);
 			return true;
 		}
 		return false; // some thing must be really wrong to return false as these are optional items
 	}
-	bool Font::read(const Json::Value &data) {
+	bool Font::readFromScript(const Json::Value &data) {
 
 		string name;
 		int size = defaultFontSize;
@@ -217,28 +217,28 @@ namespace Software2552 {
 		return true;
 	}
 	// always return true as these are optional items
-	bool Settings::read(const Json::Value &data) {
+	bool Settings::readFromScript(const Json::Value &data) {
 		// dumps too much so only enable if there is a bug: ECHOAll(data);
 		if (!data.empty()) { // ignore reference as an array or w/o data at this point
 			READSTRING(name, data);
 			READSTRING(title, data);
 			READSTRING(notes, data);
-			font.read(data["font"]);
+			font.readFromScript(data["font"]);
 		}
 
 		return true;
 	}
-	bool Dates::read(const Json::Value &data) {
-		Settings::read(data["settings"]);
-		timelineDate.read(data["timelineDate"]); // date item existed
-		lastUpdateDate.read(data["lastUpdateDate"]); // last time object was updated
-		itemDate.read(data["itemDate"]);
+	bool Dates::readFromScript(const Json::Value &data) {
+		Settings::readFromScript(data["settings"]);
+		timelineDate.readFromScript(data["timelineDate"]); // date item existed
+		lastUpdateDate.readFromScript(data["lastUpdateDate"]); // last time object was updated
+		itemDate.readFromScript(data["itemDate"]);
 		return true;
 	}
 
-	bool Reference::read(const Json::Value &data) {
+	bool Reference::readFromScript(const Json::Value &data) {
 
-		if (Dates::read(data)) { // ignore reference as an array or w/o data at this point
+		if (Dates::readFromScript(data)) { // ignore reference as an array or w/o data at this point
 			// no base class so it repeats some data in base class ReferencedItem
 			READSTRING(location, data[STRINGIFY(Reference)]);
 			READSTRING(locationPath, data[STRINGIFY(Reference)]);
@@ -247,20 +247,20 @@ namespace Software2552 {
 		}
 		return false;
 	}
-	bool Character::read(const Json::Value &data) {
+	bool Character::readFromScript(const Json::Value &data) {
 
-		if (Graphic::read(data)) {
+		if (Graphic::readFromScript(data)) {
 			return true;
 		}
 		return false;
 	}
-	bool Point3D::read(const Json::Value &data) {
+	bool Point3D::readFromScript(const Json::Value &data) {
 		READFLOAT(x, data);
 		READFLOAT(y, data);
 		READFLOAT(z, data);
 		return true;
 	}
-	bool DateAndTime::read(const Json::Value &data) {
+	bool DateAndTime::readFromScript(const Json::Value &data) {
 
 		if (READINT(bc, data)) {
 			return true;
@@ -277,8 +277,8 @@ namespace Software2552 {
 
 		return true;
 	}
-	bool Text::read(const Json::Value &data) {
-		if (Graphic::read(data)) {
+	bool Text::readFromScript(const Json::Value &data) {
+		if (Graphic::readFromScript(data)) {
 			readStringFromJson(text, data["text"]["str"]);
 		}
 		return true;
@@ -299,9 +299,9 @@ namespace Software2552 {
 	}
 
 	// return true if text read in
-	bool Paragraph::read(const Json::Value &data) {
+	bool Paragraph::readFromScript(const Json::Value &data) {
 
-		Graphic::read(data);
+		Graphic::readFromScript(data);
 
 		string str;
 		readStringFromJson(str, data["text"]["str"]);
@@ -336,7 +336,7 @@ namespace Software2552 {
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			shared_ptr<T> v = std::make_shared<T>();
 			v->setSettings(this); // inherit settings
-			if (v->read(data[key][j])) {
+			if (v->readFromScript(data[key][j])) {
 				// only save if data was read in 
 				getDrawingEngines()->get().push_back(v);
 			}
@@ -377,15 +377,15 @@ namespace Software2552 {
 		}
 	};
 
-	bool Video::read(const Json::Value &data) {
+	bool Video::readFromScript(const Json::Value &data) {
 
-		Graphic::read(data);
+		Graphic::readFromScript(data);
 		player.setVolume(getVolume());
 		return true;
 	}
-	bool Audio::read(const Json::Value &data) {
+	bool Audio::readFromScript(const Json::Value &data) {
 
-		Graphic::read(data);
+		Graphic::readFromScript(data);
 		player.setVolume(getVolume());
 		return true;
 	}
@@ -395,20 +395,20 @@ namespace Software2552 {
 		}
 		bumpWait(wait);
 	}
-	bool Scene::read(const Json::Value &data) {
+	bool Scene::readFromScript(const Json::Value &data) {
 
 		try {
 			READSTRING(keyname, data);
 			if (keyname == "ClydeBellecourt") {
 				int i = 1;
 			}
-			Settings::read(data);
+			Settings::readFromScript(data);
 			// add in a known type if data found
 			// keep add in its own vector
 			createTimeLineItems<Video>(data, "videos");
 			createTimeLineItems<Audio>(data, "audios");
 			createTimeLineItems<Paragraph>(data, "paragraphs");
-			createTimeLineItems<Image>(data,"images");
+			createTimeLineItems<Picture>(data,"images");
 			createTimeLineItems<Text>(data, "texts");
 			createTimeLineItems<Character>(data, "characters");
 			return true;
@@ -462,7 +462,7 @@ namespace Software2552 {
 	}
 
 	// read as many jason files as needed, each becomes a deck
-	bool Act::read(const string& fileName) {
+	bool Act::readFromScript(const string& fileName) {
 		
 		ofxJSON json;
 
@@ -473,7 +473,7 @@ namespace Software2552 {
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
-			playlist.read(json);
+			playlist.readFromScript(json);
 			
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
@@ -484,7 +484,7 @@ namespace Software2552 {
 					std::vector<PlayItem>::iterator finditem =
 						find(playlist.getList().begin(), playlist.getList().end(), key);
 					if (finditem != playlist.getList().end()) {
-						finditem->scene.read(json["scenes"][i]);
+						finditem->scene.readFromScript(json["scenes"][i]);
 					}
 				}
 			}
@@ -511,9 +511,9 @@ namespace Software2552 {
 		myID = ofGetSystemTimeMicros();
 	}
 	// always return true as these are optional items
-	bool Graphic::read(const Json::Value &data) {
+	bool Graphic::readFromScript(const Json::Value &data) {
 
-		ReferencedItem::read(data);
+		ReferencedItem::readFromScript(data);
 		READSTRING(type, data);
 		READFLOAT(width, data);
 		READFLOAT(height, data);
@@ -521,7 +521,7 @@ namespace Software2552 {
 		READFLOAT(volume, data);
 		readJsonValue(getDuration(), data["duration"]);
 		readJsonValue(getWait(), data["wait"]);
-		startingPoint.read(data["startingPoint"]);
+		startingPoint.readFromScript(data["startingPoint"]);
 
 		return true;
 	}

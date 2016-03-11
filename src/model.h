@@ -34,7 +34,7 @@ namespace Software2552 {
 
 	class Point3D : public ofVec3f {
 	public:
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 	};
 	//http://pocoproject.org/slides/070-DateAndTime.pdf
 	class DateAndTime : public Poco::DateTime {
@@ -53,7 +53,7 @@ namespace Software2552 {
 		string getDate() {
 			return Poco::DateTimeFormatter::format(timestamp(), format);
 		}
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		int timeZoneDifferential;
 		int bc; // non zero if its a bc date
 
@@ -83,7 +83,7 @@ namespace Software2552 {
 	public:
 		ofTrueTypeFont& get();
 		shared_ptr<ofxSmartFont> getPointer();
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 	private:
 		shared_ptr<ofxSmartFont> font;
 	};
@@ -99,7 +99,7 @@ namespace Software2552 {
 		void draw();
 		void update();
 
-		bool read(const Json::Value &data) {
+		bool readFromScript(const Json::Value &data) {
 			//floatColor colorAmbient(light.getAmbientColor());
 			//colorAmbient.read(data["ambientColor"]);
 			//light.setAmbientColor(colorAmbient.get());
@@ -131,7 +131,7 @@ namespace Software2552 {
 		void operator=(const Settings& rhs) {
 			setSettings(rhs);
 		}
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 
 		ofTrueTypeFont& getFont() { return font.get(); }
 		shared_ptr<ofxSmartFont> getFontPointer() { return font.getPointer(); }
@@ -171,7 +171,7 @@ namespace Software2552 {
 
 	class Dates : public Settings {
 	public:
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 	protected:
 		DateAndTime timelineDate; // date item existed
 		DateAndTime lastUpdateDate; // last time object was updated
@@ -181,7 +181,7 @@ namespace Software2552 {
 	// reference to a cited item
 	class Reference : public Dates {
 	public:
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 
 		// echo object (debug only)
 #if _DEBUG
@@ -202,7 +202,7 @@ namespace Software2552 {
 	// true for all time based items
 	class ReferencedItem : public Dates {
 	public:
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 #if _DEBUG
 		// echo object (debug only)
 		void trace() {
@@ -223,7 +223,7 @@ namespace Software2552 {
 	public:
 		Graphic();
 
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		
 		GraphicID id() { return myID; }
 		int getWidth() { return width; }
@@ -256,7 +256,7 @@ namespace Software2552 {
 	template <class T> class Actor : public Graphic
 	{
 	public:
-		virtual bool read(const Json::Value &data) = 0;
+		virtual bool readFromScript(const Json::Value &data) = 0;
 		T &getPlayer() {
 			test();
 			return player;
@@ -279,9 +279,9 @@ namespace Software2552 {
 	class Background : public Actor<RoleBackground> {
 	};
 		// some objects just use the OpenFrameworks objects if things are basic enough
-	class Image : public Actor<ofImage> {
+	class Picture : public Actor<ofImage> {
 	public:
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		void draw() {
 			if (okToDraw()) {
 				player.draw(getStartingPoint().x, getStartingPoint().y);
@@ -294,7 +294,7 @@ namespace Software2552 {
 	
 	class Text : public Actor<RoleText> {
 	public:
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		void draw();
 		string& getText() { return text; }
 		void setText(const string&t) {
@@ -306,7 +306,7 @@ namespace Software2552 {
 
 	class Paragraph : public Actor<ofxParagraph> {
 	public:
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		void draw();
 	};
 
@@ -314,14 +314,14 @@ namespace Software2552 {
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
 	class Audio : public Actor<ofSoundPlayer> {
 	public:
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		void setup();
 	};
 
 	class Video : public Actor<RoleVideo> {
 	public:
 
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		void setup();
 		void update() {
 			player.update();
@@ -357,7 +357,7 @@ namespace Software2552 {
 	class Character : public Actor<RoleCharacter> {
 	public:
 
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 	private:
 		// player is just a string object
 	};
@@ -437,7 +437,7 @@ namespace Software2552 {
 		Scene();
 		void setEngine(shared_ptr<GraphicEngines> enginesIn = nullptr);
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		template<typename T> void createTimeLineItems(const Json::Value &data, const string& key);
 		string &getKey() { return keyname; }
 
@@ -470,7 +470,7 @@ namespace Software2552 {
 	public:
 		PlayItem() {}
 		PlayItem(const string&keynameIn) { keyname = keynameIn; }
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		bool operator==(const PlayItem& rhs) { return rhs.keyname == keyname; }
 		string &getKeyName() { return keyname; }
 		Scene scene;
@@ -486,7 +486,7 @@ namespace Software2552 {
 	};
 	class Playlist {
 	public:
-		bool read(const Json::Value &data);
+		bool readFromScript(const Json::Value &data);
 		vector<PlayItem>& getList() { return list; }
 #if _DEBUG
 		// echo object (debug only) bugbug make debug only
@@ -505,7 +505,7 @@ namespace Software2552 {
 		Act() {}
 
 		// read a deck from json (you can also just build one in code)
-		bool read(const string& fileName = "json.json");
+		bool readFromScript(const string& fileName = "json.json");
 		vector<PlayItem> &getPlayList() { return playlist.getList(); };
 
 #if _DEBUG
