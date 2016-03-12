@@ -2,9 +2,46 @@
 #include "scenes.h"
 
 namespace Software2552 {
-	void SpaceScene::test() {
+	void BaseScene::test() {
 		//bugbug get from json
 		setBackgroundImageName("hubble1.jpg");
+	}
+	void BaseScene::draw() {
+		ofBackground(ofColor::white); // white enables all colors in pictures/videos
+
+		if (backgroundImageName.size() > 0) {
+			imageForBackground.draw(0, 0);
+		}
+	}
+	void BaseScene::setup() {
+		if (backgroundImageName.size() > 0) {
+			imageForBackground.load(backgroundImageName);
+		}
+		mainCamera.setScale(-1, -1, 1);
+
+		Camera cam1; // learn camera bugbug
+		cam1.setScale(-1, -1, 1);
+		cam1.setOrbit(true);
+		//cameras.push_back(cam1);
+
+		Light light1;
+		lights.push_back(light1);
+
+		Light light2;
+		lights.push_back(light1);
+
+		material.setShininess(120);
+		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
+
+	}
+	void BaseScene::update() {
+		if (backgroundImageName.size() > 0) {
+			imageForBackground.resize(ofGetWidth(), ofGetHeight());
+		}
+	}
+	void SpaceScene::test() {
+		//bugbug get from json
+		BaseScene::test();
 		setMainVideoName("Clyde.mp4");
 		addPlanetName("hubble1.jpg");
 		addPlanetName("earth_day.jpg");
@@ -34,12 +71,7 @@ namespace Software2552 {
 	}
 	void SpaceScene::setup() {
 		test();//bugbug set via script 
-		camera2.setScale(-1, -1, 1);
-		
-		if (backgroundImageName.size() > 0) {
-			image.load(backgroundImageName);
-		}
-		light.setAmbientColor(ofFloatColor::white);
+		BaseScene::setup();
 		video.create(mainVideoName, ofGetWidth() / 2, ofGetHeight() / 2);
 
 		float xStart = (ofGetWidth() - video.getWidth())/2;
@@ -52,21 +84,14 @@ namespace Software2552 {
 		///next draw video in fbo (put in video class) http://clab.concordia.ca/?page_id=944
 		videoSphere.set(250, 180);
 		videoSphere.move(ofVec3f(0, 0, 0));
-		material.setShininess(120);
-		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 
 	}
 	void SpaceScene::update() {
+		BaseScene::update();
 		video.update();
-		if (backgroundImageName.size() > 0) {
-			image.resize(ofGetWidth(), ofGetHeight());
-		}
 	}
 	void SpaceScene::draw() {
-		ofBackground(ofColor::white); // white enables all colors in pictures/videos
-		if (backgroundImageName.size() > 0) {
-			image.draw(0, 0);
-		}
+		BaseScene::draw();
 
 		draw2d();
 		ofPushStyle();
@@ -83,16 +108,19 @@ namespace Software2552 {
 		ofDisableAlphaBlending();
 		ofEnableDepthTest();
 
-		light.setPosition(ofGetWidth()/2, ofGetHeight() / 2, ofGetWidth() / 2);
-		light.enable();
-		camera1.setOrbit();
+		for (auto& light : lights) {
+			light.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, ofGetWidth() / 2);
+			light.enable();
+		}
 
-		camera2.begin();
+		for (auto& camera : cameras) {
+			camera.orbit();
+			camera.begin();
+		}
+		mainCamera.begin();
 		video.bind();
 		videoSphere.draw();
 		video.unbind();
-		camera2.end();
-		camera1.begin();
 		material.begin();
 		for (auto& pictureSphere : pictureSpheres) {
 			pictureSphere.texture.bind();
@@ -101,10 +129,16 @@ namespace Software2552 {
 			pictureSphere.texture.unbind();
 		}
 		material.end();
-		camera1.end();
+		mainCamera.begin();
+		for (auto& camera : cameras) {
+			camera.end();
+		}
 
 		ofDisableDepthTest();
-		light.disable();
+		for (auto& light : lights) {
+			light.disable();
+		}
+
 		ofDisableLighting();
 	}
 }

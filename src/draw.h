@@ -84,13 +84,10 @@ namespace Software2552 {
 
 	class Camera : public ofEasyCam {
 	public:
-		void setOrbit() {
-			float time = ofGetElapsedTimef();
-			float longitude = 10 * time;
-			float latitude = 10 * sin(time*0.8);
-			float radius = 600 + 50 * sin(time*0.4);
-			orbit(longitude, latitude, radius, ofPoint(0, 0, 0));
-		}
+		void orbit();
+		void setOrbit(bool b = true) { useOrbit = b; }
+	private:
+		bool useOrbit = false;
 	};
 	class Fbo : public ofFbo {
 	public:

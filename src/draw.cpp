@@ -35,6 +35,16 @@ namespace Software2552 {
 
 	}
 
+	void Camera::orbit() {
+		if (useOrbit) {
+			float time = ofGetElapsedTimef();
+			float longitude = 10 * time;
+			float latitude = 10 * sin(time*0.8);
+			float radius = 600 + 50 * sin(time*0.4);
+			ofEasyCam::orbit(longitude, latitude, radius, ofPoint(0, 0, 0));
+		}
+	}
+
 	void RoleBackground::draw(Colors* colors){
 		//ofBackgroundHex this is an option too bugbug enable background type
 
