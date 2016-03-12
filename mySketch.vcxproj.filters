@@ -314,6 +314,9 @@
     <ClCompile Include="src\color.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\scenes.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -946,6 +949,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\color.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scenes.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

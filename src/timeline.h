@@ -1,6 +1,7 @@
 #pragma once
 #include "2552software.h"
 #include "model.h"
+#include "scenes.h"
 
 // join data and view, this class knows about both the data and how its shown
 
@@ -25,7 +26,7 @@ namespace Software2552 {
 			}
 		}
 		MoreMesh mesh; // just for now bugbug, move into class hiearchey when ready
-		SceneLearn scene;
+		SpaceScene scene;
 		TheSet theSet;//bugbug code for a while, then if it makes sense json this
 		vector<Act> acts; // timeline is a series of acts
 						  // objects in model, timing code in model, colors from json
