@@ -13,12 +13,16 @@ namespace Software2552 {
 	};
 	class SpaceScene {
 	public:
-		void addPlanet(ofTexture& texture, ofVec3f& start);
+		void addPlanet(const string&textureName, const ofVec3f& Start);
+		void test();
 		void setup();
 		void update();
 		void draw();
 		void draw2d();
 		void draw3d();
+		void setMainVideoName(const string&name) { mainVideoName = name; }
+		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
+		void addPlanetName(const string&name) { planetimageNames.push_back(name); }
 	private:
 		// things a scene can have (infinte list really)
 		Sphere	videoSphere;
@@ -28,6 +32,9 @@ namespace Software2552 {
 		Material material;
 		TextureVideo video;
 		ofImage image;
+		string mainVideoName;
+		string backgroundImageName;
+		vector<string> planetimageNames;
 	};
 
 

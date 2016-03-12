@@ -2,33 +2,52 @@
 #include "scenes.h"
 
 namespace Software2552 {
-	void SpaceScene::addPlanet(ofTexture& texture, ofVec3f& start) {
+	void SpaceScene::test() {
+		//bugbug get from json
+		setBackgroundImageName("hubble1.jpg");
+		setMainVideoName("Clyde.mp4");
+		addPlanetName("hubble1.jpg");
+		addPlanetName("earth_day.jpg");
+		addPlanetName("g04_s65_34658.gif");
+		addPlanetName("Floodwaters_of_Mars_highlight_std.jpg");
+		addPlanetName("hubble1.jpg");
+		addPlanetName("earth_day.jpg");
+		addPlanetName("g04_s65_34658.gif");
+		addPlanetName("Floodwaters_of_Mars_highlight_std.jpg");
+		addPlanetName("hubble1.jpg");
+		addPlanetName("earth_day.jpg");
+		addPlanetName("g04_s65_34658.gif");
+		addPlanetName("Floodwaters_of_Mars_highlight_std.jpg");
+
+	}
+	void SpaceScene::addPlanet(const string&textureName, const ofVec3f& start) {
 		Planet p = Planet();
-		p.texture = texture;
-		p.setForTexture(texture);
 		float r = ofRandom(5, 100);
 		p.set(r, 40);
+		TextureFromImage texture;
+		texture.create(textureName, r * 2, r * 2);
+		p.setForTexture(texture);
+		p.texture = texture;
 		p.setWireframe(false);
 		p.move(start);
 		pictureSpheres.push_back(p);
 	}
 	void SpaceScene::setup() {
+		test();//bugbug set via script 
 		camera2.setScale(-1, -1, 1);
-		image.load("hubble1.jpg");
+		
+		if (backgroundImageName.size() > 0) {
+			image.load(backgroundImageName);
+		}
 		light.setAmbientColor(ofFloatColor::white);
-		video.create("Clyde.mp4", ofGetWidth() / 2, ofGetHeight() / 2);
-		TextureFromImage texture, texture2, texture3, texture4;
-		texture.create("hubble1.jpg", ofGetWidth() / 2, ofGetHeight() / 2);
+		video.create(mainVideoName, ofGetWidth() / 2, ofGetHeight() / 2);
 
-		texture2.create("earth_day.jpg", ofGetWidth() / 2, ofGetHeight() / 2);
-		texture3.create("g04_s65_34658.gif", ofGetWidth() / 2, ofGetHeight() / 2);
-		texture4.create("Floodwaters_of_Mars_highlight_std.jpg", ofGetWidth() / 2, ofGetHeight() / 2);
-
-		float w = ofGetWidth() - video.getWidth();
-		addPlanet(texture, ofVec3f(w, 0, 0));
-		addPlanet(texture2, ofVec3f(w + ofGetWidth() / ofRandom(4, 16) + 100, 0, ofGetHeight() / 2));
-		addPlanet(texture3, ofVec3f(w + ofGetWidth() / ofRandom(4, 16), 0, ofGetHeight()));
-		addPlanet(texture4, ofVec3f(w + ofGetWidth() / ofRandom(4, 16) - 100, 0, ofGetHeight() * 2));
+		float xStart = (ofGetWidth() - video.getWidth())/2;
+		for (auto& name : planetimageNames) {
+			float offset = abs(xStart);
+			addPlanet(name, ofVec3f(xStart, 0, offset +100));
+			xStart += ofRandom(xStart, xStart*2); // need to keep sign
+		}
 
 		///next draw video in fbo (put in video class) http://clab.concordia.ca/?page_id=944
 		videoSphere.set(250, 180);
@@ -39,11 +58,16 @@ namespace Software2552 {
 	}
 	void SpaceScene::update() {
 		video.update();
-		image.resize(ofGetWidth(), ofGetHeight());
+		if (backgroundImageName.size() > 0) {
+			image.resize(ofGetWidth(), ofGetHeight());
+		}
 	}
 	void SpaceScene::draw() {
-		ofBackground(ofColor::white);
-		image.draw(0, 0);
+		ofBackground(ofColor::white); // white enables all colors in pictures/videos
+		if (backgroundImageName.size() > 0) {
+			image.draw(0, 0);
+		}
+
 		draw2d();
 		ofPushStyle();
 		draw3d();
@@ -59,7 +83,7 @@ namespace Software2552 {
 		ofDisableAlphaBlending();
 		ofEnableDepthTest();
 
-		light.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, ofGetWidth());
+		light.setPosition(ofGetWidth()/2, ofGetHeight() / 2, ofGetWidth() / 2);
 		light.enable();
 		camera1.setOrbit();
 
