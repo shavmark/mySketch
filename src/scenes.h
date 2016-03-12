@@ -23,7 +23,7 @@ namespace Software2552 {
 		void test();
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
 	protected:
-		virtual void draw3dFixed() = 0;
+		virtual void draw3dFixed() = 0; 
 		virtual void draw3dMoving() = 0;
 		vector<Camera>	cameras; // secondary cameras
 		vector<Light>	lights;
