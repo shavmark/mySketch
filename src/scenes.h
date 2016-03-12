@@ -6,7 +6,8 @@
 
 namespace Software2552 {
 
-	class BaseScene {
+	// contains  elements of a stage
+	class Stage {
 	public:
 		void setup();
 		void update();
@@ -19,7 +20,7 @@ namespace Software2552 {
 		vector<Light>	lights;
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
 	private:
-		ofImage imageForBackground;
+		ofImage imageForBackground;//bugbug change this to use the background object that includes just a color background
 		string backgroundImageName;
 	};
 
@@ -28,7 +29,7 @@ namespace Software2552 {
 		Sphere sphere;
 		ofTexture texture;
 	};
-	class SpaceScene : public BaseScene {
+	class SpaceScene : public Stage {
 	public:
 		void setup();
 		void update();

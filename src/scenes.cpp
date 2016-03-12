@@ -2,18 +2,18 @@
 #include "scenes.h"
 
 namespace Software2552 {
-	void BaseScene::test() {
+	void Stage::test() {
 		//bugbug get from json
 		setBackgroundImageName("hubble1.jpg");
 	}
-	void BaseScene::draw() {
+	void Stage::draw() {
 		ofBackground(ofColor::white); // white enables all colors in pictures/videos
 
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.draw(0, 0);
 		}
 	}
-	void BaseScene::setup() {
+	void Stage::setup() {
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.load(backgroundImageName);
 		}
@@ -34,14 +34,14 @@ namespace Software2552 {
 		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 
 	}
-	void BaseScene::update() {
+	void Stage::update() {
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.resize(ofGetWidth(), ofGetHeight());
 		}
 	}
 	void SpaceScene::test() {
 		//bugbug get from json
-		BaseScene::test();
+		Stage::test();
 		setMainVideoName("Clyde.mp4");
 		addPlanetName("hubble1.jpg");
 		addPlanetName("earth_day.jpg");
@@ -71,7 +71,7 @@ namespace Software2552 {
 	}
 	void SpaceScene::setup() {
 		test();//bugbug set via script 
-		BaseScene::setup();
+		Stage::setup();
 		video.create(mainVideoName, ofGetWidth() / 2, ofGetHeight() / 2);
 
 		float xStart = (ofGetWidth() - video.getWidth())/2;
@@ -87,11 +87,11 @@ namespace Software2552 {
 
 	}
 	void SpaceScene::update() {
-		BaseScene::update();
+		Stage::update();
 		video.update();
 	}
 	void SpaceScene::draw() {
-		BaseScene::draw();
+		Stage::draw();
 
 		draw2d();
 		ofPushStyle();
