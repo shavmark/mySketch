@@ -1,4 +1,5 @@
 // store notes here
+// license/rights http://nssdc.gsfc.nasa.gov/imgcat/html/group_page/ER.html, http://www.shadedrelief.com/natural3/pages/textures.html
 //https://github.com/petewerner/generative
 //https://github.com/ResEnv/SensorTape
 //http://hubblesite.org/gallery/album/star/

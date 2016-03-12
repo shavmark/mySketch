@@ -148,7 +148,7 @@ namespace Software2552 {
 	class Material : public ofMaterial {
 	public:
 	};
-	class Planet {
+	class Planet : public Sphere {
 	public:
 		Sphere sphere;
 		ofTexture texture;
@@ -156,29 +156,35 @@ namespace Software2552 {
 	class SceneLearn {
 	public:
 		void addPlanet( ofTexture& texture, ofVec3f& start) {
-			//bugbug can we set size at update?
-			Sphere s = Sphere();
-			s.setForTexture(texture);
+			Planet p = Planet();
+			p.texture = texture;
+			p.setForTexture(texture);
 			float r = ofRandom(5, 100);
-			s.set(r, 40);
-			s.setWireframe(false);
-			s.move(start);
-			pictureSpheres.push_back(s);
+			p.set(r, 40);
+			p.setWireframe(false);
+			p.move(start);
+			pictureSpheres.push_back(p);
 		}
 		void setup() {
-			camera2.setScale(1, -1, 1);
+			camera2.setScale(-1, -1, 1);
+			image.load("hubble1.jpg");
 			light.setAmbientColor(ofFloatColor::white);
 			video.create("Clyde.mp4", ofGetWidth() / 2, ofGetHeight() / 2);
-
+			TextureFromImage texture, texture2, texture3,texture4;
 			texture.create("hubble1.jpg", ofGetWidth() / 2, ofGetHeight() / 2);
+			
+			texture2.create("earth_day.jpg", ofGetWidth() / 2, ofGetHeight() / 2);
+			texture3.create("g04_s65_34658.gif", ofGetWidth() / 2, ofGetHeight() / 2);
+			texture4.create("Floodwaters_of_Mars_highlight_std.jpg", ofGetWidth() / 2, ofGetHeight() / 2);
+			
 			float w = ofGetWidth() - video.getWidth();
 			addPlanet(texture, ofVec3f(w, 0, 0));
-			addPlanet(texture, ofVec3f(w+ ofGetWidth() / ofRandom(4, 16)+100, 0, ofGetHeight() / 2));
-			addPlanet(texture, ofVec3f(w+ ofGetWidth() / ofRandom(4, 16), 0, ofGetHeight()));
-			addPlanet(texture, ofVec3f(w+ ofGetWidth() / ofRandom(4, 16)-100, 0, ofGetHeight() * 2));
+			addPlanet(texture2, ofVec3f(w+ ofGetWidth() / ofRandom(4, 16)+100, 0, ofGetHeight() / 2));
+			addPlanet(texture3, ofVec3f(w+ ofGetWidth() / ofRandom(4, 16), 0, ofGetHeight()));
+			addPlanet(texture4, ofVec3f(w+ ofGetWidth() / ofRandom(4, 16)-100, 0, ofGetHeight() * 2));
 
 			///next draw video in fbo (put in video class) http://clab.concordia.ca/?page_id=944
-			videoSphere.set(250, 80);
+			videoSphere.set(250, 180);
 			videoSphere.move(ofVec3f(0, 0, 0));
 			material.setShininess(120);
 			//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
@@ -186,22 +192,23 @@ namespace Software2552 {
 		}
 		void update() {
 			video.update();
+			image.resize(ofGetWidth(), ofGetHeight());
 		}
 		void draw() {
+			ofBackground(ofColor::white);
+			image.draw(0, 0);
 			draw2d();
 			ofPushStyle();
 			draw3d();
 			ofPopStyle();
 		}
 		void draw2d() {
-			//fbo.draw(0, 0, ofGetWidth(), ofGetHeight());// fbo now drawing
 		}
 		void draw3d() {
 			if (video.isFrameNew()) {
 				videoSphere.setForTexture(video.getTexture());
 			}
 			ofSetSmoothLighting(true);
-			ofBackgroundGradient(ofColor::blue, ofColor::aqua, OF_GRADIENT_BAR);
 			ofDisableAlphaBlending();
 			ofEnableDepthTest();
 
@@ -215,14 +222,14 @@ namespace Software2552 {
 			video.unbind();
 			camera2.end();
 			camera1.begin();
-			texture.bind();
 			material.begin();
 			for (auto& pictureSphere : pictureSpheres) {
+				pictureSphere.texture.bind();
 				pictureSphere.rotate(30, 0, 2.0, 0.0);
 				pictureSphere.draw();
+				pictureSphere.texture.unbind();
 			}
 			material.end();
-			texture.unbind();
 			camera1.end();
 
 			ofDisableDepthTest();
@@ -232,12 +239,12 @@ namespace Software2552 {
 	private:
 		// things a scene can have (infinte list really)
 		Sphere	videoSphere;
-		vector<Sphere> pictureSpheres;
+		vector<Planet> pictureSpheres;
 		Camera	camera1, camera2;
 		Light	light;
 		Material material;
-		TextureFromImage texture;
 		TextureVideo video;
+		ofImage image;
 	};
 
 	class RoleBackground : public Role<Colors> {
