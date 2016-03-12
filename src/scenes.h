@@ -5,6 +5,11 @@
 // home of custom scenes
 
 namespace Software2552 {
+	// calls the shots
+	class Director {
+	public:
+		Camera &pickem(vector<Camera>&cameras, bool rotating) const;
+	};
 
 	// contains  elements of a stage
 	class Stage {
@@ -16,9 +21,9 @@ namespace Software2552 {
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
 	protected:
 		vector<Camera>	cameras; // secondary cameras
-		Camera			mainCamera; 
 		vector<Light>	lights;
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
+		Director director;
 	private:
 		ofImage imageForBackground;//bugbug change this to use the background object that includes just a color background
 		string backgroundImageName;

@@ -29,7 +29,6 @@ namespace Software2552 {
 
 	};
 
-
 	template<typename T>
 	class Role : public Animator {
 	public:
@@ -48,15 +47,16 @@ namespace Software2552 {
 		void setup();
 	private:
 	};
+
 	//http://openframeworks.cc/ofBook/chapters/generativemesh.html
 	class MoreMesh : public MeshEngine {
 	public:
 		void setup();
 		void draw();
 	private:
-		ofImage image;
-		ofEasyCam easyCam;
-		ofLight light;
+		ofImage		image;
+		ofEasyCam	easyCam;
+		ofLight		light;
 
 	};
 
@@ -78,6 +78,7 @@ namespace Software2552 {
 			mapTexCoordsFromTexture(texture);
 		}
 		void setWireframe(bool b = true) { wireFrame = b; }
+
 	private:
 		bool wireFrame = true;
 	};
@@ -86,6 +87,7 @@ namespace Software2552 {
 	public:
 		void orbit();
 		void setOrbit(bool b = true) { useOrbit = b; }
+		bool isOrbiting() const { return useOrbit; }
 	private:
 		bool useOrbit = false;
 	};

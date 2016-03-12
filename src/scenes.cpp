@@ -2,9 +2,39 @@
 #include "scenes.h"
 
 namespace Software2552 {
+	Camera &Director::pickem(vector<Camera>&cameras, bool orbiting) const {
+		// maybe build this out using the color count techqiue (make that a base class?)
+		for (int i = 0; i < cameras.size(); ++i) {
+			if (orbiting) {
+				if (cameras[i].isOrbiting()) {
+					return cameras[i];
+				}
+			}
+			else {
+				if (!cameras[i].isOrbiting()) {
+					return cameras[i];
+				}
+			}
+		}
+	}
+
 	void Stage::test() {
 		//bugbug get from json
 		setBackgroundImageName("hubble1.jpg");
+		Camera cam1; // learn camera bugbug
+		cam1.setScale(-1, -1, 1);
+		cam1.setOrbit(true); // rotating
+		cameras.push_back(cam1);
+
+		cam1.setScale(-1, -1, 1);
+		cam1.setOrbit(false); // not rotating
+		cameras.push_back(cam1);
+
+		Light light1;
+		lights.push_back(light1);
+
+		Light light2;
+		lights.push_back(light2);
 	}
 	void Stage::draw() {
 		ofBackground(ofColor::white); // white enables all colors in pictures/videos
@@ -17,18 +47,7 @@ namespace Software2552 {
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.load(backgroundImageName);
 		}
-		mainCamera.setScale(-1, -1, 1);
 
-		Camera cam1; // learn camera bugbug
-		cam1.setScale(-1, -1, 1);
-		cam1.setOrbit(true);
-		//cameras.push_back(cam1);
-
-		Light light1;
-		lights.push_back(light1);
-
-		Light light2;
-		lights.push_back(light1);
 
 		material.setShininess(120);
 		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
@@ -75,7 +94,7 @@ namespace Software2552 {
 		video.create(mainVideoName, ofGetWidth() / 2, ofGetHeight() / 2);
 
 		float xStart = (ofGetWidth() - video.getWidth())/2;
-		for (auto& name : planetimageNames) {
+		for (const auto& name : planetimageNames) {
 			float offset = abs(xStart);
 			addPlanet(name, ofVec3f(xStart, 0, offset +100));
 			xStart += ofRandom(xStart, xStart*2); // need to keep sign
@@ -113,26 +132,26 @@ namespace Software2552 {
 			light.enable();
 		}
 
-		for (auto& camera : cameras) {
-			camera.orbit();
-			camera.begin();
-		}
-		mainCamera.begin();
+		Camera& camFixed = director.pickem(cameras, false);
+		Camera& camMoving = director.pickem(cameras, true);
+
+		camFixed.begin();
+		// maybe put fixed stuff in a function somehow
 		video.bind();
 		videoSphere.draw();
 		video.unbind();
+		camFixed.end();
+		camMoving.begin();
 		material.begin();
+		camMoving.orbit();
 		for (auto& pictureSphere : pictureSpheres) {
 			pictureSphere.texture.bind();
 			pictureSphere.rotate(30, 0, 2.0, 0.0);
 			pictureSphere.draw();
 			pictureSphere.texture.unbind();
 		}
+		camMoving.end();
 		material.end();
-		mainCamera.begin();
-		for (auto& camera : cameras) {
-			camera.end();
-		}
 
 		ofDisableDepthTest();
 		for (auto& light : lights) {
