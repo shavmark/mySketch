@@ -76,7 +76,6 @@ namespace Software2552 {
 		}
 		void setForTexture(ofTexture& texture) {
 			mapTexCoordsFromTexture(texture);
-			rotate(180, 0, 1, 0);// flip for camera
 		}
 		void setWireframe(bool b = true) { wireFrame = b; }
 	private:
@@ -89,7 +88,7 @@ namespace Software2552 {
 			float time = ofGetElapsedTimef();
 			float longitude = 10 * time;
 			float latitude = 10 * sin(time*0.8);
-			float radius = 800 + 50 * sin(time*0.4);
+			float radius = 600 + 50 * sin(time*0.4);
 			orbit(longitude, latitude, radius, ofPoint(0, 0, 0));
 		}
 	};
@@ -103,6 +102,7 @@ namespace Software2552 {
 			loadMovie(name);
 			play();
 		}
+
 		bool bind() { 
 			if (isInitialized() && isUsingTexture()) {
 				getTexture().bind();
@@ -117,8 +117,8 @@ namespace Software2552 {
 			}
 			return false;
 		}
-		
 	private:
+
 	};
 	class TextureFromImage : public ofTexture {
 	public:
@@ -148,20 +148,38 @@ namespace Software2552 {
 	class Material : public ofMaterial {
 	public:
 	};
+	class Planet {
+	public:
+		Sphere sphere;
+		ofTexture texture;
+	};
 	class SceneLearn {
 	public:
-		void setup() {
+		void addPlanet( ofTexture& texture, ofVec3f& start) {
 			//bugbug can we set size at update?
-			texture.create("hubble1.jpg", ofGetWidth()/2, ofGetHeight() / 2) ;
-			pictureSphere.setForTexture(texture);
-
+			Sphere s = Sphere();
+			s.setForTexture(texture);
+			float r = ofRandom(5, 100);
+			s.set(r, 40);
+			s.setWireframe(false);
+			s.move(start);
+			pictureSpheres.push_back(s);
+		}
+		void setup() {
+			camera2.setScale(1, -1, 1);
+			light.setAmbientColor(ofFloatColor::white);
 			video.create("Clyde.mp4", ofGetWidth() / 2, ofGetHeight() / 2);
+
+			texture.create("hubble1.jpg", ofGetWidth() / 2, ofGetHeight() / 2);
+			float w = ofGetWidth() - video.getWidth();
+			addPlanet(texture, ofVec3f(w, 0, 0));
+			addPlanet(texture, ofVec3f(w+ ofGetWidth() / ofRandom(4, 16)+100, 0, ofGetHeight() / 2));
+			addPlanet(texture, ofVec3f(w+ ofGetWidth() / ofRandom(4, 16), 0, ofGetHeight()));
+			addPlanet(texture, ofVec3f(w+ ofGetWidth() / ofRandom(4, 16)-100, 0, ofGetHeight() * 2));
+
 			///next draw video in fbo (put in video class) http://clab.concordia.ca/?page_id=944
 			videoSphere.set(250, 80);
-			pictureSphere.set(100, 40);
-			pictureSphere.setWireframe(false);
 			videoSphere.move(ofVec3f(0, 0, 0));
-			pictureSphere.move(ofVec3f(ofGetWidth()-(video.getWidth()),0, 0));
 			material.setShininess(120);
 			//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 
@@ -179,27 +197,33 @@ namespace Software2552 {
 			//fbo.draw(0, 0, ofGetWidth(), ofGetHeight());// fbo now drawing
 		}
 		void draw3d() {
-			
 			if (video.isFrameNew()) {
 				videoSphere.setForTexture(video.getTexture());
 			}
 			ofSetSmoothLighting(true);
 			ofBackgroundGradient(ofColor::blue, ofColor::aqua, OF_GRADIENT_BAR);
-			video.bind();
+			ofDisableAlphaBlending();
+			ofEnableDepthTest();
+
 			light.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, ofGetWidth());
 			light.enable();
-			ofEnableDepthTest();
-			camera.setOrbit();
+			camera1.setOrbit();
 
-			camera.begin();
+			camera2.begin();
+			video.bind();
 			videoSphere.draw();
 			video.unbind();
+			camera2.end();
+			camera1.begin();
 			texture.bind();
 			material.begin();
-			pictureSphere.draw();
+			for (auto& pictureSphere : pictureSpheres) {
+				pictureSphere.rotate(30, 0, 2.0, 0.0);
+				pictureSphere.draw();
+			}
 			material.end();
 			texture.unbind();
-			camera.end();
+			camera1.end();
 
 			ofDisableDepthTest();
 			light.disable();
@@ -207,8 +231,9 @@ namespace Software2552 {
 		}
 	private:
 		// things a scene can have (infinte list really)
-		Sphere	videoSphere, pictureSphere;
-		Camera	camera;
+		Sphere	videoSphere;
+		vector<Sphere> pictureSpheres;
+		Camera	camera1, camera2;
 		Light	light;
 		Material material;
 		TextureFromImage texture;

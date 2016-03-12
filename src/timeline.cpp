@@ -34,6 +34,8 @@ namespace Software2552 {
 		}
 	}
 	void Timeline::setup() {
+		ofSeedRandom(); // turn of to debug if needed
+
 		ofSetFrameRate(60);
 		scene.setup();
 		return;
