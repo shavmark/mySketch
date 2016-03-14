@@ -4,6 +4,33 @@
 // this is the drawing  module where most drawing work is done
 
 namespace Software2552 {
+
+	void CrazyMesh::setup() {
+		for (int i = 0;  i < w; ++i) {
+			for (int j = 0; j < h; ++j) {
+				addColor(color);
+			}
+		}
+	}
+	void CrazyMesh::update() {
+		clearVertices();
+		for (int i = 0; i < w; ++i) {
+			for (int j = 0; j < h; ++j) {
+				float x = sin(i*0.1+ofGetElapsedTimef())*1000;
+				float y = sin(j*0.15 + ofGetElapsedTimef()) * 1000;
+				float z = x + y;
+				addVertex(ofVec3f(x,y,z));
+			}
+		}
+	}
+	void CrazyMesh::draw() {
+		ofPushStyle();
+		ofSetHexColor(0xffffff);
+		glPointSize(2);
+		glEnable(GL_POINT_SMOOTH);
+		drawVertices();
+		ofPopStyle();
+	}
 	// add this one http://clab.concordia.ca/?page_id=944
 	void RoleVideo::draw(Video*v) {
 		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);

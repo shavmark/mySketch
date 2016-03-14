@@ -43,7 +43,19 @@ namespace Software2552 {
 		virtual void pause() {};
 	};
 
-	// basic mesh stuff
+	class CrazyMesh : public ofMesh {
+	public:
+		CrazyMesh(const ofFloatColor&colorIn = ofFloatColor::orange) : ofMesh() { color = colorIn; }
+		virtual void setup();
+		virtual void update();
+		virtual void draw();
+	private:
+		ofFloatColor color;
+		int w = 200;
+		int h = 200;
+	};
+
+	// basic mesh stuff for learning
 	class MeshEngine : public ofMesh {
 	public:
 		void setup();
@@ -62,12 +74,46 @@ namespace Software2552 {
 
 	};
 
-	class Sphere : public ofSpherePrimitive {
+	class Primitive {
+	public:
+		void setWireframe(bool b = true) { wireFrame = b; }
+		bool useWireframe() { return wireFrame; }
+	private:
+		bool wireFrame = true;
+
+	};
+	class Plane : public ofPlanePrimitive, public Primitive {
+	public:
+		void draw() {
+			// currenting thinking we let color operate on its own via its class
+			ofSetColor(ofColor::white);
+			if (useWireframe()) {
+				drawWireframe();
+			}
+			else {
+				ofPlanePrimitive::draw();
+			}
+		}
+	}; 
+	class Cube : public ofBoxPrimitive, public Primitive {
+	public:
+		void draw() {
+			// currenting thinking we let color operate on its own via its class
+			ofSetColor(ofColor::white);
+			if (useWireframe()) {
+				drawWireframe();
+			}
+			else {
+				ofBoxPrimitive::draw();
+			}
+		}
+	}; 
+	class Sphere : public ofSpherePrimitive, public Primitive {
 	public:
 		void draw() {
 			// currenting thinking we let color operate on its own via its class
 			ofSetColor(ofColor::white); 
-			if (wireFrame) {
+			if (useWireframe()) {
 				drawWireframe();
 			}
 			else {
@@ -76,17 +122,13 @@ namespace Software2552 {
 			//drawFaces();
 			//drawVertices();
 		}
-		void setForTexture(ofTexture& texture) {
-			mapTexCoordsFromTexture(texture);
-		}
-		void setWireframe(bool b = true) { wireFrame = b; }
 
 	private:
-		bool wireFrame = true;
 	};
 
 	class Camera : public ofEasyCam, public Animator {
 	public:
+		Camera():ofEasyCam(), Animator(){ setScale(-1, -1, 1); }
 		void orbit();
 		void setOrbit(bool b = true) { useOrbit = b; }
 		bool isOrbiting() const { return useOrbit; }

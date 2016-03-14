@@ -21,6 +21,8 @@ namespace Software2552 {
 		void draw();
 		void test();
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
+		void add(const Camera& camera) { cameras.push_back(camera); };
+		void add(const Light& light) { lights.push_back(light); };
 	protected:
 		virtual void draw3dFixed() = 0; 
 		virtual void draw3dMoving() = 0;
@@ -45,7 +47,15 @@ namespace Software2552 {
 	};
 
 	class TestScene :public Stage {
-
+	public:
+		void setup();
+		void update();
+		void test();
+		void draw3dFixed();
+		void draw3dMoving();
+	private:
+		Cube cube;
+		CrazyMesh mesh;
 	};
 	class SpaceScene : public Stage {
 	public:

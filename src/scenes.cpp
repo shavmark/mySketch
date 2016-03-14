@@ -3,9 +3,6 @@
 
 namespace Software2552 {
 
-	void Director::update() {
-		// remove out of data cameras
-	}
 	// return a possibly modifed version such as camera moved
 	Camera* Director::pickem(vector<Camera>&cameras, bool orbiting) {
 		// maybe build this out using the color count techqiue (make that a base class?)
@@ -17,7 +14,7 @@ namespace Software2552 {
 			}
 			else {
 				if (!cameras[i].isOrbiting()) {
-					int j = ofRandom(0, 2);
+					int j = ofRandom(0, cameras.size());
 					return &cameras[j];// stuff data in the Camera class
 					// lots to do here to make things nice, learn and see how to bring this in
 					//void lookAt(const ofNode& lookAtNode, const ofVec3f& upVector = ofVec3f(0, 1, 0));
@@ -34,6 +31,7 @@ namespace Software2552 {
 					return &cameras[j];
 				}
 			}
+			return nullptr;
 		}
 	}
 	void Stage::draw2d() {
@@ -53,24 +51,8 @@ namespace Software2552 {
 	}
 
 	void Stage::test() {
-		//bugbug get from json
-		setBackgroundImageName("hubble1.jpg");
-		Camera cam1; // learn camera bugbug
-		cam1.setScale(-1, -1, 1);
-		cam1.setOrbit(true); // rotating
-		cameras.push_back(cam1);
-
-		cam1.setScale(-1, -1, 1);
-		cam1.setOrbit(false); // not rotating
-		cameras.push_back(cam1);
-		cameras.push_back(cam1); // just make a few
-
-		Light light1;
-		lights.push_back(light1);
-
-		Light light2;
-		lights.push_back(light2);
 	}
+
 	void Stage::draw3d() {
 		// bugbug should this go into a virtual function so it can be changed by derived classes?
 		ofSetSmoothLighting(true);
@@ -78,19 +60,22 @@ namespace Software2552 {
 		ofEnableDepthTest();
 
 		for (auto& light : lights) {
-			light.setPosition(ofGetWidth() / 2, ofGetHeight() / 2, ofGetWidth() / 2);
+			light.setPosition(-500, 100, 100);
 			light.enable();
 		}
 
 		camFixed = director.pickem(cameras, false);
 		camMoving = director.pickem(cameras, true);
 
-		material.begin();
+		material.begin();//bugbug figure out material
 
 		if (camFixed != nullptr) {
 			camFixed->begin();
 			draw3dFixed();
 			camFixed->end();
+		}
+		else {
+			draw3dFixed();
 		}
 
 		if (camMoving != nullptr) {
@@ -99,7 +84,10 @@ namespace Software2552 {
 			draw3dMoving();
 			camMoving->end();
 		}
-		
+		else {
+			draw3dMoving();
+		}
+
 		material.end();
 
 		ofDisableDepthTest();
@@ -114,10 +102,43 @@ namespace Software2552 {
 			imageForBackground.load(backgroundImageName);
 		}
 
-
 		material.setShininess(120);
 		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
+	}
+	// juse need to draw the SpaceScene, base class does the rest
+	void TestScene::draw3dMoving() {
+	}
+	// all items in test() to come from json
+	void TestScene::test() {
+		Stage::test();
+		Camera cam1;
+		add(cam1);
 
+		Light light;
+		//spotLight.setSpotlight(); 
+		
+		light.setAmbientColor(ofFloatColor::blue);
+		light.setDiffuseColor(ofFloatColor::red);
+		light.setSpecularColor(ofFloatColor::green);
+		add(light);
+	}
+	void TestScene::update() {
+		mesh.update();
+
+	}
+	void TestScene::draw3dFixed() {
+		//ofBackground(0);
+		cube.draw();
+		ofSetHexColor(0xffffff);
+		glPointSize(2);
+		glEnable(GL_POINT_SMOOTH);
+		mesh.drawVertices();
+	}
+	void TestScene::setup() {
+		test();//bugbug set via script 
+		mesh.setup();
+		cube.setWireframe(false);
+		cube.set(100);
 	}
 	void Stage::update() {
 		if (backgroundImageName.size() > 0) {
@@ -127,6 +148,21 @@ namespace Software2552 {
 	void SpaceScene::test() {
 		//bugbug get from json
 		Stage::test();
+		//bugbug get from json
+		Camera cam1; // learn camera bugbug
+		cam1.setOrbit(true); // rotating
+		add(cam1);
+
+		cam1.setOrbit(false); // not rotating
+		add(cam1);
+
+		Light light1;
+		add(light1);
+
+		Light light2;
+		add(light2);
+
+		setBackgroundImageName("hubble1.jpg");
 		setMainVideoName("Clyde.mp4");
 		addPlanetName("hubble1.jpg");
 		addPlanetName("earth_day.jpg");
@@ -141,7 +177,7 @@ namespace Software2552 {
 		p.set(r, 40);
 		TextureFromImage texture;
 		texture.create(textureName, r * 2, r * 2);
-		p.setForTexture(texture);
+		p.mapTexCoordsFromTexture(texture);
 		p.texture = texture;
 		p.setWireframe(false);
 		p.move(start);
@@ -184,7 +220,7 @@ namespace Software2552 {
 	void SpaceScene::draw3dFixed() {
 		// one time setup must be called to draw videoSphere
 		if (video.isFrameNew()) {
-			videoSphere.setForTexture(video.getTexture());
+			videoSphere.mapTexCoordsFromTexture(video.getTexture());
 		}
 		video.bind();
 		videoSphere.draw();
