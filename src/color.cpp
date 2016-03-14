@@ -3,7 +3,7 @@
 #include <map>
 
 namespace Software2552 {
-	Colors::colordata Colors::data;
+	Colors::colordata Colors::privatedata;
 
 	ColorSet::ColorSet(const ColorGroup& groupIn) :Animator() {
 		setGroup(groupIn);
@@ -38,7 +38,7 @@ namespace Software2552 {
 		}
 		// no data or no match found in data
 		if (getSmallest() < 0) {
-			return ColorSet(data.defaultGroup);// start with defaults
+			return ColorSet(getDefaultGroup());// start with defaults
 		}
 		++getListItem(getCurrent());
 		return getListItem(getCurrent());
@@ -65,18 +65,16 @@ namespace Software2552 {
 	// return hex color
 	int Colors::find(ColorSet::ColorGroup group, ColorName name)	{
 		pair <ColorSet::ColorGroup, ColorName> p (group, name);
-		auto it = data.colorTable.find(p);
-		if (it != data.colorTable.end()) {
+		auto it = getTable().find(p);
+		if (it != getTable().end()) {
 			return it->second;
 		}
 		return 0; // none found
 	}
 
 	void Colors::AddColorRow(ColorSet::ColorGroup group, ColorName name, int val) {
-		pair <ColorSet::ColorGroup, ColorName> p(group, name);
-		data.colorTable[p] = val;
-
-		int i = find(group, name);
+		setColorTableItem(pair<ColorSet::ColorGroup, ColorName>(group, name), val);
+		int i = find(group, name); // for testing
 
 	}
 	// use the build the sets 
@@ -108,7 +106,7 @@ namespace Software2552 {
 			find(group, light)
 			);
 
-		data.colorlist.push_back(s);
+		getList().push_back(s);
 	}
 	void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& light) {
 
@@ -120,7 +118,7 @@ namespace Software2552 {
 			light.getHex()
 			);
 
-		data.colorlist.push_back(s);
+		getList().push_back(s);
 	}
 	void Colors::add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& light) {
 
@@ -131,7 +129,7 @@ namespace Software2552 {
 			light.getHex()
 			);
 
-		data.colorlist.push_back(s);
+		getList().push_back(s);
 	}
 	bool ColorSet::lessThan(const ColorSet& j, ColorGroup group) {
 		if (isExpired() || (group != Random && getGroup() != j.getGroup())) {
@@ -148,7 +146,7 @@ namespace Software2552 {
 	void Colors::setup() {
 
 		// only needs to be setup one time since its static data
-		if (data.colorlist.size() == 0) {
+		if (getList().size() == 0) {
 			std::array<int, COLORNAME_COUNT> modern =
 			{ 0x003F53, 0x3994B3, 0x64B1D1, 0x00626D, 0x079CBA, 0x60CDD9, 0x003E6B,
 				0x0073A0, 0xBAECE9, 0xD0FC0E, 0xFDB075, 0xFFD76E, 0x4D5E6C, 0x858E9C, 0xCCD1D5 };

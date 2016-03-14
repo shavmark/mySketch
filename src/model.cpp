@@ -153,12 +153,12 @@ namespace Software2552 {
 	}
 	void Colors::update() {
 		// clean up deleted items every so often
-		for (auto& d : data.colorlist) {
+		for (auto& d : getList()) {
 			d.refresh();
 		}
 		// remove expired colors
 		Animator a(false);
-		a.removeExpiredItems(data.colorlist);
+		a.removeExpiredItems(getList());
 	}
 
 	bool PlayItem::readFromScript(const Json::Value &data) {

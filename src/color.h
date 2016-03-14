@@ -120,7 +120,7 @@ namespace Software2552 {
 		};
 
 	private:
-		static colordata data;
+		static colordata privatedata;
 		// foreground, background, font
 		static ColorSet& get();
 		void setup();
@@ -130,17 +130,20 @@ namespace Software2552 {
 		void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& light);
 		void Colors::add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& light);
 		void Colors::AddColorRow(ColorSet::ColorGroup group, ColorName name, int val);
-		static void setSmallest(int i) { data.smallest = i; }
-		static int  getSmallest() { return data.smallest; }
-		static void setCurrent(int i) { data.currentColor = i; }
-		static int  getCurrent() { return data.currentColor; }
-		static vector<ColorSet>& getList() { return data.colorlist; }
-		static ColorSet& getListItem(int i) { return data.colorlist[i]; }
+		static void setSmallest(int i) { privatedata.smallest = i; }
+		static int  getSmallest() { return privatedata.smallest; }
+		static void setCurrent(int i) { privatedata.currentColor = i; }
+		static int  getCurrent() { return privatedata.currentColor; }
+		static std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int>& getTable() { return privatedata.colorTable; }
+		static void setColorTableItem(pair <ColorSet::ColorGroup, ColorName> p, int i) { privatedata.colorTable[p] = i; }
+		static vector<ColorSet>& getList() { return privatedata.colorlist; }
+		static ColorSet& getListItem(int i) { return privatedata.colorlist[i]; }
+		static ColorSet::ColorGroup& getDefaultGroup() { return privatedata.defaultGroup; }
 		// call getNext at start up and when ever colors should change
 		// do not break colors up or thins will not match
 		// get next color based on type and usage count
 		// example: type==cool gets the next cool type, type=Random gets any next color
-		static ColorSet& getNextColors(ColorSet::ColorGroup type = data.defaultGroup);
+		static ColorSet& getNextColors(ColorSet::ColorGroup type = getDefaultGroup());
 		// there must always be at least one color
 	};
 

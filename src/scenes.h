@@ -11,7 +11,6 @@ namespace Software2552 {
 		// return a possibly changed and live value from the cameras vector
 		Camera* pickem(vector<Camera>&cameras, bool rotating);
 
-		void update();
 	};
 
 	// contains  elements of a stage
@@ -43,6 +42,10 @@ namespace Software2552 {
 	public:
 		Sphere sphere;
 		ofTexture texture;
+	};
+
+	class TestScene :public Stage {
+
 	};
 	class SpaceScene : public Stage {
 	public:
