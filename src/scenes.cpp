@@ -60,7 +60,6 @@ namespace Software2552 {
 		ofEnableDepthTest();
 
 		for (auto& light : lights) {
-			light.setPosition(-500, 100, 100);
 			light.enable();
 		}
 
@@ -103,6 +102,7 @@ namespace Software2552 {
 		}
 
 		material.setShininess(120);
+		material.setSpecularColor(ofColor(255, 255, 255, 255));
 		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 	}
 	// juse need to draw the SpaceScene, base class does the rest
@@ -114,12 +114,18 @@ namespace Software2552 {
 		Camera cam1;
 		add(cam1);
 
-		Light light;
-		//spotLight.setSpotlight(); 
+		Light light;//bugbug make arrays of spot etc light types for director to use
 		
 		light.setAmbientColor(ofFloatColor::blue);
 		light.setDiffuseColor(ofFloatColor::red);
 		light.setSpecularColor(ofFloatColor::green);
+		light.setPosition(300, 0, 0);
+		light.setDiffuseColor(ofFloatColor(255.0, 0.0, 0.0f));
+		light.setSpecularColor(ofColor(0, 0, 255));
+		light.setDirectional();
+		light.setSpotConcentration(5);
+		light.setSpotlightCutOff(10);
+
 		add(light);
 	}
 	void TestScene::update() {
@@ -135,10 +141,12 @@ namespace Software2552 {
 		mesh.drawVertices();
 	}
 	void TestScene::setup() {
+		ofSetGlobalAmbientColor(ofColor(0, 0, 0));
+		ofSetSmoothLighting(true);
 		test();//bugbug set via script 
 		mesh.setup();
 		cube.setWireframe(false);
-		cube.set(100);
+		cube.set(500);
 	}
 	void Stage::update() {
 		if (backgroundImageName.size() > 0) {
@@ -150,10 +158,12 @@ namespace Software2552 {
 		Stage::test();
 		//bugbug get from json
 		Camera cam1; // learn camera bugbug
+		cam1.setScale(-1, -1, 1); // showing video
 		cam1.setOrbit(true); // rotating
 		add(cam1);
 
 		cam1.setOrbit(false); // not rotating
+		cam1.setScale(-1, -1, 1); // showing video
 		add(cam1);
 
 		Light light1;

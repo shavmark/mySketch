@@ -128,7 +128,6 @@ namespace Software2552 {
 
 	class Camera : public ofEasyCam, public Animator {
 	public:
-		Camera():ofEasyCam(), Animator(){ setScale(-1, -1, 1); }
 		void orbit();
 		void setOrbit(bool b = true) { useOrbit = b; }
 		bool isOrbiting() const { return useOrbit; }
