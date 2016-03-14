@@ -3,6 +3,9 @@
 
 namespace Software2552 {
 
+	void Director::update() {
+		// remove out of data cameras
+	}
 	// return a possibly modifed version such as camera moved
 	Camera* Director::pickem(vector<Camera>&cameras, bool orbiting) {
 		// maybe build this out using the color count techqiue (make that a base class?)
@@ -15,7 +18,7 @@ namespace Software2552 {
 			else {
 				if (!cameras[i].isOrbiting()) {
 					int j = ofRandom(0, 2);
-					return &cameras[j];
+					return &cameras[j];// stuff data in the Camera class
 					// lots to do here to make things nice, learn and see how to bring this in
 					//void lookAt(const ofNode& lookAtNode, const ofVec3f& upVector = ofVec3f(0, 1, 0));
 					if (j == 1) {
@@ -92,7 +95,7 @@ namespace Software2552 {
 
 		if (camMoving != nullptr) {
 			camMoving->begin();
-			camMoving->orbit();
+			camMoving->orbit(); // bugbug make a few more scenes, maye this belongs in an "orbit" derived class
 			draw3dMoving();
 			camMoving->end();
 		}
@@ -179,7 +182,7 @@ namespace Software2552 {
 		}
 	}
 	void SpaceScene::draw3dFixed() {
-		// one time setup
+		// one time setup must be called to draw videoSphere
 		if (video.isFrameNew()) {
 			videoSphere.setForTexture(video.getTexture());
 		}

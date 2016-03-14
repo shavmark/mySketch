@@ -45,45 +45,6 @@ namespace Software2552 {
 	private:
 	};
 
-	// supports animation
-	class Animator {
-	public:
-		Animator();
-		//bugbug code for a bit then put in read/data in a derived class
-		// defined in model..
-		uint64_t refreshRate() { return rate; /*ms*/ }
-		void setRefreshRate(uint64_t rateIn) { rate = rateIn; };
-		bool refresh();
-		void startReadHead() {	startTime = ofGetElapsedTimeMillis();	}
-		bool isExpired() const { return expired; }
-		static bool staticOKToRemovePtr(shared_ptr<Animator> me);
-		static bool staticOKToRemove(const Animator& me);
-		bool okToDraw();
-		virtual void update();
-		virtual void setup();
-		virtual void draw() {}
-		virtual void pause();
-		virtual void play();
-		virtual void stop() { stopped = true; }
-		// how long to wait
-		virtual void getTimeBeforeStart(uint64_t& t) {
-			setIfGreater(t, getDuration() + getWait());
-		}
-		uint64_t& getDuration() { return duration; }
-		uint64_t& getWait() { return wait; }
-		void setWait(uint64_t waitIn) { wait = waitIn; }
-		void addWait(uint64_t waitIn) { wait += waitIn; }
-	private:
-		uint64_t	duration; // life time of object, 0 means forever
-		uint64_t	wait;     // time to wait before drawing
-		uint64_t	startTime;
-		uint64_t	rate;// refresh rate
-		bool		expired; // object is expired
-		bool		stopped;
-		bool		paused;
-	};
-
-
 
 	// can be, but does not need to be, a base class as its all static and can just be called, could not even be a class I suppose
 	class Trace : public BaseClass {

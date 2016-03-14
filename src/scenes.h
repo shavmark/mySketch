@@ -10,6 +10,8 @@ namespace Software2552 {
 	public:
 		// return a possibly changed and live value from the cameras vector
 		Camera* pickem(vector<Camera>&cameras, bool rotating);
+
+		void update();
 	};
 
 	// contains  elements of a stage

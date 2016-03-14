@@ -3,55 +3,70 @@
 #include <map>
 
 namespace Software2552 {
-	vector<ColorSet> Colors::data; // one set of colors to assure matching color themes
-	int Colors::smallest = -1;
-	std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int> Colors::colorTable;
-	ColorSet::ColorGroup Colors::defaultGroup= ColorSet::ColorGroup::Default;
+	Colors::colordata Colors::data;
 
-	// get a color set
+	ColorSet::ColorSet(const ColorGroup& groupIn) :Animator() {
+		setGroup(groupIn);
+		// always set a color to avoid bad errors
+		setSetcolors(4, ofColor(ofColor::blue).getHex(), ofColor(ofColor::orangeRed).getHex(), ofColor(ofColor::azure).getHex());
+	}
+	ColorSet::ColorSet(const ColorGroup& groupIn, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4) :Animator() {
+		// always store as hex
+		setGroup(groupIn);
+		setSetcolors(4, color1.getHex(), color2.getHex(), color3.getHex(), color4.getHex());
+	}
+	ColorSet::ColorSet(const ColorGroup&groupIn, int color1, int color2, int color3, int color4) :Animator() {
+		setGroup(groupIn);
+		setSetcolors(4, color1, color2, color3, color4);
+	}
+	void ColorSet::setSetcolors(int c, ...) {
+		colors.clear();
+
+		va_list args;
+		va_start(args, c);
+		for (int i = 0; i < c; ++i) {
+			colors.push_back(va_arg(args, int));
+		}
+		va_end(args);
+	}
+
+	// get a color set if the current one is not set or if its expired
 	ColorSet& Colors::get() {
 		// if first time in set things up
-		if (getSmallest() < 0) {
-			// if there is data
-			if (data.size() > 0) {
-				getNextColors(); // sets smallest as needed
-			}
+		if (getSmallest() < 0 || getListItem(getCurrent()).refresh()) {
+			getNextColors(); 
 		}
 		// no data or no match found in data
 		if (getSmallest() < 0) {
-			return ColorSet(defaultGroup);// start with defaults
+			return ColorSet(data.defaultGroup);// start with defaults
 		}
-		++data[getSmallest()];
-		//int i = getSmallest();// for testing
-		//ofColor c = data[getSmallest()].getForeground();
-		return data[getSmallest()];
+		++getListItem(getCurrent());
+		return getListItem(getCurrent());
 	}
 	// get next color based on type and usage count
 	// example: type==cool gets the next cool type, type=Random gets any next color
 	ColorSet& Colors::getNextColors(ColorSet::ColorGroup group) {
-		if (smallest < 0) {
-			smallest = 0; // show we started
+		if (getSmallest() < 0) {
+			// first call 
+			setSmallest(0);
+			setCurrent(0);
 		}
 		// find smallest of type
 		//setSmallest(0); // code assume some data loaded
-		for (int i = 0; i < data.size(); ++i) {
-			if (data[getSmallest()].lessThan(data[i], group)) {
+		for (int i = 0; i < getList().size(); ++i) {
+			if (getListItem(getSmallest()).lessThan(getListItem(i), group)) {
 				setSmallest(i);
+				setCurrent(i);
 			}
 		}
-		return data[getSmallest()];
-		//std::vector<ColorSet>::iterator result = std::min_element(std::begin(data), std::end(data));
-		//ColorSet cs = *std::min_element(data.begin(), data.end() - 1, ColorSet::searchfn);
-		//if (result != data.end()) {
-		//return *result;
-		//}
+		return getListItem(getCurrent());
 	}
 	// make a bunch of colors that match using various techniques
 	// return hex color
 	int Colors::find(ColorSet::ColorGroup group, ColorName name)	{
 		pair <ColorSet::ColorGroup, ColorName> p (group, name);
-		auto it = colorTable.find(p);
-		if (it != colorTable.end()) {
+		auto it = data.colorTable.find(p);
+		if (it != data.colorTable.end()) {
 			return it->second;
 		}
 		return 0; // none found
@@ -59,7 +74,7 @@ namespace Software2552 {
 
 	void Colors::AddColorRow(ColorSet::ColorGroup group, ColorName name, int val) {
 		pair <ColorSet::ColorGroup, ColorName> p(group, name);
-		colorTable[p] = val;
+		data.colorTable[p] = val;
 
 		int i = find(group, name);
 
@@ -93,7 +108,7 @@ namespace Software2552 {
 			find(group, light)
 			);
 
-		data.push_back(s);
+		data.colorlist.push_back(s);
 	}
 	void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& light) {
 
@@ -105,7 +120,7 @@ namespace Software2552 {
 			light.getHex()
 			);
 
-		data.push_back(s);
+		data.colorlist.push_back(s);
 	}
 	void Colors::add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& light) {
 
@@ -116,7 +131,7 @@ namespace Software2552 {
 			light.getHex()
 			);
 
-		data.push_back(s);
+		data.colorlist.push_back(s);
 	}
 	bool ColorSet::lessThan(const ColorSet& j, ColorGroup group) {
 		if (isExpired() || (group != Random && getGroup() != j.getGroup())) {
@@ -133,7 +148,7 @@ namespace Software2552 {
 	void Colors::setup() {
 
 		// only needs to be setup one time since its static data
-		if (data.size() == 0) { 
+		if (data.colorlist.size() == 0) {
 			std::array<int, COLORNAME_COUNT> modern =
 			{ 0x003F53, 0x3994B3, 0x64B1D1, 0x00626D, 0x079CBA, 0x60CDD9, 0x003E6B,
 				0x0073A0, 0xBAECE9, 0xD0FC0E, 0xFDB075, 0xFFD76E, 0x4D5E6C, 0x858E9C, 0xCCD1D5 };

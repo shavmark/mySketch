@@ -57,7 +57,7 @@ namespace Software2552 {
 
 		for (auto& a : acts) {
 			for (auto& item : a.getPlayList()) {
-				item.scene.getDrawingEngines()->cleanup();
+				item.scene.getDrawingEngines()->removeExpiredItems();
 				item.scene.getDrawingEngines()->update();
 			}
 		}

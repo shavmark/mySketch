@@ -317,6 +317,9 @@
     <ClCompile Include="src\scenes.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\animation.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -952,6 +955,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\scenes.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\animation.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

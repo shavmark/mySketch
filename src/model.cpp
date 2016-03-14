@@ -1,4 +1,5 @@
 #include "model.h"
+#include "animation.h"
 
 namespace Software2552 {
 	// helpers
@@ -126,8 +127,7 @@ namespace Software2552 {
 	}
 	void TheSet::setup() {
 		ofSetFrameRate(framerate);
-		colors.getNextColors();
-		startReadHead();
+		startAnimation();
 	}
 	void TheSet::draw() {
 		if (okToDraw()) {
@@ -152,15 +152,13 @@ namespace Software2552 {
 		return false;
 	}
 	void Colors::update() {
-		if (refresh()) {
-			// clean up deleted items every so often
-			for (auto& d : data) {
-				d.refresh();
-			}
-			// remove expired colors
-			data.erase(std::remove_if(data.begin(), data.end(),
-				Animator::staticOKToRemove), data.end());
+		// clean up deleted items every so often
+		for (auto& d : data.colorlist) {
+			d.refresh();
 		}
+		// remove expired colors
+		Animator a(false);
+		a.removeExpiredItems(data.colorlist);
 	}
 
 	bool PlayItem::readFromScript(const Json::Value &data) {
@@ -176,7 +174,11 @@ namespace Software2552 {
 	bool GraphicEngines::dataAvailable() {
 		return graphicsHelpers.size() > 0;
 	}
-	
+	void GraphicEngines::removeExpiredItems() {
+		Animator a(false);
+		a.removeExpiredPtrToItems(get());
+	}
+
 
 	uint64_t GraphicEngines::getLongestWaitTime() {
 		return findMaxWait();

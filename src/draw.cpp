@@ -14,9 +14,6 @@ namespace Software2552 {
 	}
 	// colors and background change over time but not at the same time
 	void RoleBackground::update(Colors*colors) {
-		if (colors->refresh()) {
-			colors->getNextColors();
-		}
 		//bugbug can add other back grounds like a video loop, sound
 		// picture, any graphic etc
 		if (refresh()) {

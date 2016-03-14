@@ -404,14 +404,8 @@ namespace Software2552 {
 			return f;
 		}
 		// remove items that are timed out
-		void removeExpiredItems() {
-			get().erase(std::remove_if(get().begin(), get().end(),
-				Animator::staticOKToRemovePtr), get().end());
-		}
+		void removeExpiredItems();
 
-		void cleanup() {
-			removeExpiredItems();
-		}
 		bool dataAvailable();
 		void bumpWaits(uint64_t wait);
 		uint64_t getLongestWaitTime();

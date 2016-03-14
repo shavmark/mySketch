@@ -2,6 +2,8 @@
 #include "2552software.h"
 #include "ofxBox2d.h"
 #include "color.h"
+#include "animation.h"
+
 // home of custom drawing
 
 namespace Software2552 {
@@ -83,7 +85,7 @@ namespace Software2552 {
 		bool wireFrame = true;
 	};
 
-	class Camera : public ofEasyCam {
+	class Camera : public ofEasyCam, public Animator {
 	public:
 		void orbit();
 		void setOrbit(bool b = true) { useOrbit = b; }

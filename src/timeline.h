@@ -20,7 +20,7 @@ namespace Software2552 {
 
 	private:
 		// stat all objects in vector to playing
-		template<typename T> void startReadHead(T& v) {
+		template<typename T> void startAnimation(T& v) {
 			for (auto& t : v) {
 				t.play();
 			}
