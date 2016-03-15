@@ -24,18 +24,18 @@ namespace Software2552 {
 		void add(const Camera& camera) { cameras.push_back(camera); };
 		void add(const Light& light) { lights.push_back(light); };
 	protected:
-		virtual void draw3dFixed() = 0; 
-		virtual void draw3dMoving() = 0;
+		virtual void draw2d() {};
+		virtual void draw3dFixed() {};
+		virtual void draw3dMoving() {};
+		ofVideoGrabber grabber;
 	private:
 		vector<Camera>	cameras; // secondary cameras
 		vector<Light>	lights;
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
 		Director director;
-		void draw2d();
 		void draw3d();
 		Camera *camFixed  = nullptr; // set via draw3dStart
 		Camera *camMoving = nullptr; // set via draw3dStart
-
 		ofImage imageForBackground;//bugbug change this to use the background object that includes just a color background
 		string backgroundImageName;
 	};
@@ -51,6 +51,7 @@ namespace Software2552 {
 		void setup();
 		void update();
 		void test();
+		void draw2d();
 		void draw3dFixed();
 		void draw3dMoving();
 	private:

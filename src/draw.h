@@ -125,7 +125,74 @@ namespace Software2552 {
 
 	private:
 	};
-
+	class VectorPattern : public Animator {
+	public:
+		void matrix(int twistx, int shifty) {
+			ofPushMatrix();
+			for (int i = -50; i < 50; ++i) {
+				ofTranslate(0, i*shifty);
+				ofRotate(i*twistx);
+				stripe(true);
+			}
+			ofPopMatrix();
+		}
+		void stripe(bool rotate=false) {
+			ofSetColor(ofColor::black);
+			ofSetLineWidth(3);
+			for (int i = -50; i < 50; ++i) {
+				ofPushMatrix();
+				ofTranslate(i * 20, 0);
+				if (rotate) {
+					ofRotate(i * 5);
+				}
+				ofLine(0, -100, 0, 100);
+				ofPopMatrix();
+			}
+		}
+		void triangle(bool rotate = false) {
+			ofSetColor(ofColor::black);
+			ofSetLineWidth(3);
+			ofNoFill();
+			for (int i = -50; i < 50; ++i) {
+				ofPushMatrix();
+				ofTranslate(i * 20, 0);
+				if (rotate) {
+					ofRotate(i * 5);
+				}
+				ofScale(6, 6); // enlarge 6x
+				ofTriangle(0, 0, -50, 100, 50, 100);
+				ofPopMatrix();
+			}
+		}
+		void shape(int twistx, int shifty, bool rect, bool fill, int rotate, int alpha=100) {
+			ofColor color = ofColor::black;
+			color.a = alpha;
+			ofSetColor(color);
+			ofSetLineWidth(1);
+			if (fill) {
+				ofFill();
+			}
+			else {
+				ofNoFill();
+			}
+			for (int i = -50; i < 50; ++i) {
+				ofPushMatrix();
+				ofRotate(i * twistx);
+				ofTranslate(i * 20, shifty);
+				ofRotate(rotate);
+				ofScale(6, 6); // enlarge 6x
+				if (rect) {
+					ofRect(-50, -50, 100, 100);
+				}
+				else {
+					ofTriangle(0, 0, -50, 100, 50, 100);
+				}
+				ofPopMatrix();
+			}
+			ofScale(6, 6); // enlarge 6x
+			ofTriangle(0, 0, -50, 100, 50, 100);
+		}
+	};
 	class Camera : public ofEasyCam, public Animator {
 	public:
 		void orbit();

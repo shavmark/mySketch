@@ -34,8 +34,6 @@ namespace Software2552 {
 			return nullptr;
 		}
 	}
-	void Stage::draw2d() {
-	}
 	void Stage::draw() {
 
 		ofBackground(ofColor::white); // white enables all colors in pictures/videos
@@ -46,7 +44,10 @@ namespace Software2552 {
 
 		ofPushStyle();
 		draw2d();
-		draw3d();
+		ofPopStyle();
+
+		ofPushStyle();
+		//draw3d();
 		ofPopStyle();
 	}
 
@@ -100,6 +101,14 @@ namespace Software2552 {
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.load(backgroundImageName);
 		}
+		//bugbug does Kintect show up?
+		vector<ofVideoDevice> devices = grabber.listDevices();
+		for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
+			
+		}
+		grabber.setDeviceID(0);
+		grabber.setDesiredFrameRate(30);
+		grabber.initGrabber(1280, 720);
 
 		material.setShininess(120);
 		material.setSpecularColor(ofColor(255, 255, 255, 255));
@@ -107,6 +116,18 @@ namespace Software2552 {
 	}
 	// juse need to draw the SpaceScene, base class does the rest
 	void TestScene::draw3dMoving() {
+	}
+	void TestScene::draw2d() {
+		if (grabber.isInitialized()) {
+			ofSetColor(255);
+			grabber.draw(0, 0, ofGetWidth(), ofGetHeight());
+		}
+		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
+		VectorPattern p;
+		//p.stripe(true);
+		//p.triangle(true);
+		//p.shape(15, 5, false, true, 5);
+		//p.matrix(10, 20);
 	}
 	// all items in test() to come from json
 	void TestScene::test() {
@@ -129,6 +150,7 @@ namespace Software2552 {
 		add(light);
 	}
 	void TestScene::update() {
+		Stage::update();
 		mesh.update();
 
 	}
@@ -141,6 +163,7 @@ namespace Software2552 {
 		mesh.drawVertices();
 	}
 	void TestScene::setup() {
+		Stage::setup();
 		ofSetGlobalAmbientColor(ofColor(0, 0, 0));
 		ofSetSmoothLighting(true);
 		test();//bugbug set via script 
@@ -151,6 +174,10 @@ namespace Software2552 {
 	void Stage::update() {
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.resize(ofGetWidth(), ofGetHeight());
+		}
+
+		if (grabber.isInitialized()) {
+			grabber.update();
 		}
 	}
 	void SpaceScene::test() {
