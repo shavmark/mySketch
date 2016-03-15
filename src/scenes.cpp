@@ -43,7 +43,7 @@ namespace Software2552 {
 		}
 
 		ofPushStyle();
-		//draw2d();
+		draw2d();
 		ofPopStyle();
 
 		ofPushStyle();
@@ -54,59 +54,42 @@ namespace Software2552 {
 
 	void Stage::test() {
 	}
+	// setup light and material for drawing
+	void Stage::installLightAndMaterialAndDraw(Camera*cam) {
+		if (cam != nullptr) {
+			cam->begin();
+			cam->orbit(); 
+			for (auto& light : lights) {
+				light.enable();
+			}
+			material.begin();//bugbug figure out material
+			draw3dFixed();
+			cam->end();
+		}
+		else {
+			for (auto& light : lights) {
+				light.enable();
+			}
+			material.begin();//bugbug figure out material
+			draw3dFixed();
+		}
+	}
 
 	void Stage::draw3d() {
-		// bugbug should this go into a virtual function so it can be changed by derived classes?
+		// setup
 		ofSetSmoothLighting(true);
 		ofDisableAlphaBlending();
 		ofEnableDepthTest();
 
-		camFixed = director.pickem(cameras, false);
-		camMoving = director.pickem(cameras, true);
+		installLightAndMaterialAndDraw(director.pickem(cameras, false));
+		installLightAndMaterialAndDraw(director.pickem(cameras, true));
 
-
-		if (camFixed != nullptr) {
-			camFixed->begin();
-			for (auto& light : lights) {
-				light.enable();
-			}
-			material.begin();//bugbug figure out material
-			draw3dFixed();
-			camFixed->end();
-		}
-		else {
-			for (auto& light : lights) {
-				light.enable();
-			}
-			material.begin();//bugbug figure out material
-			draw3dFixed();
-		}
-
-		if (camMoving != nullptr) {
-			camMoving->begin();
-			for (auto& light : lights) {
-				light.enable();
-			}
-			camMoving->orbit(); // bugbug make a few more scenes, maye this belongs in an "orbit" derived class
-			material.begin();//bugbug figure out material
-			draw3dMoving();
-			camMoving->end();
-		}
-		else {
-			for (auto& light : lights) {
-				light.enable();
-			}
-			material.begin();//bugbug figure out material
-			draw3dMoving();
-		}
-
+		// clean up
 		material.end();
-
 		ofDisableDepthTest();
 		for (auto& light : lights) {
 			light.disable();
 		}
-
 		ofDisableLighting();
 	}
 	void Stage::draw2d() {

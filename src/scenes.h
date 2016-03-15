@@ -35,6 +35,7 @@ namespace Software2552 {
 		virtual void draw2d();
 		virtual void draw3dFixed() {};
 		virtual void draw3dMoving() {};
+		virtual void installLightAndMaterialAndDraw(Camera*); // derive to change where cameras are
 	private:
 		vector<Grabber> grabbers;
 		vector<Camera>	cameras; 
