@@ -210,7 +210,7 @@ namespace Software2552 {
 	class Grabber : public ofVideoGrabber, public Animator {
 	public:
 		Grabber(const string&nameIn) :ofVideoGrabber(), Animator() { name = nameIn;  }
-		void install(int w, int h) {
+		void loadGrabber(int w, int h) {
 			id = find();
 			setDeviceID(id);
 			setDesiredFrameRate(30);

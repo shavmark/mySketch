@@ -98,25 +98,30 @@ namespace Software2552 {
 		ofDisableLighting();
 	}
 	void Stage::draw2d() {
-		ofSetColor(255);
-		for (auto& image : images) {
-			image.draw(image.x, image.y, image.getAnimationHeight(), image.getAnimationWidth());
+		ofBackground(ofColor::black);
+		ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
+		ofSetColor(255, 100);//bugbug figure out alpha in color.h
+		for (const auto& image : images) {
+			image.draw(image.x, image.y, image.w, image.h);
 		}
-		for (auto& video : videos) {
-			video.draw(video.x, video.y, video.getAnimationHeight(), video.getAnimationWidth());
+		ofSetColor(255, 125);
+		for (const auto& video : videos) {
+			video.draw(video.x, video.y, video.w, video.h);
 		}
+		ofSetColor(255, 175);
 		for (auto& grabber : grabbers) {
 			if (grabber.isInitialized()) {
-				grabber.draw(grabber.x, grabber.y, grabber.getAnimationHeight(), grabber.getAnimationWidth());
+				grabber.draw(grabber.x, grabber.y, grabber.w, grabber.h);
 			}
 		}
+		ofEnableAlphaBlending();
 	}
 	void Stage::setup() {
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.load(backgroundImageName);
 		}
 		for (auto& grabber : grabbers) {
-			grabber.install(grabber.w, grabber.h);
+			grabber.loadGrabber(grabber.w, grabber.h);
 		}
 		for (auto& image : images) {
 			image.loadRaster();
@@ -157,7 +162,7 @@ namespace Software2552 {
 		VectorPattern p;
 		//p.stripe(true);
 		//p.triangle(true);
-		//p.shape(15, 5, false, true, 5);
+		p.shape(15, 5, false, true, 5);
 		//p.matrix(10, 20);
 	}
 	// all items in test() to come from json
@@ -181,17 +186,17 @@ namespace Software2552 {
 		add(light);
 
 		Raster raster("t1_0010.jpg");
-		raster.w = ofGetWidth() / 3;
+		//raster.w = ofGetWidth() / 3;
 		add(raster);
 
 		VideoPlayer video("carride.mp4");
-		video.w = ofGetWidth() / 3;
-		video.x = raster.w;
+		//video.w = ofGetWidth() / 3;
+		//video.x = raster.w;
 		add(video);
 
 		Grabber grabber("Logitech HD Pro Webcam C920");
-		grabber.w = ofGetWidth() / 3;
-		grabber.x = video.x + video.w;
+		//grabber.w = ofGetWidth() / 3;
+		//grabber.x = video.x + video.w;
 		add(grabber);
 
 
@@ -199,7 +204,7 @@ namespace Software2552 {
 	void TestScene::update() {
 		Stage::update();
 		mesh.update();
-
+		/*
 		for (auto& image : getImages()) {
 			image.w = ofGetWidth() / 3;
 		}
@@ -211,7 +216,7 @@ namespace Software2552 {
 			grabber.w = ofGetWidth() / 3;
 			grabber.x = (ofGetWidth() / 3) * 2;
 		}
-
+		*/
 	}
 	void TestScene::draw3dFixed() {
 		//ofBackground(0);
