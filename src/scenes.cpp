@@ -43,11 +43,12 @@ namespace Software2552 {
 		}
 
 		ofPushStyle();
-		draw2d();
+		//draw2d();
 		ofPopStyle();
 
 		ofPushStyle();
-		//draw3d();
+		ofBackground(ofColor::blue); // white enables all colors in pictures/videos
+		draw3d();
 		ofPopStyle();
 	}
 
@@ -60,31 +61,42 @@ namespace Software2552 {
 		ofDisableAlphaBlending();
 		ofEnableDepthTest();
 
-		for (auto& light : lights) {
-			light.enable();
-		}
-
 		camFixed = director.pickem(cameras, false);
 		camMoving = director.pickem(cameras, true);
 
-		material.begin();//bugbug figure out material
 
 		if (camFixed != nullptr) {
 			camFixed->begin();
+			for (auto& light : lights) {
+				light.enable();
+			}
+			material.begin();//bugbug figure out material
 			draw3dFixed();
 			camFixed->end();
 		}
 		else {
+			for (auto& light : lights) {
+				light.enable();
+			}
+			material.begin();//bugbug figure out material
 			draw3dFixed();
 		}
 
 		if (camMoving != nullptr) {
 			camMoving->begin();
+			for (auto& light : lights) {
+				light.enable();
+			}
 			camMoving->orbit(); // bugbug make a few more scenes, maye this belongs in an "orbit" derived class
+			material.begin();//bugbug figure out material
 			draw3dMoving();
 			camMoving->end();
 		}
 		else {
+			for (auto& light : lights) {
+				light.enable();
+			}
+			material.begin();//bugbug figure out material
 			draw3dMoving();
 		}
 
@@ -98,6 +110,7 @@ namespace Software2552 {
 		ofDisableLighting();
 	}
 	void Stage::draw2d() {
+
 		ofBackground(ofColor::black);
 		ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
 		ofSetColor(255, 100);//bugbug figure out alpha in color.h
@@ -131,8 +144,9 @@ namespace Software2552 {
 			video.play();
 		}
 
-		material.setShininess(120);
-		material.setSpecularColor(ofColor(255, 255, 255, 255));
+
+		material.setShininess(90);
+		material.setSpecularColor(ofColor::olive);
 		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 	}
 	void Stage::update() {
@@ -151,6 +165,10 @@ namespace Software2552 {
 		for (auto& video : videos) {
 			video.update();
 		}
+		for (auto& light : lights) {
+			//light.setOrientation(ofVec3f(0, cos(ofGetElapsedTimef()) * RAD_TO_DEG, 0));
+			//light.setPosition(ofGetAppPtr()->mouseX, ofGetAppPtr()->mouseY, 200);
+		}
 
 	}
 	// juse need to draw the SpaceScene, base class does the rest
@@ -162,7 +180,7 @@ namespace Software2552 {
 		VectorPattern p;
 		//p.stripe(true);
 		//p.triangle(true);
-		p.shape(15, 5, false, true, 5);
+		//p.shape(15, 5, false, true, 5);
 		//p.matrix(10, 20);
 	}
 	// all items in test() to come from json
@@ -171,19 +189,55 @@ namespace Software2552 {
 		Camera cam1;
 		add(cam1);
 
-		Light light;//bugbug make arrays of spot etc light types for director to use
+		Light pointLight;
+		pointLight.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
+		// specular color, the highlight/shininess color //
+		pointLight.setSpecularColor(ofColor(255.f, 0, 0));
+		pointLight.setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 0);
+		pointLight.setPointLight();
+		add(pointLight);
 
-		light.setAmbientColor(ofFloatColor::blue);
-		light.setDiffuseColor(ofFloatColor::red);
-		light.setSpecularColor(ofFloatColor::green);
-		light.setPosition(300, 0, 0);
-		light.setDiffuseColor(ofFloatColor(255.0, 0.0, 0.0f));
-		light.setSpecularColor(ofColor(0, 0, 255));
-		light.setDirectional();
-		light.setSpotConcentration(5);
-		light.setSpotlightCutOff(10);
+		Light pointLight2;
+		pointLight2.setDiffuseColor(ofColor(0.f, 0, 255.f));
+		// specular color, the highlight/shininess color //
+		pointLight2.setSpecularColor(ofColor(255.f, 0, 0));
+		pointLight2.setPosition(-ofGetWidth()*.2, ofGetHeight()*.2, 0);
+		pointLight2.setPointLight();
+		add(pointLight2);
 
-		add(light);
+		Light directionalLight;
+		// Directional Lights emit light based on their orientation, regardless of their position //
+		directionalLight.setDiffuseColor(ofColor(0.f, 0.f, 255.f));
+		directionalLight.setSpecularColor(ofColor(255.f, 255.f, 255.f));
+		directionalLight.setDirectional();
+
+		// set the direction of the light
+		// set it pointing from left to right -> //
+		directionalLight.setOrientation(ofVec3f(0, 90, 0));
+		add(directionalLight);
+
+		Light basic;
+		basic.setPosition(-100, 0, 400);
+		add(basic);
+		
+
+		Light spotLight;
+		spotLight.setDiffuseColor(ofColor(255.f, 0.f, 0.f));
+		spotLight.setSpecularColor(ofColor(255.f, 255.f, 255.f));
+
+		// turn the light into spotLight, emit a cone of light //
+		spotLight.setSpotlight();
+
+		// size of the cone of emitted light, angle between light axis and side of cone //
+		// angle range between 0 - 90 in degrees //
+		spotLight.setSpotlightCutOff(50);
+
+		// rate of falloff, illumitation decreases as the angle from the cone axis increases //
+		// range 0 - 128, zero is even illumination, 128 is max falloff //
+		spotLight.setSpotConcentration(2);
+		spotLight.setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
+		add(spotLight);
+		return;
 
 		Raster raster("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
@@ -204,7 +258,7 @@ namespace Software2552 {
 	void TestScene::update() {
 		Stage::update();
 		mesh.update();
-		/*
+		/* use to show 3 at once
 		for (auto& image : getImages()) {
 			image.w = ofGetWidth() / 3;
 		}
@@ -220,7 +274,17 @@ namespace Software2552 {
 	}
 	void TestScene::draw3dFixed() {
 		//ofBackground(0);
+
+		// draw a little light sphere
+		for (const auto& light : getLights()) {
+			ofSetColor(light.getDiffuseColor());
+			ofDrawSphere(light.getPosition(), 20.f);
+		}
+
 		cube.draw();
+
+		return; // comment out to draw by vertice
+
 		ofSetHexColor(0xffffff);
 		glPointSize(2);
 		glEnable(GL_POINT_SMOOTH);
@@ -229,11 +293,10 @@ namespace Software2552 {
 	void TestScene::setup() {
 		test();//bugbug set via script 
 		Stage::setup();
-		ofSetGlobalAmbientColor(ofColor(0, 0, 0));
 		ofSetSmoothLighting(true);
 		mesh.setup();
 		cube.setWireframe(false);
-		cube.set(500);
+		cube.set(100);
 	}
 	void SpaceScene::test() {
 		//bugbug get from json

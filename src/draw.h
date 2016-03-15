@@ -86,8 +86,6 @@ namespace Software2552 {
 	class Plane : public ofPlanePrimitive, public Primitive {
 	public:
 		void draw() {
-			// currenting thinking we let color operate on its own via its class
-			ofSetColor(ofColor::white);
 			if (useWireframe()) {
 				drawWireframe();
 			}
@@ -99,8 +97,6 @@ namespace Software2552 {
 	class Cube : public ofBoxPrimitive, public Primitive {
 	public:
 		void draw() {
-			// currenting thinking we let color operate on its own via its class
-			ofSetColor(ofColor::white);
 			if (useWireframe()) {
 				drawWireframe();
 			}
@@ -112,8 +108,6 @@ namespace Software2552 {
 	class Sphere : public ofSpherePrimitive, public Primitive {
 	public:
 		void draw() {
-			// currenting thinking we let color operate on its own via its class
-			ofSetColor(ofColor::white); 
 			if (useWireframe()) {
 				drawWireframe();
 			}
