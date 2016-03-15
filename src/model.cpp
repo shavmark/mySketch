@@ -154,7 +154,7 @@ namespace Software2552 {
 	void Colors::update() {
 		// clean up deleted items every so often
 		for (auto& d : getList()) {
-			d.refresh();
+			d.refreshAnimation();
 		}
 		// remove expired colors
 		Animator a(false);
@@ -295,8 +295,8 @@ namespace Software2552 {
 		if (okToDraw()) {
 			player.setFont(getFontPointer());
 			player.setColor(Colors::getFontColor());
-			player.setPosition(getStartingPoint().x, getStartingPoint().y);
-			player.draw(getStartingPoint().x, getStartingPoint().y);
+			player.setPosition(x,y);
+			player.draw(x, y);
 		}
 	}
 
@@ -507,8 +507,6 @@ namespace Software2552 {
 	}
 	Graphic::Graphic() : ReferencedItem() {
 		//bugbug add a pause where time is suspended, add in rew, play, stop etc also
-		height = 0;
-		width = 0;
 		volume = 0.5;
 		myID = ofGetSystemTimeMicros();
 	}
@@ -517,14 +515,16 @@ namespace Software2552 {
 
 		ReferencedItem::readFromScript(data);
 		READSTRING(type, data);
-		READFLOAT(width, data);
-		READFLOAT(height, data);
+		readJsonValue(w, data["width"]);
+		readJsonValue(h, data["height"]);
 		READSTRING(locationPath, data);
 		READFLOAT(volume, data);
 		readJsonValue(getDuration(), data["duration"]);
 		readJsonValue(getWait(), data["wait"]);
-		startingPoint.readFromScript(data["startingPoint"]);
-
+		Point3D point;
+		point.readFromScript(data["startingPoint"]);
+		x = point.x;
+		y = point.y;
 		return true;
 	}
 

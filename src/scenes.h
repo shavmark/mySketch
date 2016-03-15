@@ -23,14 +23,24 @@ namespace Software2552 {
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
 		void add(const Camera& camera) { cameras.push_back(camera); };
 		void add(const Light& light) { lights.push_back(light); };
+		void add(const Raster& image) { images.push_back(image); };
+		void add(const VideoPlayer& video) { videos.push_back(video); };
+		void add(const Grabber& grabber) { grabbers.push_back(grabber); };
+		vector<Grabber>& getGrabbers() { return grabbers; }
+		vector<Camera>& getCameras() { return cameras; }
+		vector<Light>& getLights() { return lights; }
+		vector<Raster>& getImages() { return images; }
+		vector<VideoPlayer>& getVideos() { return videos; }
 	protected:
-		virtual void draw2d() {};
+		virtual void draw2d();
 		virtual void draw3dFixed() {};
 		virtual void draw3dMoving() {};
-		ofVideoGrabber grabber;
 	private:
-		vector<Camera>	cameras; // secondary cameras
+		vector<Grabber> grabbers;
+		vector<Camera>	cameras; 
 		vector<Light>	lights;
+		vector<Raster>	images;
+		vector<VideoPlayer>   videos;
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
 		Director director;
 		void draw3d();
@@ -48,6 +58,7 @@ namespace Software2552 {
 
 	class TestScene :public Stage {
 	public:
+		TestScene():Stage() {}
 		void setup();
 		void update();
 		void test();

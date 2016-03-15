@@ -8,6 +8,7 @@
 
 //--------------------------------------------------------------
 void ofStoryTellerApp::setup(){
+	ofSetWindowTitle("Story Teller");
 	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
 	//timeline.readScript("json.json");
 	timeline.setup();

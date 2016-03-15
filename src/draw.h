@@ -74,7 +74,8 @@ namespace Software2552 {
 
 	};
 
-	class Primitive {
+
+	class Primitive : public Animator {
 	public:
 		void setWireframe(bool b = true) { wireFrame = b; }
 		bool useWireframe() { return wireFrame; }
@@ -203,6 +204,54 @@ namespace Software2552 {
 	};
 	class Fbo : public ofFbo {
 	public:
+	};
+
+	
+	class Grabber : public ofVideoGrabber, public Animator {
+	public:
+		Grabber(const string&nameIn) :ofVideoGrabber(), Animator() { name = nameIn;  }
+		void install(int w, int h) {
+			id = find();
+			setDeviceID(id);
+			setDesiredFrameRate(30);
+			setup(w, h);
+		}
+		bool loadRaster() {
+			return true;// ofLoadImage(*this, path);
+		}
+	private:
+		int find() {
+			//bugbug does Kintect show up?
+			ofVideoGrabber grabber;
+			vector<ofVideoDevice> devices = grabber.listDevices();
+			for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
+				if (it->deviceName == name) {
+					return it->id;
+				}
+			}
+		}
+		string name;
+		int id=0;
+	};
+
+	class Raster : public ofImage, public Animator {
+	public:
+		Raster(const string&pathIn) :ofImage(), Animator() { path = pathIn; }
+		bool loadRaster() {
+			return ofLoadImage(*this, path);
+		}
+	private:
+		string path;
+	};
+
+	class VideoPlayer :public ofVideoPlayer, public Animator {
+	public:
+		VideoPlayer(const string&pathIn) :ofVideoPlayer(), Animator() { path = pathIn; }
+		bool loadVideo() {
+			return loadMovie(path);
+		}
+	private:
+		string path;
 	};
 
 	class TextureVideo : public ofVideoPlayer {

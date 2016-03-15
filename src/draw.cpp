@@ -33,7 +33,7 @@ namespace Software2552 {
 	}
 	// add this one http://clab.concordia.ca/?page_id=944
 	void RoleVideo::draw(Video*v) {
-		ofVideoPlayer::draw(v->getStartingPoint().x, v->getStartingPoint().y);
+		ofVideoPlayer::draw(v->x, v->y);
 	}
 	void RoleBackground::setup(Colors* colors) { 
 		mode = OF_GRADIENT_LINEAR; 
@@ -43,7 +43,7 @@ namespace Software2552 {
 	void RoleBackground::update(Colors*colors) {
 		//bugbug can add other back grounds like a video loop, sound
 		// picture, any graphic etc
-		if (refresh()) {
+		if (refreshAnimation()) {
 			switch ((int)ofRandom(0, 3)) {
 			case 0:
 				mode = OF_GRADIENT_LINEAR;
@@ -169,7 +169,7 @@ namespace Software2552 {
 	void RoleText::draw(Text* t) {
 		ofPushStyle();
 		ofSetHexColor(Colors::getForeground());
-		t->getFont().drawString(t->getText(), t->getStartingPoint().x, t->getStartingPoint().y);
+		t->getFont().drawString(t->getText(), t->x, t->y);
 		ofPopStyle();
 	}
 

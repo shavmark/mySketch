@@ -97,31 +97,62 @@ namespace Software2552 {
 
 		ofDisableLighting();
 	}
+	void Stage::draw2d() {
+		ofSetColor(255);
+		for (auto& image : images) {
+			image.draw(image.x, image.y, image.getAnimationHeight(), image.getAnimationWidth());
+		}
+		for (auto& video : videos) {
+			video.draw(video.x, video.y, video.getAnimationHeight(), video.getAnimationWidth());
+		}
+		for (auto& grabber : grabbers) {
+			if (grabber.isInitialized()) {
+				grabber.draw(grabber.x, grabber.y, grabber.getAnimationHeight(), grabber.getAnimationWidth());
+			}
+		}
+	}
 	void Stage::setup() {
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.load(backgroundImageName);
 		}
-		//bugbug does Kintect show up?
-		vector<ofVideoDevice> devices = grabber.listDevices();
-		for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
-			
+		for (auto& grabber : grabbers) {
+			grabber.install(grabber.w, grabber.h);
 		}
-		grabber.setDeviceID(0);
-		grabber.setDesiredFrameRate(30);
-		grabber.initGrabber(1280, 720);
+		for (auto& image : images) {
+			image.loadRaster();
+		}
+		for (auto& video : videos) {
+			video.loadVideo();
+			video.play();
+		}
 
 		material.setShininess(120);
 		material.setSpecularColor(ofColor(255, 255, 255, 255));
 		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 	}
+	void Stage::update() {
+		if (backgroundImageName.size() > 0) {
+			imageForBackground.resize(ofGetWidth(), ofGetHeight());
+		}
+
+		for (auto& grabber : grabbers) {
+			if (grabber.isInitialized()) {
+				grabber.update();
+			}
+		}
+		for (auto& image : images) {
+			image.update();
+		}
+		for (auto& video : videos) {
+			video.update();
+		}
+
+	}
 	// juse need to draw the SpaceScene, base class does the rest
 	void TestScene::draw3dMoving() {
 	}
 	void TestScene::draw2d() {
-		if (grabber.isInitialized()) {
-			ofSetColor(255);
-			grabber.draw(0, 0, ofGetWidth(), ofGetHeight());
-		}
+		Stage::draw2d();
 		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
 		VectorPattern p;
 		//p.stripe(true);
@@ -136,7 +167,7 @@ namespace Software2552 {
 		add(cam1);
 
 		Light light;//bugbug make arrays of spot etc light types for director to use
-		
+
 		light.setAmbientColor(ofFloatColor::blue);
 		light.setDiffuseColor(ofFloatColor::red);
 		light.setSpecularColor(ofFloatColor::green);
@@ -148,10 +179,38 @@ namespace Software2552 {
 		light.setSpotlightCutOff(10);
 
 		add(light);
+
+		Raster raster("t1_0010.jpg");
+		raster.w = ofGetWidth() / 3;
+		add(raster);
+
+		VideoPlayer video("carride.mp4");
+		video.w = ofGetWidth() / 3;
+		video.x = raster.w;
+		add(video);
+
+		Grabber grabber("Logitech HD Pro Webcam C920");
+		grabber.w = ofGetWidth() / 3;
+		grabber.x = video.x + video.w;
+		add(grabber);
+
+
 	}
 	void TestScene::update() {
 		Stage::update();
 		mesh.update();
+
+		for (auto& image : getImages()) {
+			image.w = ofGetWidth() / 3;
+		}
+		for (auto& video : getVideos()) {
+			video.w = ofGetWidth() / 3;
+			video.x = ofGetWidth() / 3;
+		}
+		for (auto& grabber : getGrabbers()) {
+			grabber.w = ofGetWidth() / 3;
+			grabber.x = (ofGetWidth() / 3) * 2;
+		}
 
 	}
 	void TestScene::draw3dFixed() {
@@ -163,22 +222,13 @@ namespace Software2552 {
 		mesh.drawVertices();
 	}
 	void TestScene::setup() {
+		test();//bugbug set via script 
 		Stage::setup();
 		ofSetGlobalAmbientColor(ofColor(0, 0, 0));
 		ofSetSmoothLighting(true);
-		test();//bugbug set via script 
 		mesh.setup();
 		cube.setWireframe(false);
 		cube.set(500);
-	}
-	void Stage::update() {
-		if (backgroundImageName.size() > 0) {
-			imageForBackground.resize(ofGetWidth(), ofGetHeight());
-		}
-
-		if (grabber.isInitialized()) {
-			grabber.update();
-		}
 	}
 	void SpaceScene::test() {
 		//bugbug get from json

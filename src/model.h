@@ -226,11 +226,8 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 		
 		GraphicID id() { return myID; }
-		int getWidth() { return width; }
-		int getHeight() { return height; }
 		string &getLocation() { return locationPath; }
 		float  getVolume() { return volume; }
-		Point3D& getStartingPoint() { return startingPoint; }
 
 #if _DEBUG
 		// echo object (debug only)
@@ -242,11 +239,8 @@ namespace Software2552 {
 #endif // _DEBUG
 	protected:
 		string type; // 2d, 3d, other
-		int width;
-		int height;
 		string locationPath; // remote or local bugbug maybe make a better name?  not sure
 		float volume;
-		Point3D startingPoint; // starting point of object for drawing
 
 	private:
 		GraphicID myID;// every graphic item gets a unique ID for deletion and etc
@@ -284,7 +278,7 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 		void draw() {
 			if (okToDraw()) {
-				player.draw(getStartingPoint().x, getStartingPoint().y);
+				player.draw(x, y);
 			}
 		}
 		void update() {
@@ -336,15 +330,15 @@ namespace Software2552 {
 			}
 		}
 		void pause() {
-			Graphic::pause();
+			Graphic::pauseAnimation();
 			player.setPaused(true);
 		}
 		void stop() {
-			Graphic::stop();
+			Graphic::stopAnimation();
 			player.stop();
 		}
 		void play() {
-			Graphic::play();
+			Graphic::playAnimation();
 			player.play();
 		}
 
@@ -373,27 +367,17 @@ namespace Software2552 {
 		}
 		void play() {
 			for (auto& t : get()) {
-				t->play();
+				t->playAnimation();
 			}
 		}
 		void pause() {
 			for (auto& t : get()) {
-				t->pause();
+				t->pauseAnimation();
 			}
 		}
-		void setup() {
+		void updateGraphic() {
 			for (auto& t : get()) {
-				t->setup();
-			}
-		}
-		void draw() {
-			for (auto& t : get()) {
-				t->draw();
-			}
-		}
-		void update() {
-			for (auto& t : get()) {
-				t->update();
+				t->refreshAnimation();
 			}
 		}
 		uint64_t findMaxWait() {

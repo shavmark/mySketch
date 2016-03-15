@@ -45,7 +45,6 @@ namespace Software2552 {
 
 		for (auto& a : acts) {
 			for (auto& item : a.getPlayList()) {
-				item.scene.getDrawingEngines()->setup();
 			}
 		}
 	}
@@ -58,7 +57,6 @@ namespace Software2552 {
 		for (auto& a : acts) {
 			for (auto& item : a.getPlayList()) {
 				item.scene.getDrawingEngines()->removeExpiredItems();
-				item.scene.getDrawingEngines()->update();
 			}
 		}
 	};
@@ -69,11 +67,6 @@ namespace Software2552 {
 		//mesh.draw();
 		scene.draw();
 		return;
-		for (auto& a : acts) {
-			for (auto& item : a.getPlayList()) {
-				item.scene.getDrawingEngines()->draw();
-			}
-		}
 	};
 
 }

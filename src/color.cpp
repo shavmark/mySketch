@@ -33,7 +33,7 @@ namespace Software2552 {
 	// get a color set if the current one is not set or if its expired
 	ColorSet& Colors::get() {
 		// if first time in set things up
-		if (getSmallest() < 0 || getListItem(getCurrent()).refresh()) {
+		if (getSmallest() < 0 || getListItem(getCurrent()).refreshAnimation()) {
 			getNextColors(); 
 		}
 		// no data or no match found in data
