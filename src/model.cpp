@@ -295,8 +295,8 @@ namespace Software2552 {
 		if (okToDraw()) {
 			player.setFont(getFontPointer());
 			player.setColor(Colors::getFontColor());
-			player.setPosition(x,y);
-			player.draw(x, y);
+			player.setPosition(pos.x, pos.y);
+			player.draw(pos.x, pos.y);
 		}
 	}
 
@@ -523,8 +523,8 @@ namespace Software2552 {
 		readJsonValue(getWait(), data["wait"]);
 		Point3D point;
 		point.readFromScript(data["startingPoint"]);
-		x = point.x;
-		y = point.y;
+		pos.x = point.x;
+		pos.y = point.y;
 		return true;
 	}
 

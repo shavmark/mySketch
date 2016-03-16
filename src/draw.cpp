@@ -4,6 +4,14 @@
 // this is the drawing  module where most drawing work is done
 
 namespace Software2552 {
+	void Rectangle::draw() {
+
+		ofFill();
+		ofSetRectMode(OF_RECTMODE_CENTER);	// center around the position
+		ofSetColor(255, 0, 0);
+		ofRect(pos.x, pos.y, w, h);
+
+	}
 
 	void CrazyMesh::setup() {
 		for (int i = 0;  i < w; ++i) {
@@ -33,7 +41,7 @@ namespace Software2552 {
 	}
 	// add this one http://clab.concordia.ca/?page_id=944
 	void RoleVideo::draw(Video*v) {
-		ofVideoPlayer::draw(v->x, v->y);
+		ofVideoPlayer::draw(v->pos.x, v->pos.y);
 	}
 	void RoleBackground::setup(Colors* colors) { 
 		mode = OF_GRADIENT_LINEAR; 
@@ -169,7 +177,7 @@ namespace Software2552 {
 	void RoleText::draw(Text* t) {
 		ofPushStyle();
 		ofSetHexColor(Colors::getForeground());
-		t->getFont().drawString(t->getText(), t->x, t->y);
+		t->getFont().drawString(t->getText(), t->pos.x, t->pos.y);
 		ofPopStyle();
 	}
 

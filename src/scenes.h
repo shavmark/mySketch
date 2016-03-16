@@ -17,30 +17,35 @@ namespace Software2552 {
 	class Stage {
 	public:
 		void setup();
-		void update();
+		virtual void update();
 		void draw();
-		void test();
+		virtual void test();
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
 		void add(const Camera& camera) { cameras.push_back(camera); };
 		void add(const Light& light) { lights.push_back(light); };
 		void add(const Raster& image) { images.push_back(image); };
 		void add(const VideoPlayer& video) { videos.push_back(video); };
 		void add(const Grabber& grabber) { grabbers.push_back(grabber); };
+		void add(const TextureVideo& tv) { texturevideos.push_back(tv); };
 		vector<Grabber>& getGrabbers() { return grabbers; }
 		vector<Camera>& getCameras() { return cameras; }
 		vector<Light>& getLights() { return lights; }
 		vector<Raster>& getImages() { return images; }
 		vector<VideoPlayer>& getVideos() { return videos; }
+		vector<TextureVideo>& getTextureVideos() { return texturevideos; }
 	protected:
 		virtual void draw2d();
 		virtual void draw3dFixed() {};
 		virtual void draw3dMoving() {};
-		virtual void installLightAndMaterialAndDraw(Camera*); // derive to change where cameras are
+		virtual void pre3dDraw();
+		virtual void post3dDraw();
+		virtual void installLightAndMaterialThenDraw(Camera*); // derive to change where cameras are
 	private:
 		vector<Grabber> grabbers;
 		vector<Camera>	cameras; 
 		vector<Light>	lights;
 		vector<Raster>	images;
+		vector<TextureVideo> texturevideos;
 		vector<VideoPlayer>   videos;
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
 		Director director;
@@ -67,27 +72,24 @@ namespace Software2552 {
 		void draw3dFixed();
 		void draw3dMoving();
 	private:
+		Rectangle rect[10];
+
 		Cube cube;
 		CrazyMesh mesh;
 	};
 	class SpaceScene : public Stage {
 	public:
 		void setup();
-		void update();
 		void test();
+		void update();
 		void draw2d();
 		void draw3dFixed();
 		void draw3dMoving();
-		void setMainVideoName(const string&name) { mainVideoName = name; }
 		void addPlanet(const string&textureName, const ofVec3f& Start);
-		void addPlanetName(const string&name) { planetimageNames.push_back(name); }
 	private:
 		// things a scene can have (infinte list really)
 		Sphere	videoSphere;
-		vector<Planet> pictureSpheres;
-		TextureVideo video;
-		string mainVideoName;
-		vector<string> planetimageNames;
+		vector<Planet> pictureSpheres;//bugbug move up to baseclass with a pointer vector to drawing items
 	};
 
 

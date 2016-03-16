@@ -1,6 +1,9 @@
 #include "2552software.h"
 #include "scenes.h"
 
+//By default, the screen is cleared with every draw() call.We can change that with 
+//  ofSetBackgroundAuto(...).Passing in a value of false turns off the automatic background clearing.
+
 namespace Software2552 {
 
 	// return a possibly modifed version such as camera moved
@@ -14,25 +17,27 @@ namespace Software2552 {
 			}
 			else {
 				if (!cameras[i].isOrbiting()) {
-					int j = ofRandom(0, cameras.size());
-					return &cameras[j];// stuff data in the Camera class
+					//bugbug return only fixed cameras
+					return &cameras[i];// stuff data in the Camera class
 					// lots to do here to make things nice, learn and see how to bring this in
 					//void lookAt(const ofNode& lookAtNode, const ofVec3f& upVector = ofVec3f(0, 1, 0));
-					if (j == 1) {
-						cameras[j].move(-100,0,0);
-						cameras[j].pan(5);
-					}
-					else {
-						cameras[j].move(100, 0, 0);
-					}
+					//if (j == 1) {
+						//cameras[j].move(-100,0,0);
+						//cameras[j].pan(5);
+					//}
+					//else {
+						//cameras[j].move(100, 0, 0);
+					//}
 					//bugbug just one thing we can direct http://halfdanj.github.io/ofDocGenerator/ofEasyCam.html#CameraSettings
-					float f = cameras[j].getDistance();
-					cameras[j].setDistance(cameras[j].getDistance() + ofRandom(-100,100));
-					return &cameras[j];
+					//float f = cameras[j].getDistance();
+					//figure all this out, with times, animation etc:
+					//cameras[j].setDistance(cameras[j].getDistance() + ofRandom(-100,100));
+					//return &cameras[j];
 				}
 			}
-			return nullptr;
 		}
+		logErrorString("no camera");
+		return nullptr;
 	}
 	void Stage::draw() {
 
@@ -43,11 +48,10 @@ namespace Software2552 {
 		}
 
 		ofPushStyle();
-		draw2d();
+		//draw2d();
 		ofPopStyle();
 
 		ofPushStyle();
-		ofBackground(ofColor::blue); // white enables all colors in pictures/videos
 		draw3d();
 		ofPopStyle();
 	}
@@ -55,35 +59,32 @@ namespace Software2552 {
 	void Stage::test() {
 	}
 	// setup light and material for drawing
-	void Stage::installLightAndMaterialAndDraw(Camera*cam) {
+	void Stage::installLightAndMaterialThenDraw(Camera*cam) {
+		material.begin();//bugbug figure out material
 		if (cam != nullptr) {
+			cam->setPosition(cam->pos);
 			cam->begin();
 			cam->orbit(); 
 			for (auto& light : lights) {
+				light.setPosition(light.pos);
 				light.enable();
 			}
-			material.begin();//bugbug figure out material
-			draw3dFixed();
+			if (cam->isOrbiting()) {
+				draw3dMoving();
+			}
+			else {
+				draw3dFixed();
+			}
 			cam->end();
 		}
-		else {
-			for (auto& light : lights) {
-				light.enable();
-			}
-			material.begin();//bugbug figure out material
-			draw3dFixed();
-		}
 	}
-
-	void Stage::draw3d() {
-		// setup
+	void Stage::pre3dDraw() {
+		//ofBackground(ofColor::blue); // white enables all colors in pictures/videos
 		ofSetSmoothLighting(true);
 		ofDisableAlphaBlending();
 		ofEnableDepthTest();
-
-		installLightAndMaterialAndDraw(director.pickem(cameras, false));
-		installLightAndMaterialAndDraw(director.pickem(cameras, true));
-
+	}
+	void Stage::post3dDraw() {
 		// clean up
 		material.end();
 		ofDisableDepthTest();
@@ -92,22 +93,32 @@ namespace Software2552 {
 		}
 		ofDisableLighting();
 	}
+	void Stage::draw3d() {
+		// setup bugbug consider a virtual setup/cleanup function so dervied class can change this around
+		pre3dDraw();
+
+		installLightAndMaterialThenDraw(director.pickem(cameras, false));
+		installLightAndMaterialThenDraw(director.pickem(cameras, true));
+
+		post3dDraw();
+
+	}
 	void Stage::draw2d() {
 
 		ofBackground(ofColor::black);
 		ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
 		ofSetColor(255, 100);//bugbug figure out alpha in color.h
 		for (const auto& image : images) {
-			image.draw(image.x, image.y, image.w, image.h);
+			image.draw(image.pos.x, image.pos.y, image.w, image.h);
 		}
 		ofSetColor(255, 125);
 		for (const auto& video : videos) {
-			video.draw(video.x, video.y, video.w, video.h);
+			video.draw(video.pos.x, video.pos.y, video.w, video.h);
 		}
 		ofSetColor(255, 175);
 		for (auto& grabber : grabbers) {
 			if (grabber.isInitialized()) {
-				grabber.draw(grabber.x, grabber.y, grabber.w, grabber.h);
+				grabber.draw(grabber.pos.x, grabber.pos.y, grabber.w, grabber.h);
 			}
 		}
 		ofEnableAlphaBlending();
@@ -148,11 +159,9 @@ namespace Software2552 {
 		for (auto& video : videos) {
 			video.update();
 		}
-		for (auto& light : lights) {
-			//light.setOrientation(ofVec3f(0, cos(ofGetElapsedTimef()) * RAD_TO_DEG, 0));
-			//light.setPosition(ofGetAppPtr()->mouseX, ofGetAppPtr()->mouseY, 200);
+		for (auto& video : texturevideos) {
+			video.update();
 		}
-
 	}
 	// juse need to draw the SpaceScene, base class does the rest
 	void TestScene::draw3dMoving() {
@@ -160,6 +169,9 @@ namespace Software2552 {
 	void TestScene::draw2d() {
 		Stage::draw2d();
 		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
+		for (int i = 0; i < 10; i++) {
+			rect[i].draw();
+		}
 		VectorPattern p;
 		//p.stripe(true);
 		//p.triangle(true);
@@ -172,11 +184,24 @@ namespace Software2552 {
 		Camera cam1;
 		add(cam1);
 
+		// bugbug just for learning as there is no screen size adjustment in update
+		for (int i = 0; i < 10; i++) {
+			rect[i].posA.x = -ofGetWidth() / 2;
+			rect[i].posA.y = 10 + i * 20;
+			rect[i].posB.x = ofGetWidth();
+			rect[i].posB.y = 10 + i * 20;
+			rect[i].shaper = 0.4 + 0.2 * i;
+			rect[i].updateMovement();	// start at 0 pct
+			rect[i].h = 40;
+			rect[i].w = 40;
+		}
+
 		Light pointLight;
 		pointLight.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
 		// specular color, the highlight/shininess color //
 		pointLight.setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight.setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 0);
+		pointLight.pos.x = ofGetWidth()*.2;
+		pointLight.pos.y = ofGetHeight()*.2;
 		pointLight.setPointLight();
 		add(pointLight);
 
@@ -184,7 +209,8 @@ namespace Software2552 {
 		pointLight2.setDiffuseColor(ofColor(0.f, 0, 255.f));
 		// specular color, the highlight/shininess color //
 		pointLight2.setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight2.setPosition(-ofGetWidth()*.2, ofGetHeight()*.2, 0);
+		pointLight2.pos.x = -ofGetWidth()*.2;
+		pointLight2.pos.y = ofGetHeight()*.2;
 		pointLight2.setPointLight();
 		add(pointLight2);
 
@@ -200,9 +226,9 @@ namespace Software2552 {
 		add(directionalLight);
 
 		Light basic;
-		basic.setPosition(-100, 0, 400);
+		basic.pos.x = -100;
+		basic.pos.z = 400;
 		add(basic);
-		
 
 		Light spotLight;
 		spotLight.setDiffuseColor(ofColor(255.f, 0.f, 0.f));
@@ -218,9 +244,11 @@ namespace Software2552 {
 		// rate of falloff, illumitation decreases as the angle from the cone axis increases //
 		// range 0 - 128, zero is even illumination, 128 is max falloff //
 		spotLight.setSpotConcentration(2);
-		spotLight.setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
+		spotLight.pos.x = -ofGetWidth()*.1;
+		spotLight.pos.y = ofGetHeight()*.1;
+		spotLight.pos.z = 100;
 		add(spotLight);
-		return;
+		
 
 		Raster raster("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
@@ -241,6 +269,10 @@ namespace Software2552 {
 	void TestScene::update() {
 		Stage::update();
 		mesh.update();
+
+		for (int i = 0; i < 10; i++) {
+			rect[i].updateMovement();  // go between pta and ptb
+		}
 		/* use to show 3 at once
 		for (auto& image : getImages()) {
 			image.w = ofGetWidth() / 3;
@@ -281,31 +313,54 @@ namespace Software2552 {
 		cube.setWireframe(false);
 		cube.set(100);
 	}
+	void SpaceScene::update() {
+		Stage::update();
+	}
 	void SpaceScene::test() {
+		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+
 		//bugbug get from json
 		Stage::test();
 		//bugbug get from json
+		videoSphere.set(250, 180);
+
+		Light light1;
+		light1.pos.x = 0;
+		light1.pos.y = 0;
+		light1.pos.z = videoSphere.getRadius() * 2 ;
+		add(light1);
+
+
 		Camera cam1; // learn camera bugbug
 		cam1.setScale(-1, -1, 1); // showing video
 		cam1.setOrbit(true); // rotating
+		cam1.pos.z = videoSphere.getRadius() * 2 + 300;
 		add(cam1);
 
-		cam1.setOrbit(false); // not rotating
-		cam1.setScale(-1, -1, 1); // showing video
-		add(cam1);
+		Camera cam2; // learn camera bugbug
+		cam2.setOrbit(false); // not rotating
+		cam2.setScale(-1, -1, 1); // showing video
+		cam2.pos.z = videoSphere.getRadius()*2 + 100;
+		add(cam2);
 
-		Light light1;
-		add(light1);
-
-		Light light2;
-		add(light2);
+		TextureVideo tv;
+		tv.create("Clyde.mp4", 0, 0);
+		add(tv);
 
 		setBackgroundImageName("hubble1.jpg");
-		setMainVideoName("Clyde.mp4");
-		addPlanetName("hubble1.jpg");
-		addPlanetName("earth_day.jpg");
-		addPlanetName("g04_s65_34658.gif");
-		addPlanetName("Floodwaters_of_Mars_highlight_std.jpg");
+
+		float xStart = (ofGetWidth() - tv.getWidth()) / 2;
+		float offset = abs(xStart);
+		addPlanet("earth_day.jpg", ofVec3f(xStart, 0, offset + 100));
+
+		xStart += ofRandom(xStart, xStart * 2); // need to keep sign
+		addPlanet("g04_s65_34658.gif", ofVec3f(xStart, ofRandom(0, 100), offset + 100));
+		
+		xStart += ofRandom(xStart, xStart * 2); // need to keep sign
+		addPlanet("hubble1.jpg", ofVec3f(xStart, ofRandom(0, 100), offset + 100));
+		
+		xStart += ofRandom(xStart, xStart * 2); // need to keep sign
+		addPlanet("Floodwaters_of_Mars_highlight_std.jpg", ofVec3f(xStart, ofRandom(0, 100), offset + 100));
 
 	}
 
@@ -324,25 +379,8 @@ namespace Software2552 {
 	void SpaceScene::setup() {
 		test();//bugbug set via script 
 		Stage::setup();
-		video.create(mainVideoName, ofGetWidth() / 2, ofGetHeight() / 2);
-
-		float xStart = (ofGetWidth() - video.getWidth())/2;
-		int y = 0;
-		for (const auto& name : planetimageNames) {
-			float offset = abs(xStart);
-			addPlanet(name, ofVec3f(xStart, y, offset +100));
-			y = ofRandom(0, 100);
-			xStart += ofRandom(xStart, xStart*2); // need to keep sign
-		}
-
 		///next draw video in fbo (put in video class) http://clab.concordia.ca/?page_id=944
-		videoSphere.set(250, 180);
-		videoSphere.move(ofVec3f(0, 0, 0));
 
-	}
-	void SpaceScene::update() {
-		Stage::update();
-		video.update();
 	}
 	void SpaceScene::draw2d() {
 	}
@@ -357,11 +395,11 @@ namespace Software2552 {
 	}
 	void SpaceScene::draw3dFixed() {
 		// one time setup must be called to draw videoSphere
-		if (video.isFrameNew()) {
-			videoSphere.mapTexCoordsFromTexture(video.getTexture());
+		if (getTextureVideos()[0].textureReady()) {
+			videoSphere.mapTexCoordsFromTexture(getTextureVideos()[0].getTexture());
 		}
-		video.bind();
+		getTextureVideos()[0].bind();
 		videoSphere.draw();
-		video.unbind();
+		getTextureVideos()[0].unbind();
 	}
 }

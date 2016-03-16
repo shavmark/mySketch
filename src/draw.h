@@ -14,6 +14,13 @@ namespace Software2552 {
 	class Settings;
 	class Colors;
 
+	// simple drawing 
+	class Rectangle : public BaseAnimation {
+	public:
+
+		void draw();
+	};
+
 	// drawing related items start here
 	class BaseClass2552WithDrawing : public BaseClass {
 	public:
@@ -242,7 +249,7 @@ namespace Software2552 {
 	public:
 		VideoPlayer(const string&pathIn) :ofVideoPlayer(), Animator() { path = pathIn; }
 		bool loadVideo() {
-			return loadMovie(path);
+			return load(path);
 		}
 	private:
 		string path;
@@ -251,10 +258,12 @@ namespace Software2552 {
 	class TextureVideo : public ofVideoPlayer {
 	public:
 		void create(const string& name, float w, float h) {
-			loadMovie(name);
+			load(name);
 			play();
 		}
-
+		bool textureReady() {
+			return isInitialized();
+		}
 		bool bind() { 
 			if (isInitialized() && isUsingTexture()) {
 				getTexture().bind();
@@ -294,7 +303,7 @@ namespace Software2552 {
 		Fbo	fbo;
 
 	};
-	class Light : public ofLight {
+	class Light : public ofLight, public Animator {
 	public:
 	};
 	class Material : public ofMaterial {

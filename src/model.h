@@ -278,7 +278,7 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 		void draw() {
 			if (okToDraw()) {
-				player.draw(x, y);
+				player.draw(pos.x, pos.y);
 			}
 		}
 		void update() {

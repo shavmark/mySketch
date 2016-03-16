@@ -1,4 +1,7 @@
 // store notes here
+// https://github.com/processing, another platform
+// for javascript https://github.com/processing/p5.js (make my json go here too) http://p5js.org/
+//http://www.mikewesthad.com/teaching_introduction_to_graphics.html
 // license/rights http://nssdc.gsfc.nasa.gov/imgcat/html/group_page/ER.html, http://www.shadedrelief.com/natural3/pages/textures.html
 //https://github.com/petewerner/generative
 //https://github.com/ResEnv/SensorTape
