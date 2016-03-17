@@ -40,32 +40,32 @@ namespace Software2552 {
 		return nullptr;
 	}
 	void Stage::draw() {
-		width = 100;
-		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), ball.val(), width);
-		glColor4ub(255, 255, 255, 255);
-		ofRect(0, floorLine + width, ofGetWidth(), 1);
-
-		//vertical lines
-		ofRect(xMargin, 0, 1, floorLine + width);
-		ofRect(xMargin + widthCol + width, 0, 1, floorLine + width);
-
-		return;
-		ofBackground(ofColor::white); // white enables all colors in pictures/videos
 
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.draw(0, 0);
 		}
 
 		ofPushStyle();
-		//draw2d();
+		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
+		draw2d();
 		ofPopStyle();
 
 		ofPushStyle();
-		draw3d();
+		//draw3d();
 		ofPopStyle();
 	}
 
 	void Stage::test() {
+		shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
+		b->reset(b->floorLine - 100);
+		b->setCurve(EASE_IN);
+		b->setRepeatType(LOOP_BACK_AND_FORTH);
+		//ball.setDuration(0.55);
+		b->animateTo(b->floorLine);
+		b->setDuration(0.001);
+		animatables.push_back(b);
+
+
 	}
 	// setup light and material for drawing
 	void Stage::installLightAndMaterialThenDraw(Camera*cam) {
@@ -113,8 +113,12 @@ namespace Software2552 {
 
 	}
 	void Stage::draw2d() {
-
-		ofBackground(ofColor::black);
+		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
+		for (auto& a : animatables) {
+			a->draw();
+		}
+		
+		//ofBackground(ofColor::black);
 		ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
 		ofSetColor(255, 100);//bugbug figure out alpha in color.h
 		for (const auto& image : images) {
@@ -133,14 +137,7 @@ namespace Software2552 {
 		ofEnableAlphaBlending();
 	}
 	void Stage::setup() {
-
-		ball.reset(floorLine - 100);
-		ball.setCurve(EASE_IN);
-		ball.setRepeatType(LOOP_BACK_AND_FORTH);
-		//ball.setDuration(0.55);
-		ball.animateTo(floorLine);
-		ball.setDuration(0.001);
-
+		test();
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.load(backgroundImageName);
 		}
@@ -161,8 +158,11 @@ namespace Software2552 {
 		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 	}
 	void Stage::update() {
+		
 		float dt = 1.0f / 60.0f;
-		ball.update(dt);
+		for (auto& a : animatables) {
+			a->update(dt);
+		}
 
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.resize(ofGetWidth(), ofGetHeight());
@@ -188,10 +188,11 @@ namespace Software2552 {
 	}
 	void TestScene::draw2d() {
 		Stage::draw2d();
-		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
-		for (int i = 0; i < 10; i++) {
-			rect[i].draw();
-		}
+		
+		
+		//for (int i = 0; i < 10; i++) {
+			//rect[i].draw();
+		//}
 		VectorPattern p;
 		//p.stripe(true);
 		//p.triangle(true);
@@ -201,6 +202,8 @@ namespace Software2552 {
 	// all items in test() to come from json
 	void TestScene::test() {
 		Stage::test();
+		
+
 		Camera cam1;
 		add(cam1);
 
@@ -288,6 +291,8 @@ namespace Software2552 {
 	}
 	void TestScene::update() {
 		Stage::update();
+	
+
 		mesh.update();
 
 		for (int i = 0; i < 10; i++) {
@@ -308,6 +313,8 @@ namespace Software2552 {
 		*/
 	}
 	void TestScene::draw3dFixed() {
+	
+
 		//ofBackground(0);
 
 		// draw a little light sphere
@@ -328,6 +335,8 @@ namespace Software2552 {
 	void TestScene::setup() {
 		test();//bugbug set via script 
 		Stage::setup();
+		
+
 		ofSetSmoothLighting(true);
 		mesh.setup();
 		cube.setWireframe(false);

@@ -3,6 +3,9 @@
 #include "ofxBox2d.h"
 #include "color.h"
 #include "animation.h"
+#include "ofxAnimatableFloat.h"
+#include "ofxAnimatableOfPoint.h"
+#include "ofxAnimatableOfColor.h"
 
 // home of custom drawing
 
@@ -38,6 +41,23 @@ namespace Software2552 {
 		ofPoint b;
 	};
 
+	// base class used to draw, drawing done by derived classes
+	class Animatable : public ofxAnimatableFloat{
+	public:
+		virtual void draw() {}
+	};
+	// bouncy
+	class Ball2d : public Animatable {
+	public:
+		void draw();
+		int floorLine = 630;
+		int xMargin = 0;
+		int widthCol = 60;
+		float width=100;
+	};
+
+	//bugbug many more moving shapes, or do all things move?
+
 	// https://github.com/openframeworks/ofBook/blob/master/chapters/lines/chapter.md
 	class ComplexLines {
 	public:
@@ -69,6 +89,7 @@ namespace Software2552 {
 	public:
 		void setup();
 		void update();
+		void draw();
 
 	private:
 		ofNode baseNode;

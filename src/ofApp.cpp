@@ -4,8 +4,8 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofSetWindowTitle("Story Teller");
-	Software2552::SoundIn::setup();// move to timeline or scene
-	Software2552::SoundOut::setup();// move to timeline or scene
+	//Software2552::SoundIn::setup();// move to timeline or scene
+	//Software2552::SoundOut::setup();// move to timeline or scene
 
 	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
 	//timeline.readScript("json.json");
@@ -145,8 +145,8 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	timeline.update();
-	Software2552::SoundOut::setup();// move to timeline or scene
-	Software2552::SoundIn::setup();// move to timeline or scene
+	Software2552::SoundOut::update();// move to timeline or scene
+	Software2552::SoundIn::update();// move to timeline or scene
 	return;
 	ofSetCircleResolution(circleResolution);
 	return;
@@ -275,7 +275,7 @@ void ofApp::audioOut(ofSoundBuffer &outBuffer) {
 //--------------------------------------------------------------
 void ofApp::draw(){
 	timeline.draw();
-	Software2552::SoundOut::draw();//bugbug move to timeline
+	//Software2552::SoundOut::draw();//bugbug move to timeline
 	return;
 	//for (int i = 0; i< paragraphs.get().size(); i++) {
 	//	paragraphs.get(i).draw();

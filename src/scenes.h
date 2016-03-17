@@ -2,10 +2,7 @@
 #include "2552software.h"
 #include "ofxBox2d.h"
 #include "draw.h"
-#include "ofxAnimatableFloat.h"
-#include "ofxAnimatableOfPoint.h"
-#include "ofxAnimatableOfColor.h"
-#include "ofxEasing.h"
+
 // home of custom scenes
 
 namespace Software2552 {
@@ -46,14 +43,7 @@ namespace Software2552 {
 		virtual void installLightAndMaterialThenDraw(Camera*); // derive to change where cameras are
 	private:
 		
-		//ofxAnimatableFloat
-		int floorLine = 630;
-		int xMargin = 0;
-		int widthCol = 60;
-		float width;
-		ofxAnimatableFloat  ball;
-		//ofxAnimatableFloat
-
+		vector<shared_ptr<Animatable>> animatables;//bugbug make all these ptrs so dervied classes can be used
 		vector<Grabber> grabbers;
 		vector<Camera>	cameras; 
 		vector<Light>	lights;

@@ -165,7 +165,19 @@ namespace Software2552 {
 			soundDataIn.volHistory.erase(soundDataIn.volHistory.begin(), soundDataIn.volHistory.begin() + 1);
 		}
 	}
+	void Ball2d::draw() {
+		ofFill();
+		ofSetBackgroundColor(ofColor::blue);
+		ofSetColor(ofColor::white);
+		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), val(), width);
+		//glColor4ub(255, 255, 255, 255);
+		ofRect(0, floorLine + width, ofGetWidth(), 1);
 
+		//vertical lines
+		ofRect(xMargin, 0, 1, floorLine + width);
+		ofRect(xMargin + widthCol + width, 0, 1, floorLine + width);
+
+	}
 	void Line3D::setup() {
 		//required ofEnableDepthTest();
 		baseNode.setPosition(0, 0, 0);
