@@ -165,10 +165,29 @@ namespace Software2552 {
 			soundDataIn.volHistory.erase(soundDataIn.volHistory.begin(), soundDataIn.volHistory.begin() + 1);
 		}
 	}
+	void ColorAnimation::draw() {
+		applyCurrentColor();
+	}
+	void Animatable::set(shared_ptr<ColorAnimation>p)	{
+		colorAnimation = p;
+	}
+	void Animatable::update(float dt) {
+		if (colorAnimation != nullptr) {
+			colorAnimation->update(dt);
+		}
+		ofxAnimatableFloat::update(dt);
+	}
+	void Animatable::draw() {
+		if (colorAnimation != nullptr) {
+			colorAnimation->draw();
+		}
+	}
+
 	void Ball2d::draw() {
+		Animatable::draw();
 		ofFill();
 		ofSetBackgroundColor(ofColor::blue);
-		ofSetColor(ofColor::white);
+		float f = val();
 		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), val(), width);
 		//glColor4ub(255, 255, 255, 255);
 		ofRect(0, floorLine + width, ofGetWidth(), 1);

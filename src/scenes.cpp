@@ -40,13 +40,16 @@ namespace Software2552 {
 		return nullptr;
 	}
 	void Stage::draw() {
+		for (auto& a : animatables) {
+			a->draw();
+		}
 
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.draw(0, 0);
 		}
 
 		ofPushStyle();
-		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
+		//ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
 		draw2d();
 		ofPopStyle();
 
@@ -54,17 +57,72 @@ namespace Software2552 {
 		//draw3d();
 		ofPopStyle();
 	}
+	void Stage::setup() {
+		test();
+		if (backgroundImageName.size() > 0) {
+			imageForBackground.load(backgroundImageName);
+		}
+		for (auto& grabber : grabbers) {
+			grabber.loadGrabber(grabber.w, grabber.h);
+		}
+		for (auto& image : images) {
+			image.loadRaster();
+		}
+		for (auto& video : videos) {
+			video.loadVideo();
+			video.play();
+		}
+
+
+		material.setShininess(90);
+		material.setSpecularColor(ofColor::olive);
+		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
+	}
+	void Stage::update() {
+
+		float dt = 1.0f / 60.0f;
+		for (auto& a : animatables) {
+			a->update(dt);
+		}
+
+		if (backgroundImageName.size() > 0) {
+			imageForBackground.resize(ofGetWidth(), ofGetHeight());
+		}
+
+		for (auto& grabber : grabbers) {
+			if (grabber.isInitialized()) {
+				grabber.update();
+			}
+		}
+		for (auto& image : images) {
+			image.update();
+		}
+		for (auto& video : videos) {
+			video.update();
+		}
+		for (auto& video : texturevideos) {
+			video.update();
+		}
+	}
 
 	void Stage::test() {
 		shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
 		b->reset(b->floorLine - 100);
 		b->setCurve(EASE_IN);
 		b->setRepeatType(LOOP_BACK_AND_FORTH);
-		//ball.setDuration(0.55);
+		b->setDuration(0.55);
 		b->animateTo(b->floorLine);
-		b->setDuration(0.001);
-		animatables.push_back(b);
+		//b->setDuration(0.001);
 
+		shared_ptr<ColorAnimation> p = std::make_shared<ColorAnimation>();
+
+		p->setColor(ofColor::blue);
+		p->setDuration(0.5f);
+		p->setRepeatType(LOOP_BACK_AND_FORTH);
+		p->setCurve(LINEAR);
+		p->animateTo(ofColor::red);
+		b->set(p);
+		animatables.push_back(b);
 
 	}
 	// setup light and material for drawing
@@ -135,53 +193,6 @@ namespace Software2552 {
 			}
 		}
 		ofEnableAlphaBlending();
-	}
-	void Stage::setup() {
-		test();
-		if (backgroundImageName.size() > 0) {
-			imageForBackground.load(backgroundImageName);
-		}
-		for (auto& grabber : grabbers) {
-			grabber.loadGrabber(grabber.w, grabber.h);
-		}
-		for (auto& image : images) {
-			image.loadRaster();
-		}
-		for (auto& video : videos) {
-			video.loadVideo();
-			video.play();
-		}
-
-
-		material.setShininess(90);
-		material.setSpecularColor(ofColor::olive);
-		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
-	}
-	void Stage::update() {
-		
-		float dt = 1.0f / 60.0f;
-		for (auto& a : animatables) {
-			a->update(dt);
-		}
-
-		if (backgroundImageName.size() > 0) {
-			imageForBackground.resize(ofGetWidth(), ofGetHeight());
-		}
-
-		for (auto& grabber : grabbers) {
-			if (grabber.isInitialized()) {
-				grabber.update();
-			}
-		}
-		for (auto& image : images) {
-			image.update();
-		}
-		for (auto& video : videos) {
-			video.update();
-		}
-		for (auto& video : texturevideos) {
-			video.update();
-		}
 	}
 	// juse need to draw the SpaceScene, base class does the rest
 	void TestScene::draw3dMoving() {

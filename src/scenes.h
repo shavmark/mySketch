@@ -42,7 +42,7 @@ namespace Software2552 {
 		virtual void post3dDraw();
 		virtual void installLightAndMaterialThenDraw(Camera*); // derive to change where cameras are
 	private:
-		
+
 		vector<shared_ptr<Animatable>> animatables;//bugbug make all these ptrs so dervied classes can be used
 		vector<Grabber> grabbers;
 		vector<Camera>	cameras; 

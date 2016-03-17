@@ -41,12 +41,23 @@ namespace Software2552 {
 		ofPoint b;
 	};
 
+	class ColorAnimation : public ofxAnimatableOfColor {
+	public:
+		void draw();
+	};
+
 	// base class used to draw, drawing done by derived classes
 	class Animatable : public ofxAnimatableFloat{
 	public:
-		virtual void draw() {}
+		virtual void draw();
+		virtual void update(float dt);
+		void set(shared_ptr<ColorAnimation>p);
+
+	private:
+		shared_ptr<ColorAnimation> colorAnimation = nullptr; // optional color
 	};
-	// bouncy
+
+	// bouncy ball with nice colors is pretty nice, does not take too much really
 	class Ball2d : public Animatable {
 	public:
 		void draw();
