@@ -320,6 +320,27 @@
     <ClCompile Include="src\animation.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxThreadedImageLoader\src\ofxThreadedImageLoader.cpp">
+      <Filter>addons\ofxThreadedImageLoader\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxVectorGraphics\src\ofxVectorGraphics.cpp">
+      <Filter>addons\ofxVectorGraphics\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxVectorGraphics\libs\CreEPS.cpp">
+      <Filter>addons\ofxVectorGraphics\libs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxAnimatable\src\ofxAnimatable.cpp">
+      <Filter>addons\ofxAnimatable\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxAnimatable\src\ofxAnimatableFloat.cpp">
+      <Filter>addons\ofxAnimatable\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxAnimatable\src\ofxAnimatableOfColor.cpp">
+      <Filter>addons\ofxAnimatable\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxAnimatable\src\ofxAnimatableOfPoint.cpp">
+      <Filter>addons\ofxAnimatable\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -456,6 +477,33 @@
     </Filter>
     <Filter Include="addons\ofxJson\libs\jsoncpp\src">
       <UniqueIdentifier>{fd529a60-b24f-4eca-9c3f-133c0d4b9326}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxThreadedImageLoader">
+      <UniqueIdentifier>{c77b60b5-3ca5-47ae-811a-312229289d14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxThreadedImageLoader\src">
+      <UniqueIdentifier>{f4598ac7-8c17-463d-8ec5-3e3466dc26c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxVectorGraphics">
+      <UniqueIdentifier>{91561818-b1a0-4ef5-8473-4c344f8a95f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxVectorGraphics\src">
+      <UniqueIdentifier>{f27b637e-2a7b-4833-94c1-88395ebbe57e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxVectorGraphics\libs">
+      <UniqueIdentifier>{2c800d65-ff51-4be5-82e6-c98c0f27fdc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxAnimatable">
+      <UniqueIdentifier>{fe668d0e-c9da-4b48-bccc-20897493bfd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxAnimatable\src">
+      <UniqueIdentifier>{7c349c2d-ab1a-49e7-9e29-5113e493e83c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxEasing">
+      <UniqueIdentifier>{37e11cf9-0d2f-4a64-9036-0289ae971e23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxEasing\src">
+      <UniqueIdentifier>{0bd0ba8f-5bdc-4a2e-bc4e-4a59098e7956}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -959,6 +1007,33 @@
     </ClInclude>
     <ClInclude Include="src\animation.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxThreadedImageLoader\src\ofxThreadedImageLoader.h">
+      <Filter>addons\ofxThreadedImageLoader\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxVectorGraphics\src\ofxVectorGraphics.h">
+      <Filter>addons\ofxVectorGraphics\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxVectorGraphics\libs\CreEPS.hpp">
+      <Filter>addons\ofxVectorGraphics\libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxVectorGraphics\libs\CreEPS_Types.hpp">
+      <Filter>addons\ofxVectorGraphics\libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxAnimatable\src\ofxAnimatable.h">
+      <Filter>addons\ofxAnimatable\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxAnimatable\src\ofxAnimatableFloat.h">
+      <Filter>addons\ofxAnimatable\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxAnimatable\src\ofxAnimatableOfColor.h">
+      <Filter>addons\ofxAnimatable\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxAnimatable\src\ofxAnimatableOfPoint.h">
+      <Filter>addons\ofxAnimatable\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxEasing\src\ofxEasing.h">
+      <Filter>addons\ofxEasing\src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

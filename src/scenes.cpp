@@ -40,7 +40,16 @@ namespace Software2552 {
 		return nullptr;
 	}
 	void Stage::draw() {
+		width = 100;
+		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), ball.val(), width);
+		glColor4ub(255, 255, 255, 255);
+		ofRect(0, floorLine + width, ofGetWidth(), 1);
 
+		//vertical lines
+		ofRect(xMargin, 0, 1, floorLine + width);
+		ofRect(xMargin + widthCol + width, 0, 1, floorLine + width);
+
+		return;
 		ofBackground(ofColor::white); // white enables all colors in pictures/videos
 
 		if (backgroundImageName.size() > 0) {
@@ -124,6 +133,14 @@ namespace Software2552 {
 		ofEnableAlphaBlending();
 	}
 	void Stage::setup() {
+
+		ball.reset(floorLine - 100);
+		ball.setCurve(EASE_IN);
+		ball.setRepeatType(LOOP_BACK_AND_FORTH);
+		//ball.setDuration(0.55);
+		ball.animateTo(floorLine);
+		ball.setDuration(0.001);
+
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.load(backgroundImageName);
 		}
@@ -144,6 +161,9 @@ namespace Software2552 {
 		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 	}
 	void Stage::update() {
+		float dt = 1.0f / 60.0f;
+		ball.update(dt);
+
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.resize(ofGetWidth(), ofGetHeight());
 		}
@@ -341,6 +361,7 @@ namespace Software2552 {
 		cam2.setOrbit(false); // not rotating
 		cam2.setScale(-1, -1, 1); // showing video
 		cam2.pos.z = videoSphere.getRadius()*2 + 100;
+		cam2.setFov(60);
 		add(cam2);
 
 		TextureVideo tv;

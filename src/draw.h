@@ -21,6 +21,103 @@ namespace Software2552 {
 		void draw();
 	};
 
+	class RandomDots {
+	public:
+
+		void draw() {
+			for (int i = 0; i < ofGetMouseX() * 5; i++) {
+				ofSetColor(ofRandom(96));
+				ofRect(ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 4, 4);
+			}
+		}
+	};
+
+	class Line {
+	public:
+		ofPoint a;
+		ofPoint b;
+	};
+
+	// https://github.com/openframeworks/ofBook/blob/master/chapters/lines/chapter.md
+	class ComplexLines {
+	public:
+		void draw() {
+			for (const auto& line : lines) {
+				ofDrawLine(line.a, line.b);
+			}
+		}
+		//bugbug convert to code vs mouse using random
+		void mouseDragged(int x, int y, int button) {
+			for (auto point : drawnPoints) {
+				ofPoint mouse;
+				mouse.set(x, y);
+				float dist = (mouse - point).length();
+				if (dist < 30) {
+					Line lineTemp;
+					lineTemp.a = mouse;
+					lineTemp.b = point;
+					lines.push_back(lineTemp);
+				}
+			}
+			drawnPoints.push_back(ofPoint(x, y));
+		}
+	private:
+		vector < ofPoint > drawnPoints;
+		vector < Line > lines;
+	};
+	class Line3D {
+	public:
+		void setup();
+		void update();
+
+	private:
+		ofNode baseNode;
+		ofNode childNode;
+		ofNode grandChildNode;
+		ofPolyline line;
+	};
+	class SoundOut {
+	public:
+		static void setup();
+		static void update();
+		static void draw();
+		static void audioOut(ofSoundBuffer &outBuffer);
+
+		class dataOut {
+		public:
+			double wavePhase;
+			double pulsePhase;
+			double sampleRate;
+			mutex audioMutex;
+			ofSoundBuffer lastBuffer;
+			ofPolyline waveform;
+			float rms;
+		};
+
+	private:
+		static dataOut soundDataOut;
+	};
+
+	class SoundIn {
+	public:
+		static void setup();
+		static void update();
+		static void audioIn(float * input, int bufferSize, int nChannels);
+		class dataIn {
+		public:
+			vector <float> left;
+			vector <float> right;
+			vector <float> volHistory;
+			int 	bufferCounter;
+			int 	drawCounter;
+			float smoothedVol;
+			float scaledVol;
+			ofSoundStream soundStream;
+		};
+
+	private:
+		static dataIn soundDataIn;
+	};
 	// drawing related items start here
 	class BaseClass2552WithDrawing : public BaseClass {
 	public:

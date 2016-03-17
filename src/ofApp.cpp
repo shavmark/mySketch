@@ -1,14 +1,12 @@
 #include "ofApp.h"
 #include "2552software.h"
-//#include "assimp/AssbinExporter.h"
-#include <assimp/cimport.h>
-#include <assimp/exporter.hpp>
-#include <assimp/importer.hpp>
-
 
 //--------------------------------------------------------------
-void ofStoryTellerApp::setup(){
+void ofApp::setup(){
 	ofSetWindowTitle("Story Teller");
+	Software2552::SoundIn::setup();// move to timeline or scene
+	Software2552::SoundOut::setup();// move to timeline or scene
+
 	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
 	//timeline.readScript("json.json");
 	timeline.setup();
@@ -145,8 +143,10 @@ void ofStoryTellerApp::setup(){
 
 
 //--------------------------------------------------------------
-void ofStoryTellerApp::update(){
+void ofApp::update(){
 	timeline.update();
+	Software2552::SoundOut::setup();// move to timeline or scene
+	Software2552::SoundIn::setup();// move to timeline or scene
 	return;
 	ofSetCircleResolution(circleResolution);
 	return;
@@ -264,9 +264,18 @@ void ofStoryTellerApp::update(){
 	//--
 #endif
 }
+void ofApp::audioIn(float * input, int bufferSize, int nChannels) {
+	Software2552::SoundIn::audioIn(input, bufferSize, nChannels);
+}
 //--------------------------------------------------------------
-void ofStoryTellerApp::draw(){
+void ofApp::audioOut(ofSoundBuffer &outBuffer) {
+	Software2552::SoundOut::audioOut(outBuffer);
+}
+
+//--------------------------------------------------------------
+void ofApp::draw(){
 	timeline.draw();
+	Software2552::SoundOut::draw();//bugbug move to timeline
 	return;
 	//for (int i = 0; i< paragraphs.get().size(); i++) {
 	//	paragraphs.get(i).draw();
@@ -434,7 +443,7 @@ void ofStoryTellerApp::draw(){
 	*/
 }
 
-void ofStoryTellerApp::mouseDragged(int x, int y, int button) {
+void ofApp::mouseDragged(int x, int y, int button) {
 	for (int i = 0; i < 20; i++) {
 		float radius = ofRandom(60, 80);
 		float x = cos(ofRandom(PI * 2.0)) * radius + mouseX;
@@ -447,54 +456,54 @@ void ofStoryTellerApp::mouseDragged(int x, int y, int button) {
 	}
 }
 
-void ofStoryTellerApp::exit() {
-	ringButton.removeListener(this, &ofStoryTellerApp::ringButtonPressed);
+void ofApp::exit() {
+	ringButton.removeListener(this, &ofApp::ringButtonPressed);
 }
 
 //--------------------------------------------------------------
-void ofStoryTellerApp::circleResolutionChanged(int &circleResolution) {
+void ofApp::circleResolutionChanged(int &circleResolution) {
 	ofSetCircleResolution(circleResolution);
 }
 
 //--------------------------------------------------------------
-void ofStoryTellerApp::ringButtonPressed() {
+void ofApp::ringButtonPressed() {
 	ring.play();
 }
 
 //--------------------------------------------------------------
-void ofStoryTellerApp::mousePressed(int x, int y, int button) {
+void ofApp::mousePressed(int x, int y, int button) {
 }
 
 //--------------------------------------------------------------
-void ofStoryTellerApp::mouseReleased(int x, int y, int button) {
+void ofApp::mouseReleased(int x, int y, int button) {
 }
 //--------------------------------------------------------------
-void ofStoryTellerApp::mouseMoved(int x, int y ){
-
-}
-
-
-//--------------------------------------------------------------
-void ofStoryTellerApp::mouseExited(int x, int y){
+void ofApp::mouseMoved(int x, int y ){
 
 }
 
+
 //--------------------------------------------------------------
-void ofStoryTellerApp::windowResized(int w, int h){
+void ofApp::mouseExited(int x, int y){
 
 }
 
 //--------------------------------------------------------------
-void ofStoryTellerApp::gotMessage(ofMessage msg){
+void ofApp::windowResized(int w, int h){
 
 }
 
 //--------------------------------------------------------------
-void ofStoryTellerApp::dragEvent(ofDragInfo dragInfo){ 
+void ofApp::gotMessage(ofMessage msg){
 
 }
 
-void ofStoryTellerApp::keyPressed(int key) {
+//--------------------------------------------------------------
+void ofApp::dragEvent(ofDragInfo dragInfo){ 
+
+}
+
+void ofApp::keyPressed(int key) {
 	if (key == 'c') {
 		float r = ofRandom(4, 20);
 		///circles.push_back(ofPtr<ofxBox2dCircle>(new ofxBox2dCircle));

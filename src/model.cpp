@@ -353,6 +353,9 @@ namespace Software2552 {
 		if (!getPlayer().load(getLocation())) {
 			logErrorString("setup audio Player");
 		}
+		getPlayer().play();
+		getPlayer().setMultiPlay(true);
+		getPlayer().setSpeed(ofRandom(0.8, 1.2));//bugbug get from data
 	}
 	uint64_t Video::getTimeBeforeStart(uint64_t t) {
 

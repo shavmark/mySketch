@@ -3,7 +3,7 @@
 #include <map>
 
 namespace Software2552 {
-	Colors::colordata Colors::privatedata;
+	Colors::colordata Colors::privatedata; // declare static data
 
 	ColorSet::ColorSet(const ColorGroup& groupIn) :Animator() {
 		setGroup(groupIn);

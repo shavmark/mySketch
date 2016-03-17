@@ -14,10 +14,10 @@
 #include "timeline.h"
 #include "draw.h"
 
-class ofStoryTellerApp : public ofBaseApp{
+class ofApp : public ofBaseApp{
 
 	public:
-		ofStoryTellerApp():ofBaseApp(){};
+		ofApp():ofBaseApp(){};
 
 		void setup();
 		void update();
@@ -34,6 +34,12 @@ class ofStoryTellerApp : public ofBaseApp{
 		void keyPressed(int key);
 		void exit();
 
+		// audio
+		void audioOut(ofSoundBuffer &outBuffer);
+		//in
+		void audioIn(float * input, int bufferSize, int nChannels);
+		// audio
+
 		// these items need to go some where else, maybe the App
 		Software2552::KinectBodies bodies;
 		Software2552::KinectFaces faces;
@@ -42,7 +48,7 @@ class ofStoryTellerApp : public ofBaseApp{
 
 		Software2552::Timeline timeline;
 
-		void ofStoryTellerApp::drawScene(bool isPreview){
+		void ofApp::drawScene(bool isPreview){
 	
 	ofEnableDepthTest();
 

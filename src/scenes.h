@@ -2,6 +2,10 @@
 #include "2552software.h"
 #include "ofxBox2d.h"
 #include "draw.h"
+#include "ofxAnimatableFloat.h"
+#include "ofxAnimatableOfPoint.h"
+#include "ofxAnimatableOfColor.h"
+#include "ofxEasing.h"
 // home of custom scenes
 
 namespace Software2552 {
@@ -41,6 +45,15 @@ namespace Software2552 {
 		virtual void post3dDraw();
 		virtual void installLightAndMaterialThenDraw(Camera*); // derive to change where cameras are
 	private:
+		
+		//ofxAnimatableFloat
+		int floorLine = 630;
+		int xMargin = 0;
+		int widthCol = 60;
+		float width;
+		ofxAnimatableFloat  ball;
+		//ofxAnimatableFloat
+
 		vector<Grabber> grabbers;
 		vector<Camera>	cameras; 
 		vector<Light>	lights;
