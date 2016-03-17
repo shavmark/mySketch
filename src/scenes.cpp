@@ -84,6 +84,8 @@ namespace Software2552 {
 		for (auto& a : animatables) {
 			a->update(dt);
 		}
+		pa.update(dt);
+		pa.animateTo(ofPoint(ofRandom(ofGetWidth()), ofRandom(ofGetHeight())));
 
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.resize(ofGetWidth(), ofGetHeight());
@@ -123,6 +125,7 @@ namespace Software2552 {
 		p->animateTo(ofColor::red);
 		b->set(p);
 		animatables.push_back(b);
+
 
 	}
 	// setup light and material for drawing

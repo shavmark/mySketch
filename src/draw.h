@@ -41,6 +41,9 @@ namespace Software2552 {
 		ofPoint b;
 	};
 
+	class PointAnimation : public ofxAnimatableOfPoint {
+	public:
+	};
 	class ColorAnimation : public ofxAnimatableOfColor {
 	public:
 		void draw();
