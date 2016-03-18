@@ -11,7 +11,7 @@ namespace Software2552 {
 	bool Timeline::readScript(const string& path) {
 		// read in story then let those objects go free as they are set in enumerate(Setup)
 		Act act;
-		if (act.readFromScript(path)) {
+		if (act.read(scene, path)) {
 			acts.push_back(act);
 			return true;
 		}
@@ -21,15 +21,15 @@ namespace Software2552 {
 		return;
 
 		for (auto& a : acts) {
-			for (auto& item : a.getPlayList()) {
-				item.scene.getDrawingEngines()->play();
+			for (auto& item : *a.getPlayList()) {
+				//bugbug this is not clear yet, do we need acts? item.scene.play();
 			}
 		}
 	}
 	void Timeline::pause() {
 		for (auto& a : acts) {
-			for (auto& item : a.getPlayList()) {
-				item.scene.getDrawingEngines()->pause();
+			for (auto& item : *a.getPlayList()) {
+				//bugbug this is not clear yet item.scene.getDrawingEngines()->pause();
 			}
 		}
 	}
@@ -39,24 +39,22 @@ namespace Software2552 {
 		ofSetFrameRate(60);
 		scene.setup();
 		return;
-		theSet.setup();
 		mesh.setup();
 		return;
 
 		for (auto& a : acts) {
-			for (auto& item : a.getPlayList()) {
+			for (auto& item : *a.getPlayList()) {
 			}
 		}
 	}
 	// keep this super fast
 	void Timeline::update() { 
 		scene.update();
-		//theSet.update();
 		return;
 
 		for (auto& a : acts) {
-			for (auto& item : a.getPlayList()) {
-				item.scene.getDrawingEngines()->removeExpiredItems();
+			for (auto& item : *a.getPlayList()) {
+				//bugbug this is not clear yetitem.scene.getDrawingEngines()->removeExpiredItems();
 			}
 		}
 	};

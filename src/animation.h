@@ -10,14 +10,24 @@ namespace Software2552 {
 	// basic drawing info, bugbug maybe color set goes here too, not sure yet
 	class DrawingBasics {
 	public:
+		// helpers to wrap basic functions
+		virtual void setupBasic() {};
+		virtual void updateBasic() {};
+		virtual void drawBasic() {};
+		virtual bool loadBasic() { return true; };
+		void setRefreshRate(float) {}//bugbug make part of animation
+		bool refreshAnimation() { return true; } ///bugbug find the real one
 		ofPoint pos;
 		int w = 0;
 		int h = 0;
 		bool okToDraw() { return true; }//bugbug move this to the right place
 		string &getLocation() { return locationPath; }
-		uint64_t getWait() { return 0; }//bugbug put in the right place, something from animation
-		uint64_t getLEARNINGDuration() { return 0; }//bugbug put in the right place, something from animation
+		void setLocation(const string&s) { locationPath = s; }
+		uint64_t &getWait() { return wait; }//bugbug put in the right place, something from animation
+		uint64_t &getLEARNINGDuration() { return dura; }//bugbug put in the right place, something from animation
 	private:
+		uint64_t wait = 0;
+		uint64_t dura = 0;
 		string locationPath; // location of item to draw
 
 	};

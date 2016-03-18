@@ -32,6 +32,7 @@ namespace Software2552 {
 		void add(shared_ptr<RoleSoundPlayer>s) { sounds.push_back(s); };
 		void add(shared_ptr<RoleParagraph>p) { paragraphs.push_back(p); };
 		void add(shared_ptr<RoleText>t) { texts.push_back(t); };
+		void add(shared_ptr<RoleSphere>s) { spheres.push_back(s); };
 
 		vector<shared_ptr<Grabber>>& getGrabbers() { return grabbers; }
 		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
@@ -42,6 +43,7 @@ namespace Software2552 {
 		vector<shared_ptr<RoleSoundPlayer>>& getSounds() { return sounds; }
 		vector<shared_ptr<RoleParagraph>>& getParagraphs() { return paragraphs; }
 		vector<shared_ptr<RoleText>>& getTexts() { return texts; }
+		vector<shared_ptr<RoleSphere>>& getSpheres() { return spheres; }
 
 	protected:
 		virtual void draw2d();
@@ -61,6 +63,8 @@ namespace Software2552 {
 		vector<shared_ptr<RoleSoundPlayer>> sounds;
 		vector<shared_ptr<RoleParagraph>>   paragraphs; 
 		vector<shared_ptr<RoleText>>		texts;
+		vector<shared_ptr<RoleSphere>>		spheres;
+		//bugbug can put more things like spheres here once spheres work and if it makes sense
 
 		//bugbug get the right classes so there is one type of animator then push them
 		//all up here
@@ -73,9 +77,9 @@ namespace Software2552 {
 		string backgroundImageName;
 	};
 
-	class Planet : public Sphere {
+	class Planet : public RoleSphere {
 	public:
-		Sphere sphere;
+		RoleSphere sphere;
 		ofTexture texture;
 	};
 
@@ -90,7 +94,7 @@ namespace Software2552 {
 		void draw3dMoving();
 	private:
 
-		Cube cube;
+		RoleCube cube;
 		CrazyMesh mesh;
 	};
 	class SpaceScene : public Stage {
@@ -104,7 +108,7 @@ namespace Software2552 {
 		void addPlanet(const string&textureName, const ofVec3f& Start);
 	private:
 		// things a scene can have (infinte list really)
-		Sphere	videoSphere;
+		RoleSphere	videoSphere;
 		vector<shared_ptr<Planet>> pictureSpheres;//bugbug move up to baseclass with a pointer vector to drawing items
 	};
 

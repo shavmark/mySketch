@@ -4,15 +4,10 @@
 #include "color.h"
 #include "animation.h"
 #include "ofSoundPlayer.h"
+
 // home of custom drawing
 
 namespace Software2552 {
-	class Text;
-	class Character;
-	class Particles;
-	class Video;
-	class Settings;
-	class Colors;
 
 
 	// simple drawing 
@@ -149,17 +144,6 @@ namespace Software2552 {
 
 	};
 
-	template<typename T>
-	class Role : public Animator {
-	public:
-		// fill in the ones you need in derived classes
-		virtual void draw(T*) {};
-		virtual void update(T*) {};
-		virtual void setup(T*) {};
-		virtual void play() {};
-		virtual void stop() {};
-		virtual void pause() {};
-	};
 
 	class CrazyMesh : public ofMesh {
 	public:
@@ -203,43 +187,6 @@ namespace Software2552 {
 	private:
 		bool wireFrame = true;
 
-	};
-	class Plane : public ofPlanePrimitive, public Primitive {
-	public:
-		void draw() {
-			if (useWireframe()) {
-				drawWireframe();
-			}
-			else {
-				ofPlanePrimitive::draw();
-			}
-		}
-	}; 
-	class Cube : public ofBoxPrimitive, public Primitive {
-	public:
-		void draw() {
-			if (useWireframe()) {
-				drawWireframe();
-			}
-			else {
-				ofBoxPrimitive::draw();
-			}
-		}
-	}; 
-	class Sphere : public ofSpherePrimitive, public Primitive {
-	public:
-		void draw() {
-			if (useWireframe()) {
-				drawWireframe();
-			}
-			else {
-				ofSpherePrimitive::draw();
-			}
-			//drawFaces();
-			//drawVertices();
-		}
-
-	private:
 	};
 	class VectorPattern : public Animator {
 	public:
@@ -347,11 +294,49 @@ namespace Software2552 {
 		string name;
 		int id=0;
 	};
+	class RolePlane : public ofPlanePrimitive, public Primitive {
+	public:
+		void draw() {
+			if (useWireframe()) {
+				drawWireframe();
+			}
+			else {
+				ofPlanePrimitive::draw();
+			}
+		}
+	};
+	class RoleCube : public ofBoxPrimitive, public Primitive {
+	public:
+		void draw() {
+			if (useWireframe()) {
+				drawWireframe();
+			}
+			else {
+				ofBoxPrimitive::draw();
+			}
+		}
+	};
+	class RoleSphere : public ofSpherePrimitive, public Primitive {
+	public:
+		void draw() {
+			if (useWireframe()) {
+				drawWireframe();
+			}
+			else {
+				ofSpherePrimitive::draw();
+			}
+			//drawFaces();
+			//drawVertices();
+		}
+
+	private:
+	};
+
 	// sound gets drawing basics for path and possibly other items in the future
-	class RoleSoundPlayer : public ofFmodSoundPlayer, public DrawingBasics {
+	class RoleSoundPlayer : public ofSoundPlayer, public DrawingBasics {
 	public:
 		//bugbug tie into the main sound code we added
-		void setup() {
+		void setupBasic() {
 			if (!load(getLocation())) {
 				logErrorString("setup audio Player");
 			}
@@ -362,29 +347,18 @@ namespace Software2552 {
 	};
 	class RoleRaster : public ofImage, public DrawingBasics {
 	public:
-		RoleRaster(const string&pathIn) :ofImage(), DrawingBasics() { path = pathIn; }
-		bool loadRaster() {
-			return ofLoadImage(*this, path);
+		RoleRaster() :ofImage(), DrawingBasics() {  }
+
+		RoleRaster(const string& path) :ofImage(), DrawingBasics() { setLocation(path); }
+		bool loadBasic() {
+			return ofLoadImage(*this, getLocation());
 		}
 		
-		void drawRaster() {
+		void drawBasic() {
 			if (okToDraw()) {
 				draw(pos.x, pos.y);
 			}
 		}
-
-	private:
-		string path;
-	};
-
-	class VideoPlayer :public ofVideoPlayer, public DrawingBasics {
-	public:
-		VideoPlayer(const string&pathIn) :ofVideoPlayer(), DrawingBasics() { path = pathIn; }
-		bool loadVideo() {
-			return load(path);
-		}
-	private:
-		string path;
 	};
 
 	class TextureVideo : public ofVideoPlayer {
@@ -415,8 +389,6 @@ namespace Software2552 {
 	};
 	class TextureFromImage : public ofTexture {
 	public:
-		void setup() {
-		}
 		void create(const string& name, float w, float h) {
 			// create texture
 			ofLoadImage(*this, name);
@@ -441,26 +413,21 @@ namespace Software2552 {
 	class Material : public ofMaterial {
 	public:
 	};
-	class RoleBackground : public Role<Colors> {
+	class RoleBackground : public Colors, public DrawingBasics {
 	public:
 		RoleBackground(){ mode = OF_GRADIENT_LINEAR; }
-		void setup(Colors* color);
-		void draw(Colors* color);
-		void update(Colors*color);
+		void setupBasic();
+		void drawBasic();
+		void updateBasic();
 	private:
 		ofGradientMode mode;
 
 		//ofBackgroundHex this is an option too bugbug enable background type
 	};
-	class RoleCharacter : public Role<Character> {
-	public:
-
-	private:
-	};
 	// put advanced drawing in these objects
 	class RoleParagraph :public ofxParagraph, public DrawingBasics {
 	public:
-		void draw() {
+		void drawBasic() {
 			if (okToDraw()) {
 				setPosition(pos.x, pos.y);
 				draw();
@@ -472,24 +439,11 @@ namespace Software2552 {
 	// put advanced drawing in these objects
 	class RoleVideo :public ofVideoPlayer, public DrawingBasics {
 	public:
-		void draw(Video*v);
-		void setup() {
-			if (!isLoaded()) {
-				if (!load(getLocation())) {
-					logErrorString("setup video Player");
-				}
-			}
-
-		}
-		void draw() {
-			if (okToDraw()) {
-				//getPlayer()->setPaused(false);
-				//getPlayer()->draw(this);
-			}
-			else {
-				//getPlayer()->setPaused(true);
-			}
-		}
+		RoleVideo() :ofVideoPlayer(), DrawingBasics() {  }
+		RoleVideo(const string& path) :ofVideoPlayer(), DrawingBasics() { setLocation(path); }
+		void drawBasic();
+		void setupBasic();
+		bool loadBasic();
 		//virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
 		uint64_t getTimeBeforeStart(uint64_t t) {
 
@@ -512,18 +466,12 @@ namespace Software2552 {
 
 	private:
 	};
-	class RoleText : public Role<Text> {
+	class RoleText :  public DrawingBasics {
 	public:
-		void drawText() {
-			if (okToDraw()) {
-				//draw();
-			}
-		}
-		void draw(Text*);
-		static void draw(const string &s, int x, int y);
-
-		string& getText() { return text; }
+		void drawBasic();
+		void drawText(const string &s, int x, int y);
 		void setText(const string&t) { text = t; }
+		string& getText() { return text; }
 	private:
 		string text;
 	};

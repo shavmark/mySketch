@@ -14,8 +14,7 @@ namespace Software2552 {
 	bool echoJSONTree(const string& functionname, const Json::Value &root, bool isError = false);
 #define ECHOAll(data) echoJSONTree(__FUNCTION__, data);
 #define ERROR_ECHOAll(data) echoJSONTree(__FUNCTION__, data, true);
-
-	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data);
+	template<typename T> shared_ptr<vector<shared_ptr<T>>> parse(const Json::Value &data);
 
 #if _DEBUG
 	template<typename T> void traceVector(T& vec);
@@ -153,17 +152,20 @@ namespace Software2552 {
 	// an actor is a drawable that contains the drawing object for that graphic
 	template <class T> class Actor : public Settings {
 	public:
-		Actor();
+		Actor() :Settings() {
+			player = std::make_shared<T>();
+			references = nullptr;
+		}
 
 		bool read(const Json::Value &data);
 
 		shared_ptr<T> getPlayer() {	return player;	}
-		shared_ptr<Reference> getReferences() { return references; }
+		shared_ptr<vector<shared_ptr<Reference>>>  getReferences() { return references; }
 
 	private:
-		virtual bool readFromScript(const Json::Value &data) {};
+		virtual bool readFromScript(const Json::Value &data) { return true; };
 		shared_ptr<T> player;
-		shared_ptr<Reference> references;
+		shared_ptr<vector<shared_ptr<Reference>>> references;
 	};
 
 	
@@ -187,7 +189,12 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 	};
 
-
+	
+	class Sphere : public Actor<RoleSphere> {
+	public:
+	private:
+		bool readFromScript(const Json::Value &data);
+	};
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
 	class Audio : public Actor<RoleSoundPlayer> {
 	public:
@@ -201,13 +208,7 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 	};
 
-	// 3d, 2d, talking, movment, etc.  not for this release, way to complicated in this world, lots of tools, not all is compatable 
-	class Character : public Actor<RoleCharacter> {
-	public:
-	private:
-		bool readFromScript(const Json::Value &data);
-	};
-
+	// class Character 3d, 2d, talking, movment, etc.  not for this release, way to complicated in this world, lots of tools, not all is compatable 
 	
 	// read a scene
 	class Scene : public Settings {
@@ -218,7 +219,6 @@ namespace Software2552 {
 
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
 		string &getKey() { return keyname; }
-		void removeExpiredItems();
 		uint64_t findMaxWait() {
 			uint64_t f = 0;
 			//for (auto& t : get()) {
@@ -236,7 +236,7 @@ namespace Software2552 {
 		string keyname;
 
 	private:
-		template<typename T, typename T2> void createTimeLineItems(T2&vec, const Json::Value &data, const string& key);
+		template<typename T, typename T2> void createTimeLineItems(vector<shared_ptr<T2>>&vec, const Json::Value &data, const string& key);
 
 	};
 	// item in a play list
@@ -244,22 +244,20 @@ namespace Software2552 {
 	public:
 		PlayItem() {}
 		PlayItem(const string&keynameIn) { keyname = keynameIn; }
-		bool read(const Json::Value &data);
-		bool operator==(const PlayItem& rhs) { return rhs.keyname == keyname; }
+		bool readFromScript(const Json::Value &data);
+		bool operator==(const PlayItem rhs) { return rhs.keyname == keyname; }
 		string &getKeyName() { return keyname; }
-		Scene scene;
 
 	private:
 		string keyname;
 	};
 	class Playlist {
 	public:
-		bool read(const Json::Value &data);
-		vector<PlayItem>& getList() { return list; }
+		bool readFromScript(const Json::Value &data);
+		shared_ptr<vector<shared_ptr<PlayItem>>> getList() { return list; }
 	private:
-		vector<PlayItem> list;
+		shared_ptr<vector<shared_ptr<PlayItem>>> list;
 	};
-
 
 	// an Act is one json file that contains 1 or more scenes
 	class Act {
@@ -268,8 +266,7 @@ namespace Software2552 {
 
 		// read a deck from json (you can also just build one in code)
 		bool read(Stage&stage, const string& fileName = "json.json");
-		vector<PlayItem> &getPlayList() { return playlist.getList(); };
-
+		shared_ptr<vector<shared_ptr<PlayItem>>> getPlayList() { return playlist.getList(); };
 	private:
 		Playlist playlist;
 

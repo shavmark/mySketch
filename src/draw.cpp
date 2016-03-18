@@ -260,15 +260,27 @@ namespace Software2552 {
 		ofPopStyle();
 	}
 	// add this one http://clab.concordia.ca/?page_id=944
-	void RoleVideo::draw(Video*v) {
-		ofVideoPlayer::draw(v->pos.x, v->pos.y);
+	void RoleVideo::drawBasic() {
+		draw(pos.x, pos.y);
 	}
-	void RoleBackground::setup(Colors* colors) { 
+	void RoleVideo::setupBasic() {
+		if (!isLoaded()) {
+			if (!load(getLocation())) {
+				logErrorString("setup video Player");
+			}
+		}
+	}
+	bool RoleVideo::loadBasic() { 
+		setupBasic(); 
+		return true; 
+	}
+
+	void RoleBackground::setupBasic() {
 		mode = OF_GRADIENT_LINEAR; 
 		setRefreshRate(60000);// just set something different while in dev
 	}
 	// colors and background change over time but not at the same time
-	void RoleBackground::update(Colors*colors) {
+	void RoleBackground::updateBasic() {
 		//bugbug can add other back grounds like a video loop, sound
 		// picture, any graphic etc
 		if (refreshAnimation()) {
@@ -297,14 +309,21 @@ namespace Software2552 {
 		}
 	}
 
-	void RoleBackground::draw(Colors* colors){
+	void RoleBackground::drawBasic(){
 		//ofBackgroundHex this is an option too bugbug enable background type
 
-		ofBackgroundGradient(ofColor::fromHex(colors->getForeground()),
-			ofColor::fromHex(colors->getBackground()), mode);
-		RoleText::draw("print", 100,200);
+		ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
+			ofColor::fromHex(Colors::getBackground()), mode);
+		RoleText text;
+		text.drawText("print", 100,200);
 	}
-	void RoleText::draw(const string &s, int x, int y) {
+	void RoleText::drawBasic() {
+		if (okToDraw()) {
+			drawText(text, pos.x, pos.y); //bugbug add in some animation
+		}
+	}
+
+	void RoleText::drawText(const string &s, int x, int y) {
 		ofPushStyle();
 		Colors::setFontColor();
 		Font font;
@@ -393,12 +412,6 @@ namespace Software2552 {
 		ofMesh::draw();
 		ofPopMatrix();
 		easyCam.end();
-	}
-	void RoleText::draw(Text* t) {
-		ofPushStyle();
-		ofSetHexColor(Colors::getForeground());
-		t->getFont().drawString(t->getText(), t->pos.x, t->pos.y);
-		ofPopStyle();
 	}
 
 	// its ok also if Controller passes in an object such as a paragraph to copy in

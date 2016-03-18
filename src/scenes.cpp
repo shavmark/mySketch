@@ -66,10 +66,10 @@ namespace Software2552 {
 			grabber->loadGrabber(grabber->w, grabber->h);
 		}
 		for (auto& image : images) {
-			image->loadRaster();
+			image->loadBasic();
 		}
 		for (auto& video : videos) {
-			video->loadVideo();
+			video->loadBasic();
 			video->play();
 		}
 
@@ -273,11 +273,11 @@ namespace Software2552 {
 		add(spotLight);
 		
 
-		shared_ptr<Raster> raster = std::make_shared<Raster>("t1_0010.jpg");
+		shared_ptr<RoleRaster> raster = std::make_shared<RoleRaster>("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
 		add(raster);
 
-		shared_ptr<VideoPlayer> video = std::make_shared<VideoPlayer>("carride.mp4");
+		shared_ptr<RoleVideo> video = std::make_shared<RoleVideo>("carride.mp4");
 		//video.w = ofGetWidth() / 3;
 		//video.x = raster.w;
 		add(video);

@@ -94,15 +94,15 @@ namespace Software2552 {
 #endif // _DEBUG
 
 	// read in list of Json values
-	template<typename T> shared_ptr<T> parse(const Json::Value &data)
+	template<typename T> shared_ptr<vector<shared_ptr<T>>> parse(const Json::Value &data)
 	{
-		shared_ptr<T> results = nullptr;
+		shared_ptr<vector<shared_ptr<T>>>  results = nullptr;
 		if (data.size() > 0) {
-			results = std::make_shared<T>();
+			results = std::make_shared<vector<shared_ptr<T>>>();
 		}
 		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
-			T item;
-			item.readFromScript(data[j]);
+			shared_ptr<T> item = std::make_shared<T>();
+			item->readFromScript(data[j]);
 			results->push_back(item);
 		}
 		return results;
@@ -154,28 +154,6 @@ namespace Software2552 {
 		}
 		return false;
 	}
-	void TheSet::setup() {
-		ofSetFrameRate(framerate);
-		startAnimation();
-	}
-	void TheSet::draw() {
-		if (okToDraw()) {
-			background.draw(&colors); // bugbug object at some point may want its own colors
-		}
-	}
-	void TheSet::update() {
-		//bugbug work on this later colors.update();
-		//background.update(&colors);// bugbug object at some point may want its own colors
-		//if (refresh()) {
-			//colors.getNextColors();
-		//}
-	}
-
-	template <class T>Actor::Actor():Settings(){
-		shared_ptr<T> player = std::make_shared<T>();
-		references = nullptr;
-	}
-
 	 template <class T> bool Actor<T>::read(const Json::Value &data) {
 		// any actor can have settings set, or defaults used
 		Settings::readFromScript(data["settings"]);
@@ -186,13 +164,13 @@ namespace Software2552 {
 		// all actors can have a location
 		readStringFromJson(player->getLocation(), data["location"]);
 		if (player->getLocation().size() > 0) {
-			getPlayer()->load(player->getLocation());//bugbug if things get too slow etc do not load here
+			getPlayer()->loadBasic();//bugbug if things get too slow etc do not load here
 		}
 
 		// optional sizes, locations, durations for animation etc
 		readJsonValue(player->w, data["width"]);
 		readJsonValue(player->h, data["height"]);
-		readJsonValue(player->getDuration(), data["duration"]);
+		readJsonValue(player->getLEARNINGDuration(), data["duration"]);
 		readJsonValue(player->getWait(), data["wait"]);
 		Point3D point;
 		point.readFromScript(data["startingPoint"]);
@@ -220,7 +198,7 @@ namespace Software2552 {
 		return true;
 	}
 	bool Playlist::readFromScript(const Json::Value &data) {
-		parse<PlayItem>(list, data["playList"]);
+		list = parse<PlayItem>(data["playList"]);
 		return true;
 	}
 
@@ -278,10 +256,6 @@ namespace Software2552 {
 			return true;
 		}
 		return false;
-	}
-	bool Character::readFromScript(const Json::Value &data) {
-
-		return true;
 	}
 	bool Point3D::readFromScript(const Json::Value &data) {
 		READFLOAT(x, data);
@@ -347,14 +321,14 @@ namespace Software2552 {
 
 		return true;
 	}
-	template<typename T, typename T2> void Scene::createTimeLineItems(T2&vec, const Json::Value &data, const string& key)
+	template<typename T, typename T2> void Scene::createTimeLineItems(vector<shared_ptr<T2>>& vec, const Json::Value &data, const string& key)
 	{
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			shared_ptr<T> v = std::make_shared<T>();
 			v->setSettings(this); // inherit settings
 			if (v->read(data[key][j])) {
 				// only save if data was read in 
-				vec.push_back(v);
+				vec.push_back(v->getPlayer());
 			}
 		}
 	}
@@ -379,6 +353,18 @@ namespace Software2552 {
 
 		return true;
 	}
+
+	bool Sphere::readFromScript(const Json::Value &data) {
+		float radius = 100;//default
+		READFLOAT(radius, data);
+		getPlayer()->setRadius(radius);
+
+		float resolution = 100;//default
+		READFLOAT(resolution, data);
+		getPlayer()->setResolution(resolution);
+
+		return true;
+	}
 	bool Scene::read(Stage&stage, const Json::Value &data) {
 
 		try {
@@ -395,6 +381,7 @@ namespace Software2552 {
 			createTimeLineItems<Paragraph>(stage.getParagraphs(), data, "paragraphs");
 			createTimeLineItems<Picture>(stage.getImages(), data,"images");
 			createTimeLineItems<Text>(stage.getTexts(), data, "texts");
+			createTimeLineItems<Sphere>(stage.getSpheres(), data, "spheres");
 			return true;
 		}
 		catch (std::exception e) {
@@ -430,29 +417,33 @@ namespace Software2552 {
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
-			playlist.read(json);
+			playlist.readFromScript(json);
 			
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				string keyname;
 				if (readStringFromJson(keyname, json["scenes"][i]["keyname"])) {
-					PlayItem key(keyname);
+					if (playlist.getList() == nullptr) {
+						logErrorString("missing scene "+keyname);
+						continue;// not found
+					}
 					// if a scene is not in the play list do not save it
-					std::vector<PlayItem>::iterator finditem =
-						find(playlist.getList().begin(), playlist.getList().end(), key);
-					//bugbug json needs to add in a named scene that data gets tied to
-					if (finditem != playlist.getList().end()) {
-						finditem->scene.read(stage, json["scenes"][i]);
+					//bugbug json needs to add in a named scene that data gets tied to, and what if there is no playlist? we do not want to blow up
+					for (auto& item : *getPlayList()) {
+						if (item->getKeyName() == keyname) {
+							item->scene.read(stage, json["scenes"][i]);
+						}
 					}
 				}
 			}
 			// space out waits, but calc out video and other lengths (will result in loading videos)
 			float wait = 0;
-			for (auto& item : playlist.getList()) {
-				//item.scene.getDrawingEngines()->bumpWaits(wait);
-				//wait = item.scene.getDrawingEngines()->getLongestWaitTime();
+			if (playlist.getList() == nullptr) {
+				for (auto& item : *playlist.getList()) {
+					//item.scene.getDrawingEngines()->bumpWaits(wait);
+					//wait = item.scene.getDrawingEngines()->getLongestWaitTime();
+				}
 			}
-
 		}
 		catch (std::exception e) {
 			logErrorString(e.what());
