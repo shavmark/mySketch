@@ -348,16 +348,31 @@ namespace Software2552 {
 		int id=0;
 	};
 	// sound gets drawing basics for path and possibly other items in the future
-	class SoundPlayer : public ofFmodSoundPlayer, public DrawingBasics {
+	class RoleSoundPlayer : public ofFmodSoundPlayer, public DrawingBasics {
 	public:
 		//bugbug tie into the main sound code we added
+		void setup() {
+			if (!load(getLocation())) {
+				logErrorString("setup audio Player");
+			}
+			// some of this data could come from data in the future
+			play();
+		}
+
 	};
-	class Raster : public ofImage, public DrawingBasics {
+	class RoleRaster : public ofImage, public DrawingBasics {
 	public:
-		Raster(const string&pathIn) :ofImage(), DrawingBasics() { path = pathIn; }
+		RoleRaster(const string&pathIn) :ofImage(), DrawingBasics() { path = pathIn; }
 		bool loadRaster() {
 			return ofLoadImage(*this, path);
 		}
+		
+		void drawRaster() {
+			if (okToDraw()) {
+				draw(pos.x, pos.y);
+			}
+		}
+
 	private:
 		string path;
 	};
@@ -445,6 +460,12 @@ namespace Software2552 {
 	// put advanced drawing in these objects
 	class RoleParagraph :public ofxParagraph, public DrawingBasics {
 	public:
+		void draw() {
+			if (okToDraw()) {
+				setPosition(pos.x, pos.y);
+				draw();
+			}
+		}
 
 	private:
 	};
@@ -452,11 +473,52 @@ namespace Software2552 {
 	class RoleVideo :public ofVideoPlayer, public DrawingBasics {
 	public:
 		void draw(Video*v);
-		
+		void setup() {
+			if (!isLoaded()) {
+				if (!load(getLocation())) {
+					logErrorString("setup video Player");
+				}
+			}
+
+		}
+		void draw() {
+			if (okToDraw()) {
+				//getPlayer()->setPaused(false);
+				//getPlayer()->draw(this);
+			}
+			else {
+				//getPlayer()->setPaused(true);
+			}
+		}
+		//virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
+		uint64_t getTimeBeforeStart(uint64_t t) {
+
+			// if json sets a wait use it
+			if (getWait() > 0) {
+				setIfGreater(t, getWait());
+			}
+			else {
+				// will need to load it now to get the true lenght
+				if (!isLoaded()) {
+					load(getLocation());
+				}
+				uint64_t duration = getLEARNINGDuration();
+				setIfGreater(t, duration);
+			}
+			return t;
+		}
+
+		// 
+
 	private:
 	};
 	class RoleText : public Role<Text> {
 	public:
+		void drawText() {
+			if (okToDraw()) {
+				//draw();
+			}
+		}
 		void draw(Text*);
 		static void draw(const string &s, int x, int y);
 

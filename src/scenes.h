@@ -24,16 +24,25 @@ namespace Software2552 {
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
 		void add(shared_ptr<Camera> camera) { cameras.push_back(camera); };
 		void add(shared_ptr<Light> light) { lights.push_back(light); };
-		void add(shared_ptr<Raster>image) { images.push_back(image); };
-		void add(shared_ptr<VideoPlayer> video) { videos.push_back(video); };
+		void add(shared_ptr<RoleRaster>image) { images.push_back(image); };
+		void add(shared_ptr<RoleVideo> video) { videos.push_back(video); };
 		void add(shared_ptr<Grabber> grabber) { grabbers.push_back(grabber); };
 		void add(shared_ptr<TextureVideo>tv) { texturevideos.push_back(tv); };
+
+		void add(shared_ptr<RoleSoundPlayer>s) { sounds.push_back(s); };
+		void add(shared_ptr<RoleParagraph>p) { paragraphs.push_back(p); };
+		void add(shared_ptr<RoleText>t) { texts.push_back(t); };
+
 		vector<shared_ptr<Grabber>>& getGrabbers() { return grabbers; }
 		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
 		vector<shared_ptr<Light>>& getLights() { return lights; }
-		vector<shared_ptr<Raster>>& getImages() { return images; }
-		vector<shared_ptr<VideoPlayer>>& getVideos() { return videos; }
+		vector<shared_ptr<RoleRaster>>& getImages() { return images; }
+		vector<shared_ptr<RoleVideo>>& getVideos() { return videos; }
 		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
+		vector<shared_ptr<RoleSoundPlayer>>& getSounds() { return sounds; }
+		vector<shared_ptr<RoleParagraph>>& getParagraphs() { return paragraphs; }
+		vector<shared_ptr<RoleText>>& getTexts() { return texts; }
+
 	protected:
 		virtual void draw2d();
 		virtual void draw3dFixed() {};
@@ -46,9 +55,12 @@ namespace Software2552 {
 		vector<shared_ptr<Grabber>> grabbers;
 		vector<shared_ptr<Camera>>	cameras;
 		vector<shared_ptr<Light>>	lights;
-		vector<shared_ptr<Raster>>	images;
-		vector<shared_ptr<TextureVideo>> texturevideos;
-		vector<shared_ptr<VideoPlayer>>   videos;
+		vector<shared_ptr<RoleRaster>>		images;
+		vector<shared_ptr<TextureVideo>>	texturevideos;
+		vector<shared_ptr<RoleVideo>>		videos;
+		vector<shared_ptr<RoleSoundPlayer>> sounds;
+		vector<shared_ptr<RoleParagraph>>   paragraphs; 
+		vector<shared_ptr<RoleText>>		texts;
 
 		//bugbug get the right classes so there is one type of animator then push them
 		//all up here

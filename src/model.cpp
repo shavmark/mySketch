@@ -224,20 +224,6 @@ namespace Software2552 {
 		return true;
 	}
 
-	// see if any data in need of drawing is present
-	bool GraphicEngines::dataAvailable() {
-		return graphicsHelpers.size() > 0;
-	}
-	void GraphicEngines::removeExpiredItems() {
-		Animator a(false);
-		a.removeExpiredPtrToItems(get());
-	}
-
-
-	uint64_t GraphicEngines::getLongestWaitTime() {
-		return findMaxWait();
-	}
-
 	bool Font::readFromScript(const Json::Value &data) {
 
 		string name;
@@ -275,6 +261,7 @@ namespace Software2552 {
 		return true;
 	}
 	bool Dates::readFromScript(const Json::Value &data) {
+		Settings::readFromScript(data["settings"]);
 		timelineDate.readFromScript(data["timelineDate"]); // date item existed
 		lastUpdateDate.readFromScript(data["lastUpdateDate"]); // last time object was updated
 		itemDate.readFromScript(data["itemDate"]);
@@ -282,7 +269,7 @@ namespace Software2552 {
 	}
 
 	bool Reference::readFromScript(const Json::Value &data) {
-		Settings::readFromScript(data["settings"]);
+		Dates::readFromScript(data["dates"]);
 		if (Dates::readFromScript(data)) { // ignore reference as an array or w/o data at this point
 			// no base class so it repeats some data in base class ReferencedItem
 			READSTRING(location, data[STRINGIFY(Reference)]);
@@ -323,20 +310,6 @@ namespace Software2552 {
 		readStringFromJson(getPlayer()->getText(), data["text"]["str"]);
 		return true;
 	}
-	void Text::draw() {
-		if (getPlayer()->okToDraw()) {
-			getPlayer()->draw(this);
-		}
-	}
-
-	void Paragraph::draw() {
-		if (getPlayer()->okToDraw()) {
-			getPlayer()->setFont(getFontPointer());
-			getPlayer()->setColor(Colors::getFontColor());
-			getPlayer()->setPosition(getPlayer()->pos.x, getPlayer()->pos.y);
-			getPlayer()->draw(getPlayer()->pos.x, getPlayer()->pos.y);
-		}
-	}
 
 	// return true if text read in
 	bool Paragraph::readFromScript(const Json::Value &data) {
@@ -367,16 +340,21 @@ namespace Software2552 {
 			getPlayer()->setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
 
+		getPlayer()->setFont(getFontPointer());
+		getPlayer()->setColor(Colors::getFontColor());
+		getPlayer()->pos.x = 0; //bugbug maybe get from data
+		getPlayer()->pos.y = 0; //bugbug maybe get from data
+
 		return true;
 	}
-	template<typename T> void Scene::createTimeLineItems(const Json::Value &data, const string& key)
+	template<typename T, typename T2> void Scene::createTimeLineItems(T2&vec, const Json::Value &data, const string& key)
 	{
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			shared_ptr<T> v = std::make_shared<T>();
 			v->setSettings(this); // inherit settings
-			if (v->readFromScript(data[key][j])) {
+			if (v->read(data[key][j])) {
 				// only save if data was read in 
-				getDrawingEngines()->get().push_back(v);
+				vec.push_back(v);
 			}
 		}
 	}
@@ -385,40 +363,6 @@ namespace Software2552 {
 		// only copy items that change as a default
 		font = rhs.font;
 	}
-	void Audio::setup() {
-		if (!getPlayer()->load(getPlayer()->getLocation())) {
-			logErrorString("setup audio Player");
-		}
-		// some of this data could come from data in the future
-		getPlayer()->play();
-		getPlayer()->setMultiPlay(true);
-		getPlayer()->setSpeed(ofRandom(0.8, 1.2));//bugbug get from data
-	}
-	//bugbug most likely to move to animaiton code
-	uint64_t Video::getTimeBeforeStart(uint64_t t) {
-
-		// if json sets a wait use it
-		if (getPlayer()->getWait() > 0) {
-			setIfGreater(t, getPlayer()->getWait());
-		}
-		else {
-			// will need to load it now to get the true lenght
-			if (!getPlayer()->isLoaded()) {
-				getPlayer()->load(getPlayer()->getLocation());
-			}
-			uint64_t duration = getPlayer()->getLEARNINGDuration();
-			setIfGreater(t, duration);
-		}
-		return t;
-	}
-
-	void Video::setup() {
-		if (!getPlayer()->isLoaded()) {
-			if (!getPlayer()->load(getPlayer()->getLocation())) {
-				logErrorString("setup video Player");
-			}
-		}
-	};
 
 	bool Video::readFromScript(const Json::Value &data) {
 		float volume=1;//default
@@ -430,15 +374,12 @@ namespace Software2552 {
 		float volume = 1;//default
 		READFLOAT(volume, data);
 		getPlayer()->setVolume(volume);
+		getPlayer()->setMultiPlay(true);
+		getPlayer()->setSpeed(ofRandom(0.8, 1.2));// get from data
+
 		return true;
 	}
-	void GraphicEngines::bumpWaits(uint64_t wait) {
-		if (!wait) {
-			return;
-		}
-		bumpWait(wait);
-	}
-	bool Scene::readFromScript(const Json::Value &data) {
+	bool Scene::read(Stage&stage, const Json::Value &data) {
 
 		try {
 			READSTRING(keyname, data);
@@ -448,12 +389,12 @@ namespace Software2552 {
 			Settings::readFromScript(data);
 			// add in a known type if data found
 			// keep add in its own vector
-			createTimeLineItems<Video>(data, "videos");
-			createTimeLineItems<Audio>(data, "audios");
-			createTimeLineItems<Paragraph>(data, "paragraphs");
-			createTimeLineItems<Picture>(data,"images");
-			createTimeLineItems<Text>(data, "texts");
-			createTimeLineItems<Character>(data, "characters");
+
+			createTimeLineItems<Video>(stage.getVideos(), data, "videos");
+			createTimeLineItems<Audio>(stage.getSounds(), data, "audios");
+			createTimeLineItems<Paragraph>(stage.getParagraphs(), data, "paragraphs");
+			createTimeLineItems<Picture>(stage.getImages(), data,"images");
+			createTimeLineItems<Text>(stage.getTexts(), data, "texts");
 			return true;
 		}
 		catch (std::exception e) {
@@ -465,23 +406,20 @@ namespace Software2552 {
 	}
 	Scene::Scene(const string&keynameIn) {
 		keyname = keynameIn;
-		engines = nullptr;
 	}
-	Scene::Scene() {
-		engines = nullptr;
+	//bugbug where to remove expired items? most likely animaiton in the drawing code
+	void Scene::removeExpiredItems() {
+		//Animator a(false);
+		//a.removeExpiredPtrToItems(get());
 	}
 
-	void Scene::setEngine(shared_ptr<GraphicEngines> enginesIn) {
-		if (enginesIn == nullptr) {
-			engines = std::make_shared<GraphicEngines>();
-		}
-		else {
-			engines = enginesIn;
-		}
+	uint64_t Scene::getLongestWaitTime() {
+		return findMaxWait();
 	}
+
 
 	// read as many jason files as needed, each becomes a deck
-	bool Act::readFromScript(const string& fileName) {
+	bool Act::read(Stage&stage, const string& fileName) {
 		
 		ofxJSON json;
 
@@ -492,7 +430,7 @@ namespace Software2552 {
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
-			playlist.readFromScript(json);
+			playlist.read(json);
 			
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
@@ -502,16 +440,17 @@ namespace Software2552 {
 					// if a scene is not in the play list do not save it
 					std::vector<PlayItem>::iterator finditem =
 						find(playlist.getList().begin(), playlist.getList().end(), key);
+					//bugbug json needs to add in a named scene that data gets tied to
 					if (finditem != playlist.getList().end()) {
-						finditem->scene.readFromScript(json["scenes"][i]);
+						finditem->scene.read(stage, json["scenes"][i]);
 					}
 				}
 			}
 			// space out waits, but calc out video and other lengths (will result in loading videos)
 			float wait = 0;
 			for (auto& item : playlist.getList()) {
-				item.scene.getDrawingEngines()->bumpWaits(wait);
-				wait = item.scene.getDrawingEngines()->getLongestWaitTime();
+				//item.scene.getDrawingEngines()->bumpWaits(wait);
+				//wait = item.scene.getDrawingEngines()->getLongestWaitTime();
 			}
 
 		}

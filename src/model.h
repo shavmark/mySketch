@@ -3,6 +3,7 @@
 #include "2552software.h"
 #include "color.h"
 #include "draw.h"
+#include "scenes.h"
 
 // json driven model
 
@@ -89,35 +90,6 @@ namespace Software2552 {
 	};
 
 
-	// one set per 
-	class TheSet : public Animator {
-	public:
-		TheSet() {
-			framerate = 30;
-		}
-		void setup();
-		void draw();
-		void update();
-
-		bool readFromScript(const Json::Value &data) {
-			//floatColor colorAmbient(light.getAmbientColor());
-			//colorAmbient.read(data["ambientColor"]);
-			//light.setAmbientColor(colorAmbient.get());
-
-			//floatColor colorDiffuse(light.getDiffuseColor());
-			//colorAmbient.read(data["diffuseColor"]);
-			//light.setDiffuseColor(colorDiffuse.get());
-			return true;
-		}
-
-		/// use pointers if data set gets too large
-
-		RoleBackground background; // there is only one background, but it can have different settings
-		int framerate; // only one framerate
-		vector<ofLight>	light;
-		vector<ofEasyCam> camera;
-		Colors colors;
-	};
 	//  settings get copied a lot as they are the default data for all classes so they need to stay small
 	class Settings {
 	public:
@@ -128,9 +100,7 @@ namespace Software2552 {
 			init();
 			name = nameIn;
 		}
-		void operator=(const Settings& rhs) {
-			setSettings(rhs);
-		}
+		void operator=(const Settings& rhs) {setSettings(rhs);	}
 		bool readFromScript(const Json::Value &data);
 
 		ofTrueTypeFont& getFont() { return font.get(); }
@@ -144,15 +114,6 @@ namespace Software2552 {
 			}
 		}
 
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Settings));
-
-			logVerbose(name);
-			logVerbose(notes);
-		}
-#endif
 
 	protected:
 		Font   font;
@@ -169,7 +130,7 @@ namespace Software2552 {
 
 	};
 
-	class Dates  {
+	class Dates : public Settings {
 	public:
 		bool readFromScript(const Json::Value &data);
 	protected:
@@ -179,7 +140,7 @@ namespace Software2552 {
 
 	};
 	// reference to a cited item
-	class Reference : public Dates, public Settings {
+	class Reference : public Dates {
 	public:
 		bool readFromScript(const Json::Value &data);
 
@@ -207,73 +168,35 @@ namespace Software2552 {
 
 	
 	class Background : public Actor<RoleBackground> {
+	public:
 	};
 
-		// some objects just use the OpenFrameworks objects if things are basic enough
-	class Picture : public Actor<Raster> {
+	class Picture : public Actor<RoleRaster> {
 	public:
-		//bugbug its likely all access to Player is done in the player's class
-		void draw() {
-			if (getPlayer()->okToDraw()) {
-				getPlayer()->draw(getPlayer()->pos.x, getPlayer()->pos.y);
-			}
-		}
-		void update() {
-			getPlayer()->update();
-		};
-
 	};
 	
 	class Text : public Actor<RoleText> {
 	public:
-		void draw();//bugbug remove all drawing code
 	private:
 		bool readFromScript(const Json::Value &data);
 	};
 
 	class Paragraph : public Actor<RoleParagraph> {
 	public:
-		void draw();
 	private:
 		bool readFromScript(const Json::Value &data);
 	};
 
 
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
-	class Audio : public Actor<SoundPlayer> {
+	class Audio : public Actor<RoleSoundPlayer> {
 	public:
-		void setup();
 	private:
 		bool readFromScript(const Json::Value &data);
 	};
 
 	class Video : public Actor<RoleVideo> {
 	public:
-
-		void setup();
-		void update() {	getPlayer()->update();		};
-		void draw() {
-			if (getPlayer()->okToDraw()) {
-				getPlayer()->setPaused(false);
-				getPlayer()->draw(this);
-			}
-			else {
-				getPlayer()->setPaused(true);
-			}
-		}
-		void pause() {
-			getPlayer()->setPaused(true);
-		}
-		void stop() {
-			getPlayer()->stop();
-		}
-		void play() {
-			getPlayer()->play();
-		}
-
-		// 
-		virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
-		string test;
 	private:
 		bool readFromScript(const Json::Value &data);
 	};
@@ -281,42 +204,26 @@ namespace Software2552 {
 	// 3d, 2d, talking, movment, etc.  not for this release, way to complicated in this world, lots of tools, not all is compatable 
 	class Character : public Actor<RoleCharacter> {
 	public:
-
 	private:
 		bool readFromScript(const Json::Value &data);
-		// player is just a string object
 	};
 
-	class Scene;
-	class GraphicEngines {
+	
+	// read a scene
+	class Scene : public Settings {
 	public:
+		Scene(const string&keynameIn);
+		Scene();
+		bool read(Stage&stage, const Json::Value &data);
 
-		// increase all wait times
-		void bumpWait(uint64_t wait) {
-			for (auto& t : get()) {
-				t->addWait(wait);
-			}
-		}
-		void play() {
-			for (auto& t : get()) {
-				t->playAnimation();
-			}
-		}
-		void pause() {
-			for (auto& t : get()) {
-				t->pauseAnimation();
-			}
-		}
-		void updateGraphic() {
-			for (auto& t : get()) {
-				t->refreshAnimation();
-			}
-		}
+		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
+		string &getKey() { return keyname; }
+		void removeExpiredItems();
 		uint64_t findMaxWait() {
 			uint64_t f = 0;
-			for (auto& t : get()) {
-				setIfGreater(f, t->getLEARNINGDuration() + t->getWait());
-			}
+			//for (auto& t : get()) {
+				//setIfGreater(f, t->getLEARNINGDuration() + t->getWait());
+			//}
 			return f;
 		}
 		// remove items that are timed out
@@ -325,54 +232,11 @@ namespace Software2552 {
 		bool dataAvailable();
 		void bumpWaits(uint64_t wait);
 		uint64_t getLongestWaitTime();
-		//		std::shared_ptr<Video> sp1 =
-//			std::dynamic_pointer_cast<Video>(graphicsHelpers[0]);
-		/* example
-				shared_ptr<Video> v = std::make_shared<Video>();
-		v->test = "hi";
-		graphicsHelpers.push_back(v);
-		shared_ptr<Paragraph> v2 = std::make_shared<Paragraph>();
-		graphicsHelpers.push_back(v2);
-*/
-		vector<shared_ptr<Actor<T>>>& get() {
-			return graphicsHelpers;
-		}
-	private:
-		vector<shared_ptr<Actor>> graphicsHelpers;
-	};
-
-	class Scene : public Settings {
-	public:
-		Scene(const string&keynameIn);
-		Scene();
-		void setEngine(shared_ptr<GraphicEngines> enginesIn = nullptr);
-		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
-		bool readFromScript(const Json::Value &data);
-		template<typename T> void createTimeLineItems(const Json::Value &data, const string& key);
-		string &getKey() { return keyname; }
-
-		// we want folks to use wrappers to avoid tons of dependicies on this
-		shared_ptr<GraphicEngines> getDrawingEngines() {
-			if (engines == nullptr) {
-				setEngine();
-			}
-			return engines;
-		}
-
-#if _DEBUG
-		// echo object (debug only) bugbug make debug only
-		void trace() {
-			logVerbose(STRINGIFY(Scene));
-			traceVector(getDrawingEngines()->get());
-		}
-
-#endif // _DEBUG
-
 	protected:
 		string keyname;
 
 	private:
-		shared_ptr<GraphicEngines> engines;
+		template<typename T, typename T2> void createTimeLineItems(T2&vec, const Json::Value &data, const string& key);
 
 	};
 	// item in a play list
@@ -380,30 +244,18 @@ namespace Software2552 {
 	public:
 		PlayItem() {}
 		PlayItem(const string&keynameIn) { keyname = keynameIn; }
-		bool readFromScript(const Json::Value &data);
+		bool read(const Json::Value &data);
 		bool operator==(const PlayItem& rhs) { return rhs.keyname == keyname; }
 		string &getKeyName() { return keyname; }
 		Scene scene;
-#if _DEBUG
-		void trace() {
-			logVerbose(STRINGIFY(PlayItem));
-			scene.trace();
-		}
-#endif
 
 	private:
 		string keyname;
 	};
 	class Playlist {
 	public:
-		bool readFromScript(const Json::Value &data);
+		bool read(const Json::Value &data);
 		vector<PlayItem>& getList() { return list; }
-#if _DEBUG
-		// echo object (debug only) bugbug make debug only
-		void trace() {
-			logVerbose(STRINGIFY(Playlist));
-		}
-#endif
 	private:
 		vector<PlayItem> list;
 	};
@@ -415,15 +267,9 @@ namespace Software2552 {
 		Act() {}
 
 		// read a deck from json (you can also just build one in code)
-		bool readFromScript(const string& fileName = "json.json");
+		bool read(Stage&stage, const string& fileName = "json.json");
 		vector<PlayItem> &getPlayList() { return playlist.getList(); };
 
-#if _DEBUG
-		// echo object (debug only) 
-		void trace() {
-			logVerbose(STRINGIFY(Act));
-		}
-#endif
 	private:
 		Playlist playlist;
 
