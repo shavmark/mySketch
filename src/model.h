@@ -183,71 +183,38 @@ namespace Software2552 {
 	public:
 		bool readFromScript(const Json::Value &data);
 
-		// echo object (debug only)
-#if _DEBUG
-		void trace() {
-			logVerbose(STRINGIFY(Reference));
-			Settings::trace();
-			logVerbose(location);
-			logVerbose(locationPath);
-			logVerbose(source);
-		}
-#endif
 	protected:
 		string locationPath; // can be local too
 		string location;
 		string source;
 	};
 
-	// true for all time based items
-	class ReferencedItem  {
+	// an actor is a drawable that contains the drawing object for that graphic
+	template <class T> class Actor : public Settings {
 	public:
-		bool readFromScript(const Json::Value &data);
+		Actor();
 
-	protected:
-		vector <Reference> references;
+		bool read(const Json::Value &data);
 
-	};
-
-	// basic graphic like SUN etc to add flavor
-	class Graphic : public ReferencedItem {
-	public:
-		Graphic();
-
-		bool readFromScript(const Json::Value &data);
-		
-		//bugbug move these two down where needed then 
-
-	protected:
+		shared_ptr<T> getPlayer() {	return player;	}
+		shared_ptr<Reference> getReferences() { return references; }
 
 	private:
-	};
-
-	// an actor is a graphic that contains the drawing object for that graphic
-	template <class T> class Actor : public Graphic
-	{
-	public:
-		Actor() { shared_ptr<T> player = std::make_shared<T>(); }
-
-		virtual bool readFromScript(const Json::Value &data);
-
-		shared_ptr<T> getPlayer() {
-			return player;
-		}
-
-	private:
+		virtual bool readFromScript(const Json::Value &data) {};
 		shared_ptr<T> player;
+		shared_ptr<Reference> references;
 	};
 
 	
 	class Background : public Actor<RoleBackground> {
 	};
+
 		// some objects just use the OpenFrameworks objects if things are basic enough
 	class Picture : public Actor<Raster> {
 	public:
-		bool readFromScript(const Json::Value &data);
+		//bugbug its likely all access to Player is done in the player's class
 		void draw() {
-			if (getPlayer()->okToDraw()) {//okToDraw bugbug get from new animation class
+			if (getPlayer()->okToDraw()) {
 				getPlayer()->draw(getPlayer()->pos.x, getPlayer()->pos.y);
 			}
 		}
@@ -259,75 +226,64 @@ namespace Software2552 {
 	
 	class Text : public Actor<RoleText> {
 	public:
-		bool readFromScript(const Json::Value &data);
-		void draw();
-		string& getText() { return text; }
-		void setText(const string&t) {
-			text = t;
-		}
+		void draw();//bugbug remove all drawing code
 	private:
-		string text;
+		bool readFromScript(const Json::Value &data);
 	};
 
-	class Paragraph : public Actor<ofxParagraph> {
+	class Paragraph : public Actor<RoleParagraph> {
 	public:
-		bool readFromScript(const Json::Value &data);
 		void draw();
+	private:
+		bool readFromScript(const Json::Value &data);
 	};
 
 
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
 	class Audio : public Actor<SoundPlayer> {
 	public:
-		bool readFromScript(const Json::Value &data);
 		void setup();
+	private:
+		bool readFromScript(const Json::Value &data);
 	};
 
 	class Video : public Actor<RoleVideo> {
 	public:
 
-		bool readFromScript(const Json::Value &data);
 		void setup();
-		float  getVolume() { return volume; }
-		void update() {
-			player.update();
-		};
+		void update() {	getPlayer()->update();		};
 		void draw() {
-			if (okToDraw()) {
-				player.setPaused(false);
-				player.draw(this);
+			if (getPlayer()->okToDraw()) {
+				getPlayer()->setPaused(false);
+				getPlayer()->draw(this);
 			}
 			else {
-				player.setPaused(true);
+				getPlayer()->setPaused(true);
 			}
 		}
 		void pause() {
-			Graphic::pauseAnimation();
-			player.setPaused(true);
+			getPlayer()->setPaused(true);
 		}
 		void stop() {
-			Graphic::stopAnimation();
-			player.stop();
+			getPlayer()->stop();
 		}
 		void play() {
-			Graphic::playAnimation();
-			player.play();
+			getPlayer()->play();
 		}
 
 		// 
 		virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
 		string test;
 	private:
-		float volume;
-
+		bool readFromScript(const Json::Value &data);
 	};
 
-	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now
+	// 3d, 2d, talking, movment, etc.  not for this release, way to complicated in this world, lots of tools, not all is compatable 
 	class Character : public Actor<RoleCharacter> {
 	public:
 
-		bool readFromScript(const Json::Value &data);
 	private:
+		bool readFromScript(const Json::Value &data);
 		// player is just a string object
 	};
 
@@ -335,6 +291,7 @@ namespace Software2552 {
 	class GraphicEngines {
 	public:
 
+		// increase all wait times
 		void bumpWait(uint64_t wait) {
 			for (auto& t : get()) {
 				t->addWait(wait);
@@ -358,7 +315,7 @@ namespace Software2552 {
 		uint64_t findMaxWait() {
 			uint64_t f = 0;
 			for (auto& t : get()) {
-				setIfGreater(f, t->getDuration() + t->getWait());
+				setIfGreater(f, t->getLEARNINGDuration() + t->getWait());
 			}
 			return f;
 		}
@@ -377,11 +334,11 @@ namespace Software2552 {
 		shared_ptr<Paragraph> v2 = std::make_shared<Paragraph>();
 		graphicsHelpers.push_back(v2);
 */
-		vector<shared_ptr<Graphic>>& get() { 
+		vector<shared_ptr<Actor<T>>>& get() {
 			return graphicsHelpers;
 		}
 	private:
-		vector<shared_ptr<Graphic>> graphicsHelpers;
+		vector<shared_ptr<Actor>> graphicsHelpers;
 	};
 
 	class Scene : public Settings {

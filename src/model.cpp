@@ -3,7 +3,31 @@
 
 namespace Software2552 {
 	// helpers
-	
+	ofTrueTypeFont& Font::get() {
+		if (font == nullptr) {
+			getPointer();
+		}
+		if (font != nullptr) {
+			return font->ttf;
+		}
+		ofTrueTypeFont font2;
+		return font2; // default
+	}
+
+	shared_ptr<ofxSmartFont> Font::getPointer() {
+		if (font == nullptr) {
+			font = ofxSmartFont::get(defaultFontFile, defaultFontSize);
+			if (font == nullptr) {
+				// name is not unqiue, just a helper of some kind I guess
+				font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);
+			}
+		}
+		if (font == nullptr) {
+			logErrorString("font is null");
+		}
+		return font;
+	}
+
 	//bugbug todo weave into errors, even on release mode as anyone can break a json file
 	void echoValue(const Json::Value &data, bool isError) {
 		//Json::Value::Members m = data.getMemberNames();
@@ -70,13 +94,18 @@ namespace Software2552 {
 #endif // _DEBUG
 
 	// read in list of Json values
-	template<typename T, typename T2> void parse(T2& vec, const Json::Value &data)
+	template<typename T> shared_ptr<T> parse(const Json::Value &data)
 	{
+		shared_ptr<T> results = nullptr;
+		if (data.size() > 0) {
+			results = std::make_shared<T>();
+		}
 		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
 			T item;
 			item.readFromScript(data[j]);
-			vec.push_back(item);
+			results->push_back(item);
 		}
+		return results;
 	}
 	// get a string from json
 	bool readStringFromJson(string &value, const Json::Value& data) {
@@ -142,18 +171,40 @@ namespace Software2552 {
 		//}
 	}
 
-	 template <class T> bool Actor<T>::readFromScript(const Json::Value &data) {
+	template <class T>Actor::Actor():Settings(){
+		shared_ptr<T> player = std::make_shared<T>();
+		references = nullptr;
+	}
+
+	 template <class T> bool Actor<T>::read(const Json::Value &data) {
+		// any actor can have settings set, or defaults used
+		Settings::readFromScript(data["settings"]);
+
+		// any actor can have a reference
+		references = parse<Reference>(data["references"]);
+		 
 		// all actors can have a location
 		readStringFromJson(player->getLocation(), data["location"]);
 		if (player->getLocation().size() > 0) {
 			getPlayer()->load(player->getLocation());//bugbug if things get too slow etc do not load here
 		}
+
+		// optional sizes, locations, durations for animation etc
+		readJsonValue(player->w, data["width"]);
+		readJsonValue(player->h, data["height"]);
+		readJsonValue(player->getDuration(), data["duration"]);
+		readJsonValue(player->getWait(), data["wait"]);
+		Point3D point;
+		point.readFromScript(data["startingPoint"]);
+		player->pos = point;
+
+		// read derived class data
+		readFromScript(data);
+
 		return true;
 	}
 
-	bool Picture::readFromScript(const Json::Value &data) {
-		return true;
-	}
+	 
 	void Colors::update() {
 		// clean up deleted items every so often
 		for (auto& d : getList()) {
@@ -187,11 +238,6 @@ namespace Software2552 {
 		return findMaxWait();
 	}
 
-	// return true if there is some data 
-	bool ReferencedItem::readFromScript(const Json::Value &data) {
-		parse<Reference>(references, data["references"]);
-		return true;
-	}
 	bool Font::readFromScript(const Json::Value &data) {
 
 		string name;
@@ -248,10 +294,7 @@ namespace Software2552 {
 	}
 	bool Character::readFromScript(const Json::Value &data) {
 
-		if (Graphic::readFromScript(data)) {
-			return true;
-		}
-		return false;
+		return true;
 	}
 	bool Point3D::readFromScript(const Json::Value &data) {
 		READFLOAT(x, data);
@@ -277,34 +320,30 @@ namespace Software2552 {
 		return true;
 	}
 	bool Text::readFromScript(const Json::Value &data) {
-		if (Graphic::readFromScript(data)) {
-			readStringFromJson(text, data["text"]["str"]);
-		}
+		readStringFromJson(getPlayer()->getText(), data["text"]["str"]);
 		return true;
 	}
 	void Text::draw() {
-		if (okToDraw()) {
-			player.draw(this);
+		if (getPlayer()->okToDraw()) {
+			getPlayer()->draw(this);
 		}
 	}
 
 	void Paragraph::draw() {
-		if (okToDraw()) {
-			player.setFont(getFontPointer());
-			player.setColor(Colors::getFontColor());
-			player.setPosition(pos.x, pos.y);
-			player.draw(pos.x, pos.y);
+		if (getPlayer()->okToDraw()) {
+			getPlayer()->setFont(getFontPointer());
+			getPlayer()->setColor(Colors::getFontColor());
+			getPlayer()->setPosition(getPlayer()->pos.x, getPlayer()->pos.y);
+			getPlayer()->draw(getPlayer()->pos.x, getPlayer()->pos.y);
 		}
 	}
 
 	// return true if text read in
 	bool Paragraph::readFromScript(const Json::Value &data) {
 
-		Graphic::readFromScript(data);
-
 		string str;
 		readStringFromJson(str, data["text"]["str"]);
-		player.setText(str);
+		getPlayer()->setText(str);
 
 		int indent;
 		int leading;
@@ -312,20 +351,20 @@ namespace Software2552 {
 		string alignment; // paragraph is a data type in this usage
 
 		if (READINT(indent, data)) {
-			player.setIndent(indent);
+			getPlayer()->setIndent(indent);
 		}
 		if (READINT(leading, data)) {
-			player.setLeading(leading);
+			getPlayer()->setLeading(leading);
 		}
 		if (READINT(spacing, data)) {
-			player.setSpacing(leading);
+			getPlayer()->setSpacing(leading);
 		}
 		READSTRING(alignment, data);
 		if (alignment == "center") { //bugbug ignore case
-			player.setAlignment(ofxParagraph::ALIGN_CENTER);
+			getPlayer()->setAlignment(ofxParagraph::ALIGN_CENTER);
 		}
 		else if (alignment == "right") { //bugbug ignore case
-			player.setAlignment(ofxParagraph::ALIGN_RIGHT);
+			getPlayer()->setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
 
 		return true;
@@ -347,47 +386,47 @@ namespace Software2552 {
 		font = rhs.font;
 	}
 	void Audio::setup() {
-		if (!getPlayer().load(getLocation())) {
+		if (!getPlayer()->load(getPlayer()->getLocation())) {
 			logErrorString("setup audio Player");
 		}
-		getPlayer().play();
-		getPlayer().setMultiPlay(true);
-		getPlayer().setSpeed(ofRandom(0.8, 1.2));//bugbug get from data
+		// some of this data could come from data in the future
+		getPlayer()->play();
+		getPlayer()->setMultiPlay(true);
+		getPlayer()->setSpeed(ofRandom(0.8, 1.2));//bugbug get from data
 	}
+	//bugbug most likely to move to animaiton code
 	uint64_t Video::getTimeBeforeStart(uint64_t t) {
 
 		// if json sets a wait use it
-		if (getWait() > 0) {
-			setIfGreater(t, getWait());
+		if (getPlayer()->getWait() > 0) {
+			setIfGreater(t, getPlayer()->getWait());
 		}
 		else {
 			// will need to load it now to get the true lenght
-			if (!getPlayer().isLoaded()) {
-				getPlayer().load(getLocation());
+			if (!getPlayer()->isLoaded()) {
+				getPlayer()->load(getPlayer()->getLocation());
 			}
-			uint64_t duration = getPlayer().getDuration();
+			uint64_t duration = getPlayer()->getLEARNINGDuration();
 			setIfGreater(t, duration);
 		}
 		return t;
 	}
 
 	void Video::setup() {
-		if (!player.isLoaded()) {
-			if (!player.load(getLocation())) {
+		if (!getPlayer()->isLoaded()) {
+			if (!getPlayer()->load(getPlayer()->getLocation())) {
 				logErrorString("setup video Player");
 			}
 		}
 	};
 
 	bool Video::readFromScript(const Json::Value &data) {
-		Actor::readFromScript(data);
 		float volume=1;//default
 		READFLOAT(volume, data);
 		getPlayer()->setVolume(volume);
 		return true;
 	}
 	bool Audio::readFromScript(const Json::Value &data) {
-		Actor::readFromScript(data);
 		float volume = 1;//default
 		READFLOAT(volume, data);
 		getPlayer()->setVolume(volume);
@@ -430,30 +469,6 @@ namespace Software2552 {
 	}
 	Scene::Scene() {
 		engines = nullptr;
-	}
-	ofTrueTypeFont& Font::get() {
-		if (font == nullptr) {
-			getPointer();
-		}
-		if (font != nullptr) {
-			return font->ttf;
-		}
-		ofTrueTypeFont font2;
-		return font2; // default
-	}
-
-	shared_ptr<ofxSmartFont> Font::getPointer() {
-		if (font == nullptr) {
-			font = ofxSmartFont::get(defaultFontFile, defaultFontSize);
-			if (font == nullptr) {
-				// name is not unqiue, just a helper of some kind I guess
-				font = ofxSmartFont::add(defaultFontFile, defaultFontSize, defaultFontName);
-			}
-		}
-		if (font == nullptr) {
-			logErrorString("font is null");
-		}
-		return font;
 	}
 
 	void Scene::setEngine(shared_ptr<GraphicEngines> enginesIn) {
@@ -507,26 +522,5 @@ namespace Software2552 {
 
 		return true;
 	}
-	Graphic::Graphic() : ReferencedItem() {
-		//bugbug add a pause where time is suspended, add in rew, play, stop etc also
-		volume = 0.5;
-	}
-	// always return true as these are optional items
-	bool Graphic::readFromScript(const Json::Value &data) {
-
-		ReferencedItem::readFromScript(data);
-		readJsonValue(w, data["width"]);
-		readJsonValue(h, data["height"]);
-		readJsonValue(getDuration(), data["duration"]);
-		readJsonValue(getWait(), data["wait"]);
-		Point3D point;
-		point.readFromScript(data["startingPoint"]);
-		pos.x = point.x;
-		pos.y = point.y;
-		READSTRING(locationPath, data);
-		READFLOAT(volume, data);
-		return true;
-	}
-
 
 }

@@ -3,7 +3,7 @@
 #include "ofxBox2d.h"
 #include "color.h"
 #include "animation.h"
-
+#include "ofSoundPlayer.h"
 // home of custom drawing
 
 namespace Software2552 {
@@ -348,8 +348,9 @@ namespace Software2552 {
 		int id=0;
 	};
 	// sound gets drawing basics for path and possibly other items in the future
-	class SoundPlayer : public ofSoundPlayer, public DrawingBasics {
+	class SoundPlayer : public ofFmodSoundPlayer, public DrawingBasics {
 	public:
+		//bugbug tie into the main sound code we added
 	};
 	class Raster : public ofImage, public DrawingBasics {
 	public:
@@ -442,7 +443,13 @@ namespace Software2552 {
 	private:
 	};
 	// put advanced drawing in these objects
-	class RoleVideo :public ofVideoPlayer {
+	class RoleParagraph :public ofxParagraph, public DrawingBasics {
+	public:
+
+	private:
+	};
+	// put advanced drawing in these objects
+	class RoleVideo :public ofVideoPlayer, public DrawingBasics {
 	public:
 		void draw(Video*v);
 		
@@ -453,7 +460,10 @@ namespace Software2552 {
 		void draw(Text*);
 		static void draw(const string &s, int x, int y);
 
+		string& getText() { return text; }
+		void setText(const string&t) { text = t; }
 	private:
+		string text;
 	};
 
 }
