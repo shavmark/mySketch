@@ -169,7 +169,7 @@ namespace Software2552 {
 
 	};
 
-	class Dates : public Settings {
+	class Dates  {
 	public:
 		bool readFromScript(const Json::Value &data);
 	protected:
@@ -179,7 +179,7 @@ namespace Software2552 {
 
 	};
 	// reference to a cited item
-	class Reference : public Dates {
+	class Reference : public Dates, public Settings {
 	public:
 		bool readFromScript(const Json::Value &data);
 
@@ -200,18 +200,9 @@ namespace Software2552 {
 	};
 
 	// true for all time based items
-	class ReferencedItem : public Dates {
+	class ReferencedItem  {
 	public:
 		bool readFromScript(const Json::Value &data);
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(ReferencedItem));
-			Dates::trace();
-		}
-
-#endif // _DEBUG
-
 
 	protected:
 		vector <Reference> references;
@@ -219,71 +210,51 @@ namespace Software2552 {
 	};
 
 	// basic graphic like SUN etc to add flavor
-	class Graphic : public ReferencedItem, public Animator {
+	class Graphic : public ReferencedItem {
 	public:
 		Graphic();
 
 		bool readFromScript(const Json::Value &data);
 		
-		GraphicID id() { return myID; }
-		string &getLocation() { return locationPath; }
-		float  getVolume() { return volume; }
+		//bugbug move these two down where needed then 
 
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(Graphic));
-			ReferencedItem::trace();
-			logVerbose(type);
-		}
-#endif // _DEBUG
 	protected:
-		string type; // 2d, 3d, other
-		string locationPath; // remote or local bugbug maybe make a better name?  not sure
-		float volume;
 
 	private:
-		GraphicID myID;// every graphic item gets a unique ID for deletion and etc
 	};
 
-	// an actor if you will
+	// an actor is a graphic that contains the drawing object for that graphic
 	template <class T> class Actor : public Graphic
 	{
 	public:
-		virtual bool readFromScript(const Json::Value &data) = 0;
-		T &getPlayer() {
-			test();
+		Actor() { shared_ptr<T> player = std::make_shared<T>(); }
+
+		virtual bool readFromScript(const Json::Value &data);
+
+		shared_ptr<T> getPlayer() {
 			return player;
 		}
 
-#if _DEBUG
-		// echo object (debug only)
-		virtual void test() {
-			logVerbose(STRINGIFY(T));
-			Graphic::trace();
-		}
-
-#endif // _DEBUG
-
-	protected:
-		T player;
+	private:
+		shared_ptr<T> player;
 	};
 
 	
 	class Background : public Actor<RoleBackground> {
 	};
 		// some objects just use the OpenFrameworks objects if things are basic enough
-	class Picture : public Actor<ofImage> {
+	class Picture : public Actor<Raster> {
 	public:
 		bool readFromScript(const Json::Value &data);
 		void draw() {
-			if (okToDraw()) {
-				player.draw(pos.x, pos.y);
+			if (getPlayer()->okToDraw()) {//okToDraw bugbug get from new animation class
+				getPlayer()->draw(getPlayer()->pos.x, getPlayer()->pos.y);
 			}
 		}
 		void update() {
-			player.update();
+			getPlayer()->update();
 		};
+
 	};
 	
 	class Text : public Actor<RoleText> {
@@ -306,7 +277,7 @@ namespace Software2552 {
 
 
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
-	class Audio : public Actor<ofSoundPlayer> {
+	class Audio : public Actor<SoundPlayer> {
 	public:
 		bool readFromScript(const Json::Value &data);
 		void setup();
@@ -317,6 +288,7 @@ namespace Software2552 {
 
 		bool readFromScript(const Json::Value &data);
 		void setup();
+		float  getVolume() { return volume; }
 		void update() {
 			player.update();
 		};
@@ -345,6 +317,9 @@ namespace Software2552 {
 		// 
 		virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
 		string test;
+	private:
+		float volume;
+
 	};
 
 	// 3d, 2d, talking, movment, etc will get complicated but put in basics for now

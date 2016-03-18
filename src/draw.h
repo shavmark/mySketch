@@ -347,7 +347,10 @@ namespace Software2552 {
 		string name;
 		int id=0;
 	};
-
+	// sound gets drawing basics for path and possibly other items in the future
+	class SoundPlayer : public ofSoundPlayer, public DrawingBasics {
+	public:
+	};
 	class Raster : public ofImage, public DrawingBasics {
 	public:
 		Raster(const string&pathIn) :ofImage(), DrawingBasics() { path = pathIn; }

@@ -142,14 +142,17 @@ namespace Software2552 {
 		//}
 	}
 
-	bool Picture::readFromScript(const Json::Value &data) {
-		if (Graphic::readFromScript(data)) {
-			if (getLocation().size() > 0) {
-				player.load(getLocation());//bugbug if things get too slow etc do not load here
-			}
-			return true;
+	 template <class T> bool Actor<T>::readFromScript(const Json::Value &data) {
+		// all actors can have a location
+		readStringFromJson(player->getLocation(), data["location"]);
+		if (player->getLocation().size() > 0) {
+			getPlayer()->load(player->getLocation());//bugbug if things get too slow etc do not load here
 		}
-		return false;
+		return true;
+	}
+
+	bool Picture::readFromScript(const Json::Value &data) {
+		return true;
 	}
 	void Colors::update() {
 		// clean up deleted items every so often
@@ -186,13 +189,8 @@ namespace Software2552 {
 
 	// return true if there is some data 
 	bool ReferencedItem::readFromScript(const Json::Value &data) {
-
-		if (Dates::readFromScript(data)) {
-
-			parse<Reference>(references, data["references"]);
-			return true;
-		}
-		return false; // some thing must be really wrong to return false as these are optional items
+		parse<Reference>(references, data["references"]);
+		return true;
 	}
 	bool Font::readFromScript(const Json::Value &data) {
 
@@ -231,7 +229,6 @@ namespace Software2552 {
 		return true;
 	}
 	bool Dates::readFromScript(const Json::Value &data) {
-		Settings::readFromScript(data["settings"]);
 		timelineDate.readFromScript(data["timelineDate"]); // date item existed
 		lastUpdateDate.readFromScript(data["lastUpdateDate"]); // last time object was updated
 		itemDate.readFromScript(data["itemDate"]);
@@ -239,7 +236,7 @@ namespace Software2552 {
 	}
 
 	bool Reference::readFromScript(const Json::Value &data) {
-
+		Settings::readFromScript(data["settings"]);
 		if (Dates::readFromScript(data)) { // ignore reference as an array or w/o data at this point
 			// no base class so it repeats some data in base class ReferencedItem
 			READSTRING(location, data[STRINGIFY(Reference)]);
@@ -383,15 +380,17 @@ namespace Software2552 {
 	};
 
 	bool Video::readFromScript(const Json::Value &data) {
-
-		Graphic::readFromScript(data);
-		player.setVolume(getVolume());
+		Actor::readFromScript(data);
+		float volume=1;//default
+		READFLOAT(volume, data);
+		getPlayer()->setVolume(volume);
 		return true;
 	}
 	bool Audio::readFromScript(const Json::Value &data) {
-
-		Graphic::readFromScript(data);
-		player.setVolume(getVolume());
+		Actor::readFromScript(data);
+		float volume = 1;//default
+		READFLOAT(volume, data);
+		getPlayer()->setVolume(volume);
 		return true;
 	}
 	void GraphicEngines::bumpWaits(uint64_t wait) {
@@ -511,23 +510,21 @@ namespace Software2552 {
 	Graphic::Graphic() : ReferencedItem() {
 		//bugbug add a pause where time is suspended, add in rew, play, stop etc also
 		volume = 0.5;
-		myID = ofGetSystemTimeMicros();
 	}
 	// always return true as these are optional items
 	bool Graphic::readFromScript(const Json::Value &data) {
 
 		ReferencedItem::readFromScript(data);
-		READSTRING(type, data);
 		readJsonValue(w, data["width"]);
 		readJsonValue(h, data["height"]);
-		READSTRING(locationPath, data);
-		READFLOAT(volume, data);
 		readJsonValue(getDuration(), data["duration"]);
 		readJsonValue(getWait(), data["wait"]);
 		Point3D point;
 		point.readFromScript(data["startingPoint"]);
 		pos.x = point.x;
 		pos.y = point.y;
+		READSTRING(locationPath, data);
+		READFLOAT(volume, data);
 		return true;
 	}
 
