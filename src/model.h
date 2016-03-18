@@ -214,7 +214,7 @@ namespace Software2552 {
 	class Scene : public Settings {
 	public:
 		Scene(const string&keynameIn);
-		Scene();
+		Scene() {};
 		bool read(Stage&stage, const Json::Value &data);
 
 		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
@@ -247,6 +247,7 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 		bool operator==(const PlayItem rhs) { return rhs.keyname == keyname; }
 		string &getKeyName() { return keyname; }
+		Scene scene;
 
 	private:
 		string keyname;
