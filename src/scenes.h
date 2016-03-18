@@ -6,11 +6,11 @@
 // home of custom scenes
 
 namespace Software2552 {
-	// calls the shots
+	// calls the shots, uses the Animation classes to do so bugbug code this in
 	class Director {
 	public:
 		// return a possibly changed and live value from the cameras vector
-		Camera* pickem(vector<Camera>&cameras, bool rotating);
+		shared_ptr<Camera> pickem(vector<shared_ptr<Camera>>&cameras, bool rotating);
 
 	};
 
@@ -20,40 +20,43 @@ namespace Software2552 {
 		void setup();
 		virtual void update();
 		void draw();
-		virtual void test();
+		virtual void test();//shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
-		void add(const Camera& camera) { cameras.push_back(camera); };
-		void add(const Light& light) { lights.push_back(light); };
-		void add(const Raster& image) { images.push_back(image); };
-		void add(const VideoPlayer& video) { videos.push_back(video); };
-		void add(const Grabber& grabber) { grabbers.push_back(grabber); };
-		void add(const TextureVideo& tv) { texturevideos.push_back(tv); };
-		vector<Grabber>& getGrabbers() { return grabbers; }
-		vector<Camera>& getCameras() { return cameras; }
-		vector<Light>& getLights() { return lights; }
-		vector<Raster>& getImages() { return images; }
-		vector<VideoPlayer>& getVideos() { return videos; }
-		vector<TextureVideo>& getTextureVideos() { return texturevideos; }
+		void add(shared_ptr<Camera> camera) { cameras.push_back(camera); };
+		void add(shared_ptr<Light> light) { lights.push_back(light); };
+		void add(shared_ptr<Raster>image) { images.push_back(image); };
+		void add(shared_ptr<VideoPlayer> video) { videos.push_back(video); };
+		void add(shared_ptr<Grabber> grabber) { grabbers.push_back(grabber); };
+		void add(shared_ptr<TextureVideo>tv) { texturevideos.push_back(tv); };
+		vector<shared_ptr<Grabber>>& getGrabbers() { return grabbers; }
+		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
+		vector<shared_ptr<Light>>& getLights() { return lights; }
+		vector<shared_ptr<Raster>>& getImages() { return images; }
+		vector<shared_ptr<VideoPlayer>>& getVideos() { return videos; }
+		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
 	protected:
 		virtual void draw2d();
 		virtual void draw3dFixed() {};
 		virtual void draw3dMoving() {};
 		virtual void pre3dDraw();
 		virtual void post3dDraw();
-		virtual void installLightAndMaterialThenDraw(Camera*); // derive to change where cameras are
+		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>); // derive to change where cameras are
 	private:
 		vector<shared_ptr<Animatable>> animatables;//bugbug make all these ptrs so dervied classes can be used
-		vector<Grabber> grabbers;
-		vector<Camera>	cameras; 
-		vector<Light>	lights;
-		vector<Raster>	images;
-		vector<TextureVideo> texturevideos;
-		vector<VideoPlayer>   videos;
+		vector<shared_ptr<Grabber>> grabbers;
+		vector<shared_ptr<Camera>>	cameras;
+		vector<shared_ptr<Light>>	lights;
+		vector<shared_ptr<Raster>>	images;
+		vector<shared_ptr<TextureVideo>> texturevideos;
+		vector<shared_ptr<VideoPlayer>>   videos;
+
+		//bugbug get the right classes so there is one type of animator then push them
+		//all up here
+		vector<shared_ptr<Animator>> animators;
+
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
 		Director director;
 		void draw3d();
-		Camera *camFixed  = nullptr; // set via draw3dStart
-		Camera *camMoving = nullptr; // set via draw3dStart
 		ofImage imageForBackground;//bugbug change this to use the background object that includes just a color background
 		string backgroundImageName;
 	};
@@ -74,7 +77,6 @@ namespace Software2552 {
 		void draw3dFixed();
 		void draw3dMoving();
 	private:
-		Rectangle rect[10];
 
 		Cube cube;
 		CrazyMesh mesh;
@@ -91,7 +93,7 @@ namespace Software2552 {
 	private:
 		// things a scene can have (infinte list really)
 		Sphere	videoSphere;
-		vector<Planet> pictureSpheres;//bugbug move up to baseclass with a pointer vector to drawing items
+		vector<shared_ptr<Planet>> pictureSpheres;//bugbug move up to baseclass with a pointer vector to drawing items
 	};
 
 

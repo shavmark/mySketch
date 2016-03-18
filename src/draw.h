@@ -3,9 +3,6 @@
 #include "ofxBox2d.h"
 #include "color.h"
 #include "animation.h"
-#include "ofxAnimatableFloat.h"
-#include "ofxAnimatableOfPoint.h"
-#include "ofxAnimatableOfColor.h"
 
 // home of custom drawing
 
@@ -17,8 +14,9 @@ namespace Software2552 {
 	class Settings;
 	class Colors;
 
+
 	// simple drawing 
-	class Rectangle : public BaseAnimation {
+	class Rectangle : public DrawingBasics {
 	public:
 
 		void draw();
@@ -39,25 +37,6 @@ namespace Software2552 {
 	public:
 		ofPoint a;
 		ofPoint b;
-	};
-
-	class PointAnimation : public ofxAnimatableOfPoint {
-	public:
-	};
-	class ColorAnimation : public ofxAnimatableOfColor {
-	public:
-		void draw();
-	};
-
-	// base class used to draw, drawing done by derived classes
-	class Animatable : public ofxAnimatableFloat{
-	public:
-		virtual void draw();
-		virtual void update(float dt);
-		void set(shared_ptr<ColorAnimation>p);
-
-	private:
-		shared_ptr<ColorAnimation> colorAnimation = nullptr; // optional color
 	};
 
 	// bouncy ball with nice colors is pretty nice, does not take too much really
@@ -213,8 +192,11 @@ namespace Software2552 {
 
 	};
 
+	// bugbug things that come from openframeworks do not get the anmation base class, too many collisions
+	//bugbug figure out how to animate such things, like moving a camera, is such 
+	// animation done in the Director?
 
-	class Primitive : public Animator {
+	class Primitive : public DrawingBasics {
 	public:
 		void setWireframe(bool b = true) { wireFrame = b; }
 		bool useWireframe() { return wireFrame; }
@@ -327,7 +309,7 @@ namespace Software2552 {
 			ofTriangle(0, 0, -50, 100, 50, 100);
 		}
 	};
-	class Camera : public ofEasyCam, public Animator {
+	class Camera : public ofEasyCam, public DrawingBasics {
 	public:
 		void orbit();
 		void setOrbit(bool b = true) { useOrbit = b; }
@@ -339,10 +321,9 @@ namespace Software2552 {
 	public:
 	};
 
-	
-	class Grabber : public ofVideoGrabber, public Animator {
+	class Grabber : public ofVideoGrabber, public DrawingBasics {
 	public:
-		Grabber(const string&nameIn) :ofVideoGrabber(), Animator() { name = nameIn;  }
+		Grabber(const string&nameIn) :ofVideoGrabber(), DrawingBasics(){ name = nameIn;  }
 		void loadGrabber(int w, int h) {
 			id = find();
 			setDeviceID(id);
@@ -367,9 +348,9 @@ namespace Software2552 {
 		int id=0;
 	};
 
-	class Raster : public ofImage, public Animator {
+	class Raster : public ofImage, public DrawingBasics {
 	public:
-		Raster(const string&pathIn) :ofImage(), Animator() { path = pathIn; }
+		Raster(const string&pathIn) :ofImage(), DrawingBasics() { path = pathIn; }
 		bool loadRaster() {
 			return ofLoadImage(*this, path);
 		}
@@ -377,9 +358,9 @@ namespace Software2552 {
 		string path;
 	};
 
-	class VideoPlayer :public ofVideoPlayer, public Animator {
+	class VideoPlayer :public ofVideoPlayer, public DrawingBasics {
 	public:
-		VideoPlayer(const string&pathIn) :ofVideoPlayer(), Animator() { path = pathIn; }
+		VideoPlayer(const string&pathIn) :ofVideoPlayer(), DrawingBasics() { path = pathIn; }
 		bool loadVideo() {
 			return load(path);
 		}
