@@ -6,12 +6,14 @@
 // home of custom scenes
 
 namespace Software2552 {
-	// calls the shots, uses the Animation classes to do so bugbug code this in
+	// calls the shots, uses the Animation classes to do so bugbug code this in, add it to its own file
+	// it replaces time line
 	class Director {
 	public:
 		// return a possibly changed and live value from the cameras vector
 		shared_ptr<Camera> pickem(vector<shared_ptr<Camera>>&cameras, bool rotating);
-
+		// owns scenes, read, run, delete when duration is over
+		objectLifeTimeManager
 	};
 
 	// contains  elements of a stage

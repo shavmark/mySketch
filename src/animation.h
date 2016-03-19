@@ -8,24 +8,46 @@
 
 namespace Software2552 {
 
-	class AniWrapper : public ofxAnimatableOfPoint {
+	class objectLifeTimeManager {
+	public:
+		bool isExpired() const { return expired; }
+		template<typename T>void removeExpiredPtrToItems(vector<T>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::staticOKToRemovePtr), v.end());
+		}
+		template<typename T>void removeExpiredItems(vector<T>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::staticOKToRemove), v.end());
+		}
+		float& getOjectLifetime() { return objectlifetime; }
+		static bool staticOKToRemovePtr(shared_ptr<objectLifeTimeManager> me);
+		static bool staticOKToRemove(const objectLifeTimeManager& me);
+		bool  objectIsExpired() { return expired; }
+		void operator++ () { ++usageCount; }
+		bool operator> (const objectLifeTimeManager& rhs) { return usageCount > rhs.usageCount; }
+		int getAnimationUsageCount() const { return usageCount; }
+
+	private:
+		int	     usageCount=0;   // number of times this animation was used
+		float    objectlifetime=0; // 0=forever, how long object lives after it starts drawing
+		bool	 expired=false;    // object is expired
+
+	};
+	class AniPointWrapper : public ofxAnimatableOfPoint, public objectLifeTimeManager {
 	public:
 		float& getAnimationWait() { return waitTime_; }
 		float& getAnimationDelay() { return delay_; }
 	};
 	// animates colors
-	class ColorAnimation : public ofxAnimatableOfColor {
+	class ColorAnimation : public ofxAnimatableOfColor, public objectLifeTimeManager {
 	public:
 		void draw();
 	};
 
 	class MyAnimation   {
 	public:
-		MyAnimation() { init(); }
-		float& getOjectLifetime() { return objectlifetime; }
+		MyAnimation() {  }
 
 		// avoid name clashes and wrap the most used items, else access the contained object for more
-		AniWrapper& getAnimationHelper() { return ani; }
+		AniPointWrapper& getAnimationHelper() { return ani; }
 		float& getAnimationWait() { return getAnimationHelper().getAnimationWait(); }
 		float& getAnimationDelay() { return getAnimationHelper().getAnimationDelay(); }
 		ofPoint& getCurrentPosition() { return getAnimationHelper().getCurrentPosition(); }
@@ -45,32 +67,21 @@ namespace Software2552 {
 		void animateToAfterDelay(const ofPoint& where, float delay) { getAnimationHelper().animateToAfterDelay(where, delay); }
 		void animateToIfFinished(const ofPoint& where) { getAnimationHelper().animateToIfFinished(where); }
 
-		bool  objectIsExpired() { return expired; }
 		bool okToDraw() { return true; }//bugbug move this to the right place
-		void operator++ () { ++usageCount; }
-		bool operator> (const MyAnimation& rhs) { return usageCount > rhs.usageCount; }
-		int getAnimationUsageCount() const { return usageCount; }
 		void setRefreshRate(float) {}//bugbug make part of animation
 		bool refreshAnimation() { return true; } ///bugbug find the real one
 
-		AniWrapper ani; // call all the other items here
+		AniPointWrapper ani; // call all the other items via here
 
 	private:
-		void init() {
-			usageCount = 0;   // number of times this animation was used
-			objectlifetime = 0; // 0=forever, how long object lives after it starts drawing
-			expired = false;    // object is expired
-		}
 		string   locationPath;   // location of item to draw
-		int	     usageCount;   // number of times this animation was used
-		float    objectlifetime; // 0=forever, how long object lives after it starts drawing
-		bool	 expired;    // object is expired
 	};
 	// basic drawing info, bugbug maybe color set goes here too, not sure yet
 	class DrawingBasics : public MyAnimation {
 	public:
 		DrawingBasics() {  }
 		DrawingBasics(const string&path) { setLocationPath(path);  }
+		bool okToDraw();
 
 		// helpers to wrap basic functions
 		void setupForDrawing() { mySetup(); };

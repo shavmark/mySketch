@@ -33,14 +33,14 @@ namespace Software2552 {
 		paused = true;
 	}
 
-	bool Animator::staticOKToRemovePtr(shared_ptr<Animator> me) {
+	bool objectLifeTimeManager::staticOKToRemovePtr(shared_ptr<objectLifeTimeManager> me) {
 		if (me == nullptr) {
 			return false;
 		}
 		return staticOKToRemove(*me);
 	}
 	
-	bool Animator::staticOKToRemove(const Animator& me) {
+	bool objectLifeTimeManager::staticOKToRemove(const objectLifeTimeManager& me) {
 		if (me.isExpired()) {
 			return true;
 		}
@@ -59,7 +59,7 @@ namespace Software2552 {
 
 	}
 
-	bool Animator::okToDraw() {
+	bool DrawingBasics::okToDraw() {
 		if (paused || stopped || isExpired()) {
 			return false;
 		}

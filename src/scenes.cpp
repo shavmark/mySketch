@@ -177,7 +177,7 @@ namespace Software2552 {
 		//p.shape(15, 5, false, true, 5);
 		//p.matrix(10, 20);
 	}
-	// all items in test() to come from json
+	// bugbug all items in test() to come from json or are this is done in Director
 	void TestScene::test() {
 		Stage::test();
 		
