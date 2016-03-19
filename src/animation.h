@@ -13,20 +13,37 @@ namespace Software2552 {
 		float& getAnimationWait() { return waitTime_; }
 		float& getAnimationDelay() { return delay_; }
 	};
+	// animates colors
+	class ColorAnimation : public ofxAnimatableOfColor {
+	public:
+		void draw();
+	};
 
 	class MyAnimation   {
 	public:
 		MyAnimation() { init(); }
 		float& getOjectLifetime() { return objectlifetime; }
 
-		// avoid name clashes
-		float& getAnimationWait() { return ani.getAnimationWait(); }
-		float& getAnimationDelay() { return ani.getAnimationDelay(); }
-		ofPoint& getCurrentPosition() { return ani.getCurrentPosition(); }
-		void setPositionX(float f) { ani.setPositionX(f); }
-		void setPositionY(float f) { ani.setPositionY(f); }
-		void setPositionZ(float f) { ani.setPositionZ(f); }
-		void setAnimationPosition(const ofPoint p) { ani.setPosition(p); }
+		// avoid name clashes and wrap the most used items, else access the contained object for more
+		AniWrapper& getAnimationHelper() { return ani; }
+		float& getAnimationWait() { return getAnimationHelper().getAnimationWait(); }
+		float& getAnimationDelay() { return getAnimationHelper().getAnimationDelay(); }
+		ofPoint& getCurrentPosition() { return getAnimationHelper().getCurrentPosition(); }
+		void setPositionX(float f) { getAnimationHelper().setPositionX(f); }
+		void setPositionY(float f) { getAnimationHelper().setPositionY(f); }
+		void setPositionZ(float f) { getAnimationHelper().setPositionZ(f); }
+		void setAnimationPosition(const ofPoint& p) { getAnimationHelper().setPosition(p); }
+		void setDuration(float seconds) { getAnimationHelper().setDuration(seconds); }
+		void setCurve(AnimCurve curveStyle) { getAnimationHelper().setCurve(curveStyle);	}
+		void setRepeatType(AnimRepeat repeat) {	getAnimationHelper().setRepeatType(repeat);	}
+
+		void pause() { getAnimationHelper().pause(); };
+		void resume() { getAnimationHelper().resume(); };
+		void reset() {	getAnimationHelper().reset();	}
+		void updateAnimation(float dt) { getAnimationHelper().update(dt); }//must be called
+		void animateTo(const ofPoint& where) { getAnimationHelper().animateTo(where); }
+		void animateToAfterDelay(const ofPoint& where, float delay) { getAnimationHelper().animateToAfterDelay(where, delay); }
+		void animateToIfFinished(const ofPoint& where) { getAnimationHelper().animateToIfFinished(where); }
 
 		bool  objectIsExpired() { return expired; }
 		bool okToDraw() { return true; }//bugbug move this to the right place
@@ -35,8 +52,10 @@ namespace Software2552 {
 		int getAnimationUsageCount() const { return usageCount; }
 		void setRefreshRate(float) {}//bugbug make part of animation
 		bool refreshAnimation() { return true; } ///bugbug find the real one
+
+		AniWrapper ani; // call all the other items here
+
 	private:
-		AniWrapper ani;
 		void init() {
 			usageCount = 0;   // number of times this animation was used
 			objectlifetime = 0; // 0=forever, how long object lives after it starts drawing
@@ -52,28 +71,40 @@ namespace Software2552 {
 	public:
 		DrawingBasics() {  }
 		DrawingBasics(const string&path) { setLocationPath(path);  }
-		// helpers to wrap basic functions
-		virtual void setupBasic() {};
-		virtual void updateBasic() {};
-		virtual void drawBasic() {};
-		virtual bool loadBasic() { return true; };
 
+		// helpers to wrap basic functions
+		void setupForDrawing() { mySetup(); };
+		void updateForDrawing() { 
+			float dt = 1.0f / 60.0f;//bugbug does this time to frame count? I think so
+			if (colorAnimation != nullptr) {
+				colorAnimation->update(dt);
+			}
+			getAnimationHelper().update(dt);
+			myUpdate(); // call derived classes
+		};
+		void drawIt() { myDraw(); };
+		bool loadForDrawing() { return myLoad(); };
+
+		void setColorAnimation(shared_ptr<ColorAnimation>p) {
+			colorAnimation = p;
+		}
 		int w = 0;
 		int h = 0;
 
 		string &getLocationPath() { return locationPath; }
 		void setLocationPath(const string&s) { locationPath = s; }
 
-
 	private:
+		// derived classes supply these if they need them to be called
+		virtual void mySetup() {};
+		virtual void myUpdate() {};
+		virtual void myDraw() {};
+		virtual bool myLoad() { return true; };
 		string   locationPath;   // location of item to draw
+		shared_ptr<ColorAnimation> colorAnimation = nullptr; // optional color
+
 	};
 
-	// animates colors
-	class ColorAnimation : public ofxAnimatableOfColor {
-	public:
-		void draw();
-	};
 
 	// base class used to draw, drawing done by derived classes
 	class Animatable : public ofxAnimatableFloat, public DrawingBasics {

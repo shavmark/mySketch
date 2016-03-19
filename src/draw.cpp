@@ -183,12 +183,10 @@ namespace Software2552 {
 		}
 	}
 
-	void Ball2d::draw() {
-		Animatable::draw();
+	void Ball2d::myDraw() {
 		ofFill();
 		ofSetBackgroundColor(ofColor::blue);
-		float f = val();
-		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), val(), width);
+		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), getCurrentPosition().y, width);
 		//glColor4ub(255, 255, 255, 255);
 		ofRect(0, floorLine + width, ofGetWidth(), 1);
 
@@ -232,6 +230,41 @@ namespace Software2552 {
 		ofRect(getCurrentPosition().x, getCurrentPosition().y, w, h);
 
 	}
+	void RolePlane::myDraw() {
+		if (useWireframe()) {
+			drawWireframe();
+		}
+		else {
+			ofPlanePrimitive::draw();
+		}
+	}
+
+	void RoleCube::myDraw() {
+		if (useWireframe()) {
+			drawWireframe();
+		}
+		else {
+			ofBoxPrimitive::draw();
+		}
+	}
+	void RoleSphere::myDraw() {
+		if (useWireframe()) {
+			drawWireframe();
+		}
+		else {
+			ofSpherePrimitive::draw();
+		}
+		//drawFaces();
+		//drawVertices();
+	}
+
+	void RoleSoundPlayer::mySetup() {
+		if (!load(getLocationPath())) {
+			logErrorString("setup audio Player");
+		}
+		// some of this data could come from data in the future
+		play();
+	}
 
 	void CrazyMesh::setup() {
 		for (int i = 0;  i < w; ++i) {
@@ -259,28 +292,42 @@ namespace Software2552 {
 		drawVertices();
 		ofPopStyle();
 	}
-	// add this one http://clab.concordia.ca/?page_id=944
-	void RoleVideo::drawBasic() {
-		ofVideoPlayer::draw(getCurrentPosition().x, getCurrentPosition().y);
+	void RoleRaster::myDraw() {
+		if (okToDraw()) {
+			ofImage::draw(getCurrentPosition().x, getCurrentPosition().y, w, h);
+		}
 	}
-	void RoleVideo::setupBasic() {
+	void RoleParagraph::myDraw() {
+		if (okToDraw()) {
+			ofxParagraph::setPosition(getCurrentPosition().x, getCurrentPosition().y);
+			ofxParagraph::draw();
+		}
+	}
+
+	// add this one http://clab.concordia.ca/?page_id=944
+	void RoleVideo::myDraw() {
+		if (okToDraw()) {
+			ofVideoPlayer::draw(getCurrentPosition().x, getCurrentPosition().y);
+		}
+	}
+	void RoleVideo::mySetup() {
 		if (!isLoaded()) {
 			if (!load(getLocationPath())) {
 				logErrorString("setup video Player");
 			}
 		}
 	}
-	bool RoleVideo::loadBasic() { 
-		setupBasic(); 
+	bool RoleVideo::myLoad() { 
+		setupForDrawing(); 
 		return true; 
 	}
 
-	void RoleBackground::setupBasic() {
+	void RoleBackground::mySetup() {
 		mode = OF_GRADIENT_LINEAR; 
 		setRefreshRate(60000);// just set something different while in dev
 	}
 	// colors and background change over time but not at the same time
-	void RoleBackground::updateBasic() {
+	void RoleBackground::myUpdate() {
 		//bugbug can add other back grounds like a video loop, sound
 		// picture, any graphic etc
 		if (refreshAnimation()) {
@@ -309,26 +356,30 @@ namespace Software2552 {
 		}
 	}
 
-	void RoleBackground::drawBasic(){
-		//ofBackgroundHex this is an option too bugbug enable background type
+	void RoleBackground::myDraw(){
+		if (okToDraw()) {
+			//ofBackgroundHex this is an option too bugbug enable background type
 
-		ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
-			ofColor::fromHex(Colors::getBackground()), mode);
-		RoleText text;
-		text.drawText("print", 100,200);
+			ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
+				ofColor::fromHex(Colors::getBackground()), mode);
+			RoleText text;
+			text.drawText("print", 100, 200);
+		}
 	}
-	void RoleText::drawBasic() {
+	void RoleText::myDraw() {
 		if (okToDraw()) {
 			drawText(text, getCurrentPosition().x, getCurrentPosition().y); //bugbug add in some animation
 		}
 	}
 
 	void RoleText::drawText(const string &s, int x, int y) {
-		ofPushStyle();
-		Colors::setFontColor();
-		Font font;
-		font.get().drawString(s, x, y);
-		ofPopStyle();
+		if (okToDraw()) {
+			ofPushStyle();
+			Colors::setFontColor();
+			Font font;
+			font.get().drawString(s, x, y);
+			ofPopStyle();
+		}
 	}
 	void MeshEngine::setup() {
 		//setMode(OF_PRIMITIVE_POINTS);

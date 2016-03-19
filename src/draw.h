@@ -34,9 +34,9 @@ namespace Software2552 {
 	};
 
 	// bouncy ball with nice colors is pretty nice, does not take too much really
-	class Ball2d : public Animatable {
+	class Ball2d : public DrawingBasics {
 	public:
-		void draw();
+		void myDraw();
 		int floorLine = 630;
 		int xMargin = 0;
 		int widthCol = 60;
@@ -257,6 +257,7 @@ namespace Software2552 {
 	};
 	class Camera : public ofEasyCam, public MyAnimation {
 	public:
+
 		void orbit();
 		void setOrbit(bool b = true) { useOrbit = b; }
 		bool isOrbiting() const { return useOrbit; }
@@ -270,14 +271,12 @@ namespace Software2552 {
 	class Grabber : public ofVideoGrabber, public DrawingBasics {
 	public:
 		Grabber(const string&nameIn) :ofVideoGrabber(), DrawingBasics(){ name = nameIn;  }
+		void myUpdate() { ofVideoGrabber::update(); }
 		void loadGrabber(int w, int h) {
 			id = find();
 			setDeviceID(id);
 			setDesiredFrameRate(30);
 			ofVideoGrabber::setup(w, h);
-		}
-		bool loadRaster() {
-			return true;// ofLoadImage(*this, path);
 		}
 	private:
 		int find() {
@@ -295,38 +294,15 @@ namespace Software2552 {
 	};
 	class RolePlane : public ofPlanePrimitive, public Primitive {
 	public:
-		void draw() {
-			if (useWireframe()) {
-				drawWireframe();
-			}
-			else {
-				ofPlanePrimitive::draw();
-			}
-		}
+		void myDraw();
 	};
 	class RoleCube : public ofBoxPrimitive, public Primitive {
 	public:
-		void draw() {
-			if (useWireframe()) {
-				drawWireframe();
-			}
-			else {
-				ofBoxPrimitive::draw();
-			}
-		}
+		void myDraw();
 	};
 	class RoleSphere : public ofSpherePrimitive, public Primitive {
 	public:
-		void draw() {
-			if (useWireframe()) {
-				drawWireframe();
-			}
-			else {
-				ofSpherePrimitive::draw();
-			}
-			//drawFaces();
-			//drawVertices();
-		}
+		void myDraw();
 
 	private:
 	};
@@ -335,29 +311,20 @@ namespace Software2552 {
 	class RoleSoundPlayer : public ofSoundPlayer, public DrawingBasics {
 	public:
 		//bugbug tie into the main sound code we added
-		void setupBasic() {
-			if (!load(getLocationPath())) {
-				logErrorString("setup audio Player");
-			}
-			// some of this data could come from data in the future
-			play();
-		}
+
+		void mySetup();
 
 	};
 	class RoleRaster : public ofImage, public DrawingBasics {
 	public:
 		RoleRaster() :ofImage(), DrawingBasics() {  }
-
 		RoleRaster(const string& path) :ofImage(), DrawingBasics(path) { }
-		bool loadBasic() {
+
+		void myUpdate() { ofImage::update(); }
+		bool myLoad() {
 			return ofLoadImage(*this, getLocationPath());
 		}
-		
-		void drawBasic() {
-			if (okToDraw()) {
-				ofImage::draw(getCurrentPosition().x, getCurrentPosition().y);
-			}
-		}
+		void myDraw();
 	};
 
 	class TextureVideo : public ofVideoPlayer {
@@ -366,6 +333,8 @@ namespace Software2552 {
 			load(name);
 			play();
 		}
+		void myUpdate() { ofVideoPlayer::update(); }
+
 		bool textureReady() {
 			return isInitialized();
 		}
@@ -415,9 +384,9 @@ namespace Software2552 {
 	class RoleBackground : public Colors, public DrawingBasics {
 	public:
 		RoleBackground(){ mode = OF_GRADIENT_LINEAR; }
-		void setupBasic();
-		void drawBasic();
-		void updateBasic();
+		void mySetup();
+		void myDraw();
+		void myUpdate();
 	private:
 		ofGradientMode mode;
 
@@ -426,12 +395,8 @@ namespace Software2552 {
 	// put advanced drawing in these objects
 	class RoleParagraph :public ofxParagraph, public DrawingBasics {
 	public:
-		void drawBasic() {
-			if (okToDraw()) {
-				ofxParagraph::setPosition(getCurrentPosition().x, getCurrentPosition().y);
-				ofxParagraph::draw();
-			}
-		}
+
+		void myDraw();
 
 	private:
 	};
@@ -440,9 +405,10 @@ namespace Software2552 {
 	public:
 		RoleVideo() :ofVideoPlayer(), DrawingBasics() {  }
 		RoleVideo(const string& path) :ofVideoPlayer(), DrawingBasics(path) { }
-		void drawBasic();
-		void setupBasic();
-		bool loadBasic();
+		void myUpdate() { ofVideoPlayer::update(); }
+		void myDraw();
+		void mySetup();
+		bool myLoad();
 		//virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
 		float getTimeBeforeStart(float t) {
 
@@ -467,7 +433,7 @@ namespace Software2552 {
 	};
 	class RoleText :  public DrawingBasics {
 	public:
-		void drawBasic();
+		void myDraw();
 		void drawText(const string &s, int x, int y);
 		void setText(const string&t) { text = t; }
 		string& getText() { return text; }

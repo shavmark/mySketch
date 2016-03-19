@@ -41,7 +41,7 @@ namespace Software2552 {
 	}
 	void Stage::draw() {
 		for (auto& a : animatables) {
-			a->draw();
+			a->drawIt();
 		}
 
 		if (backgroundImageName.size() > 0) {
@@ -66,10 +66,10 @@ namespace Software2552 {
 			grabber->loadGrabber(grabber->w, grabber->h);
 		}
 		for (auto& image : images) {
-			image->loadBasic();
+			image->loadForDrawing();
 		}
 		for (auto& video : videos) {
-			video->loadBasic();
+			video->loadForDrawing();
 			video->play();
 		}
 
@@ -80,9 +80,8 @@ namespace Software2552 {
 	}
 	void Stage::update() {
 
-		float dt = 1.0f / 60.0f;
 		for (auto& a : animatables) {
-			a->update(dt);
+			a->updateForDrawing();
 		}
 
 		if (backgroundImageName.size() > 0) {
@@ -95,7 +94,7 @@ namespace Software2552 {
 			}
 		}
 		for (auto& image : images) {
-			image->update();
+			image->myUpdate();
 		}
 		for (auto& video : videos) {
 			video->update();
@@ -104,24 +103,27 @@ namespace Software2552 {
 			video->update();
 		}
 	}
-
+	//great animation example
 	void Stage::test() {
 		shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
-		b->reset(b->floorLine - 100);
+		b->setPositionY(b->floorLine - 100);
 		b->setCurve(EASE_IN);
 		b->setRepeatType(LOOP_BACK_AND_FORTH);
 		b->setDuration(0.55);
-		b->animateTo(b->floorLine);
+		ofPoint p;
+		p.y = b->floorLine;
+		b->animateTo(p);
 		//b->setDuration(0.001);
 
-		shared_ptr<ColorAnimation> p = std::make_shared<ColorAnimation>();
+		shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
 
-		p->setColor(ofColor::blue);
-		p->setDuration(0.5f);
-		p->setRepeatType(LOOP_BACK_AND_FORTH);
-		p->setCurve(LINEAR);
-		p->animateTo(ofColor::red);
-		b->set(p);
+		c->setColor(ofColor::blue);
+		c->setDuration(0.5f);
+		c->setRepeatType(LOOP_BACK_AND_FORTH);
+		c->setCurve(LINEAR);
+		c->animateTo(ofColor::red);
+		b->setColorAnimation(c);
+
 		animatables.push_back(b);
 
 
@@ -174,7 +176,7 @@ namespace Software2552 {
 	void Stage::draw2d() {
 		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
 		for (auto& a : animatables) {
-			a->draw();
+			a->drawIt();
 		}
 		
 		//ofBackground(ofColor::black);

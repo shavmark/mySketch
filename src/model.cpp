@@ -164,7 +164,7 @@ namespace Software2552 {
 		// all actors can have a location
 		readStringFromJson(player->getLocationPath(), data["location"]);
 		if (player->getLocationPath().size() > 0) {
-			getPlayer()->loadBasic();//bugbug if things get too slow etc do not load here
+			getPlayer()->loadForDrawing();//bugbug if things get too slow etc do not load here
 		}
 
 		// optional sizes, locations, durations for animation etc
