@@ -62,17 +62,9 @@ namespace Software2552 {
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.load(backgroundImageName);
 		}
-		for (auto& grabber : grabbers) {
-			grabber->loadGrabber(grabber->w, grabber->h);
+		for (auto& a : animatables) {
+			a->loadForDrawing();
 		}
-		for (auto& image : images) {
-			image->loadForDrawing();
-		}
-		for (auto& video : videos) {
-			video->loadForDrawing();
-			video->play();
-		}
-
 
 		material.setShininess(90);
 		material.setSpecularColor(ofColor::olive);
@@ -88,20 +80,6 @@ namespace Software2552 {
 			imageForBackground.resize(ofGetWidth(), ofGetHeight());
 		}
 
-		for (auto& grabber : grabbers) {
-			if (grabber->isInitialized()) {
-				grabber->update();
-			}
-		}
-		for (auto& image : images) {
-			image->myUpdate();
-		}
-		for (auto& video : videos) {
-			video->update();
-		}
-		for (auto& video : texturevideos) {
-			video->update();
-		}
 	}
 	//great animation example
 	void Stage::test() {
@@ -180,22 +158,8 @@ namespace Software2552 {
 		}
 		
 		//ofBackground(ofColor::black);
-		ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
-		ofSetColor(255, 100);//bugbug figure out alpha in color.h
-		for (const auto& image : images) {
-			image->draw(image->getCurrentPosition().x, image->getCurrentPosition().y, image->w, image->h);
-		}
-		ofSetColor(255, 125);
-		for (const auto& video : videos) {
-			video->draw(video->getCurrentPosition().x, video->getCurrentPosition().y, video->w, video->h);
-		}
-		ofSetColor(255, 175);
-		for (auto& grabber : grabbers) {
-			if (grabber->isInitialized()) {
-				grabber->draw(grabber->getCurrentPosition().x, grabber->getCurrentPosition().y, grabber->w, grabber->h);
-			}
-		}
-		ofEnableAlphaBlending();
+		//bugbug option is to add vs replace:ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
+		//ofEnableAlphaBlending();
 	}
 	// juse need to draw the SpaceScene, base class does the rest
 	void TestScene::draw3dMoving() {
@@ -276,17 +240,17 @@ namespace Software2552 {
 
 		shared_ptr<RoleRaster> raster = std::make_shared<RoleRaster>("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
-		add(raster);
+		addAnimatable(raster);
 
 		shared_ptr<RoleVideo> video = std::make_shared<RoleVideo>("carride.mp4");
 		//video.w = ofGetWidth() / 3;
 		//video.x = raster.w;
-		add(video);
+		addAnimatable(video);
 
 		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
 		//grabber.w = ofGetWidth() / 3;
 		//grabber.x = video.x + video.w;
-		add(grabber);
+		addAnimatable(grabber);
 
 
 	}

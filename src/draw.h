@@ -271,13 +271,10 @@ namespace Software2552 {
 	class Grabber : public ofVideoGrabber, public DrawingBasics {
 	public:
 		Grabber(const string&nameIn) :ofVideoGrabber(), DrawingBasics(){ name = nameIn;  }
-		void myUpdate() { ofVideoGrabber::update(); }
-		void loadGrabber(int w, int h) {
-			id = find();
-			setDeviceID(id);
-			setDesiredFrameRate(30);
-			ofVideoGrabber::setup(w, h);
-		}
+		void myUpdate() { if (isInitialized()) ofVideoGrabber::update(); }
+		void myDraw();
+		bool myObjectLoad() { return loadGrabber(w, h); }
+		bool loadGrabber(int wIn, int hIn);
 	private:
 		int find() {
 			//bugbug does Kintect show up?
@@ -308,7 +305,7 @@ namespace Software2552 {
 	};
 
 	// sound gets drawing basics for path and possibly other items in the future
-	class RoleSoundPlayer : public ofSoundPlayer, public DrawingBasics {
+	class RoleSound : public ofSoundPlayer, public DrawingBasics {
 	public:
 		//bugbug tie into the main sound code we added
 
@@ -321,13 +318,13 @@ namespace Software2552 {
 		RoleRaster(const string& path) :ofImage(), DrawingBasics(path) { }
 
 		void myUpdate() { ofImage::update(); }
-		bool myLoad() {
+		bool myObjectLoad() {
 			return ofLoadImage(*this, getLocationPath());
 		}
 		void myDraw();
 	};
 
-	class TextureVideo : public ofVideoPlayer {
+	class TextureVideo : public ofVideoPlayer, public DrawingBasics {
 	public:
 		void create(const string& name, float w, float h) {
 			load(name);
@@ -408,7 +405,7 @@ namespace Software2552 {
 		void myUpdate() { ofVideoPlayer::update(); }
 		void myDraw();
 		void mySetup();
-		bool myLoad();
+		bool myObjectLoad();
 		//virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
 		float getTimeBeforeStart(float t) {
 

@@ -258,7 +258,7 @@ namespace Software2552 {
 		//drawVertices();
 	}
 
-	void RoleSoundPlayer::mySetup() {
+	void RoleSound::mySetup() {
 		if (!load(getLocationPath())) {
 			logErrorString("setup audio Player");
 		}
@@ -316,8 +316,10 @@ namespace Software2552 {
 				logErrorString("setup video Player");
 			}
 		}
+		play();
+
 	}
-	bool RoleVideo::myLoad() { 
+	bool RoleVideo::myObjectLoad() { 
 		setupForDrawing(); 
 		return true; 
 	}
@@ -355,7 +357,18 @@ namespace Software2552 {
 			ofEasyCam::orbit(longitude, latitude, radius, ofPoint(0, 0, 0));
 		}
 	}
+	bool Grabber::loadGrabber(int wIn, int hIn) {
+		id = find();
+		setDeviceID(id);
+		setDesiredFrameRate(30);
+		return ofVideoGrabber::setup(wIn, hIn);
+	}
 
+	void Grabber::myDraw() {
+		if (isInitialized() && okToDraw()) {
+			draw(getCurrentPosition().x, getCurrentPosition().y, w, h);
+		}
+	}
 	void RoleBackground::myDraw(){
 		if (okToDraw()) {
 			//ofBackgroundHex this is an option too bugbug enable background type

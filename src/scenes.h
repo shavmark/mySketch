@@ -20,30 +20,21 @@ namespace Software2552 {
 		void setup();
 		virtual void update();
 		void draw();
+
 		virtual void test();//shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
+
+		// drawing tools
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
 		void add(shared_ptr<Camera> camera) { cameras.push_back(camera); };
 		void add(shared_ptr<Light> light) { lights.push_back(light); };
-		void add(shared_ptr<RoleRaster>image) { images.push_back(image); };
-		void add(shared_ptr<RoleVideo> video) { videos.push_back(video); };
-		void add(shared_ptr<Grabber> grabber) { grabbers.push_back(grabber); };
 		void add(shared_ptr<TextureVideo>tv) { texturevideos.push_back(tv); };
-
-		void add(shared_ptr<RoleSoundPlayer>s) { sounds.push_back(s); };
-		void add(shared_ptr<RoleParagraph>p) { paragraphs.push_back(p); };
-		void add(shared_ptr<RoleText>t) { texts.push_back(t); };
-		void add(shared_ptr<RoleSphere>s) { spheres.push_back(s); };
-
-		vector<shared_ptr<Grabber>>& getGrabbers() { return grabbers; }
 		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
 		vector<shared_ptr<Light>>& getLights() { return lights; }
-		vector<shared_ptr<RoleRaster>>& getImages() { return images; }
-		vector<shared_ptr<RoleVideo>>& getVideos() { return videos; }
 		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
-		vector<shared_ptr<RoleSoundPlayer>>& getSounds() { return sounds; }
-		vector<shared_ptr<RoleParagraph>>& getParagraphs() { return paragraphs; }
-		vector<shared_ptr<RoleText>>& getTexts() { return texts; }
-		vector<shared_ptr<RoleSphere>>& getSpheres() { return spheres; }
+
+		// things to draw
+		void addAnimatable(shared_ptr<DrawingBasics>p) { animatables.push_back(p); }
+		vector<shared_ptr<DrawingBasics>>& getAnimatables() { return animatables; }
 
 	protected:
 		virtual void draw2d();
@@ -55,21 +46,10 @@ namespace Software2552 {
 	private:
 		//bugbug maybe just animatables is needed, a a typeof or such can be used
 		vector<shared_ptr<DrawingBasics>> animatables;//bugbug make all these ptrs so dervied classes can be used
-		vector<shared_ptr<Grabber>> grabbers;
 		vector<shared_ptr<Camera>>	cameras;
 		vector<shared_ptr<Light>>	lights;
-		vector<shared_ptr<RoleRaster>>		images;
 		vector<shared_ptr<TextureVideo>>	texturevideos;
-		vector<shared_ptr<RoleVideo>>		videos;
-		vector<shared_ptr<RoleSoundPlayer>> sounds;
-		vector<shared_ptr<RoleParagraph>>   paragraphs; 
-		vector<shared_ptr<RoleText>>		texts;
-		vector<shared_ptr<RoleSphere>>		spheres;
 		//bugbug can put more things like spheres here once spheres work and if it makes sense
-
-		//bugbug get the right classes so there is one type of animator then push them
-		//all up here
-		vector<shared_ptr<Animator>> animators;
 
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
 		Director director;

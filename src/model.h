@@ -196,7 +196,7 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 	};
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
-	class Audio : public Actor<RoleSoundPlayer> {
+	class Audio : public Actor<RoleSound> {
 	public:
 	private:
 		bool readFromScript(const Json::Value &data);
@@ -229,14 +229,14 @@ namespace Software2552 {
 		// remove items that are timed out
 		void removeExpiredItems();
 
-		bool dataAvailable();
-		void bumpWaits(uint64_t wait);
+		//bool dataAvailable();
+		//void bumpWaits(uint64_t wait);
 		uint64_t getLongestWaitTime();
 	protected:
 		string keyname;
 
 	private:
-		template<typename T, typename T2> void createTimeLineItems(vector<shared_ptr<T2>>&vec, const Json::Value &data, const string& key);
+		template<typename T> void createTimeLineItems(vector<shared_ptr<DrawingBasics>>&vec, const Json::Value &data, const string& key);
 
 	};
 	// item in a play list

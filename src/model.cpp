@@ -319,7 +319,7 @@ namespace Software2552 {
 
 		return true;
 	}
-	template<typename T, typename T2> void Scene::createTimeLineItems(vector<shared_ptr<T2>>& vec, const Json::Value &data, const string& key)
+	template<typename T> void Scene::createTimeLineItems(vector<shared_ptr<DrawingBasics>>& vec, const Json::Value &data, const string& key)
 	{
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			shared_ptr<T> v = std::make_shared<T>();
@@ -374,12 +374,12 @@ namespace Software2552 {
 			// add in a known type if data found
 			// keep add in its own vector
 
-			createTimeLineItems<Video>(stage.getVideos(), data, "videos");
-			createTimeLineItems<Audio>(stage.getSounds(), data, "audios");
-			createTimeLineItems<Paragraph>(stage.getParagraphs(), data, "paragraphs");
-			createTimeLineItems<Picture>(stage.getImages(), data,"images");
-			createTimeLineItems<Text>(stage.getTexts(), data, "texts");
-			createTimeLineItems<Sphere>(stage.getSpheres(), data, "spheres");
+			createTimeLineItems<Video>(stage.getAnimatables(), data, "videos");
+			createTimeLineItems<Audio>(stage.getAnimatables(), data, "audios");
+			createTimeLineItems<Paragraph>(stage.getAnimatables(), data, "paragraphs");
+			createTimeLineItems<Picture>(stage.getAnimatables(), data,"images");
+			createTimeLineItems<Text>(stage.getAnimatables(), data, "texts");
+			createTimeLineItems<Sphere>(stage.getAnimatables(), data, "spheres");
 			return true;
 		}
 		catch (std::exception e) {

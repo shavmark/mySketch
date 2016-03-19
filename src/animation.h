@@ -83,7 +83,7 @@ namespace Software2552 {
 			myUpdate(); // call derived classes
 		};
 		void drawIt() { myDraw(); };
-		bool loadForDrawing() { return myLoad(); };
+		bool loadForDrawing() { return myObjectLoad(); };
 
 		void setColorAnimation(shared_ptr<ColorAnimation>p) {
 			colorAnimation = p;
@@ -99,7 +99,7 @@ namespace Software2552 {
 		virtual void mySetup() {};
 		virtual void myUpdate() {};
 		virtual void myDraw() {};
-		virtual bool myLoad() { return true; };
+		virtual bool myObjectLoad() { return true; };
 		string   locationPath;   // location of item to draw
 		shared_ptr<ColorAnimation> colorAnimation = nullptr; // optional color
 
