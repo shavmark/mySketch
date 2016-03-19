@@ -4,7 +4,6 @@
 #include "color.h"
 #include "animation.h"
 #include "ofSoundPlayer.h"
-
 // home of custom drawing
 
 namespace Software2552 {
@@ -188,7 +187,7 @@ namespace Software2552 {
 		bool wireFrame = true;
 
 	};
-	class VectorPattern : public Animator {
+	class VectorPattern : public DrawingBasics {
 	public:
 		void matrix(int twistx, int shifty) {
 			ofPushMatrix();
@@ -256,7 +255,7 @@ namespace Software2552 {
 			ofTriangle(0, 0, -50, 100, 50, 100);
 		}
 	};
-	class Camera : public ofEasyCam, public DrawingBasics {
+	class Camera : public ofEasyCam, public MyAnimation {
 	public:
 		void orbit();
 		void setOrbit(bool b = true) { useOrbit = b; }
@@ -275,7 +274,7 @@ namespace Software2552 {
 			id = find();
 			setDeviceID(id);
 			setDesiredFrameRate(30);
-			setup(w, h);
+			ofVideoGrabber::setup(w, h);
 		}
 		bool loadRaster() {
 			return true;// ofLoadImage(*this, path);
@@ -337,7 +336,7 @@ namespace Software2552 {
 	public:
 		//bugbug tie into the main sound code we added
 		void setupBasic() {
-			if (!load(getLocation())) {
+			if (!load(getLocationPath())) {
 				logErrorString("setup audio Player");
 			}
 			// some of this data could come from data in the future
@@ -349,14 +348,14 @@ namespace Software2552 {
 	public:
 		RoleRaster() :ofImage(), DrawingBasics() {  }
 
-		RoleRaster(const string& path) :ofImage(), DrawingBasics() { setLocation(path); }
+		RoleRaster(const string& path) :ofImage(), DrawingBasics(path) { }
 		bool loadBasic() {
-			return ofLoadImage(*this, getLocation());
+			return ofLoadImage(*this, getLocationPath());
 		}
 		
 		void drawBasic() {
 			if (okToDraw()) {
-				draw(pos.x, pos.y);
+				ofImage::draw(getCurrentPosition().x, getCurrentPosition().y);
 			}
 		}
 	};
@@ -407,7 +406,7 @@ namespace Software2552 {
 		Fbo	fbo;
 
 	};
-	class Light : public ofLight, public Animator {
+	class Light : public ofLight, public MyAnimation {
 	public:
 	};
 	class Material : public ofMaterial {
@@ -429,8 +428,8 @@ namespace Software2552 {
 	public:
 		void drawBasic() {
 			if (okToDraw()) {
-				setPosition(pos.x, pos.y);
-				draw();
+				ofxParagraph::setPosition(getCurrentPosition().x, getCurrentPosition().y);
+				ofxParagraph::draw();
 			}
 		}
 
@@ -440,23 +439,23 @@ namespace Software2552 {
 	class RoleVideo :public ofVideoPlayer, public DrawingBasics {
 	public:
 		RoleVideo() :ofVideoPlayer(), DrawingBasics() {  }
-		RoleVideo(const string& path) :ofVideoPlayer(), DrawingBasics() { setLocation(path); }
+		RoleVideo(const string& path) :ofVideoPlayer(), DrawingBasics(path) { }
 		void drawBasic();
 		void setupBasic();
 		bool loadBasic();
 		//virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
-		uint64_t getTimeBeforeStart(uint64_t t) {
+		float getTimeBeforeStart(float t) {
 
 			// if json sets a wait use it
-			if (getWait() > 0) {
-				setIfGreater(t, getWait());
+			if (getAnimationWait() > 0) {
+				setIfGreater(t, getAnimationWait());
 			}
 			else {
 				// will need to load it now to get the true lenght
 				if (!isLoaded()) {
-					load(getLocation());
+					load(getLocationPath());
 				}
-				uint64_t duration = getLEARNINGDuration();
+				float duration = getOjectLifetime();
 				setIfGreater(t, duration);
 			}
 			return t;

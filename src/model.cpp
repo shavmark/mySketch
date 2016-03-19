@@ -162,19 +162,19 @@ namespace Software2552 {
 		references = parse<Reference>(data["references"]);
 		 
 		// all actors can have a location
-		readStringFromJson(player->getLocation(), data["location"]);
-		if (player->getLocation().size() > 0) {
+		readStringFromJson(player->getLocationPath(), data["location"]);
+		if (player->getLocationPath().size() > 0) {
 			getPlayer()->loadBasic();//bugbug if things get too slow etc do not load here
 		}
 
 		// optional sizes, locations, durations for animation etc
 		readJsonValue(player->w, data["width"]);
 		readJsonValue(player->h, data["height"]);
-		readJsonValue(player->getLEARNINGDuration(), data["duration"]);
-		readJsonValue(player->getWait(), data["wait"]);
+		readJsonValue(player->getOjectLifetime(), data["duration"]);
+		readJsonValue(player->getAnimationWait(), data["wait"]);
 		Point3D point;
 		point.readFromScript(data["startingPoint"]);
-		player->pos = point;
+		player->setAnimationPosition(point);
 
 		// read derived class data
 		readFromScript(data);
@@ -316,8 +316,6 @@ namespace Software2552 {
 
 		getPlayer()->setFont(getFontPointer());
 		getPlayer()->setColor(Colors::getFontColor());
-		getPlayer()->pos.x = 0; //bugbug maybe get from data
-		getPlayer()->pos.y = 0; //bugbug maybe get from data
 
 		return true;
 	}

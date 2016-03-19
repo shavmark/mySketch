@@ -229,7 +229,7 @@ namespace Software2552 {
 		ofFill();
 		ofSetRectMode(OF_RECTMODE_CENTER);	// center around the position
 		ofSetColor(255, 0, 0);
-		ofRect(pos.x, pos.y, w, h);
+		ofRect(getCurrentPosition().x, getCurrentPosition().y, w, h);
 
 	}
 
@@ -261,11 +261,11 @@ namespace Software2552 {
 	}
 	// add this one http://clab.concordia.ca/?page_id=944
 	void RoleVideo::drawBasic() {
-		draw(pos.x, pos.y);
+		ofVideoPlayer::draw(getCurrentPosition().x, getCurrentPosition().y);
 	}
 	void RoleVideo::setupBasic() {
 		if (!isLoaded()) {
-			if (!load(getLocation())) {
+			if (!load(getLocationPath())) {
 				logErrorString("setup video Player");
 			}
 		}
@@ -319,7 +319,7 @@ namespace Software2552 {
 	}
 	void RoleText::drawBasic() {
 		if (okToDraw()) {
-			drawText(text, pos.x, pos.y); //bugbug add in some animation
+			drawText(text, getCurrentPosition().x, getCurrentPosition().y); //bugbug add in some animation
 		}
 	}
 

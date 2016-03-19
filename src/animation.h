@@ -3,33 +3,70 @@
 #include "ofxAnimatableFloat.h"
 #include "ofxAnimatableOfPoint.h"
 #include "ofxAnimatableOfColor.h"
+
 // supports animation
 
 namespace Software2552 {
 
-	// basic drawing info, bugbug maybe color set goes here too, not sure yet
-	class DrawingBasics {
+	class AniWrapper : public ofxAnimatableOfPoint {
 	public:
+		float& getAnimationWait() { return waitTime_; }
+		float& getAnimationDelay() { return delay_; }
+	};
+
+	class MyAnimation   {
+	public:
+		MyAnimation() { init(); }
+		float& getOjectLifetime() { return objectlifetime; }
+
+		// avoid name clashes
+		float& getAnimationWait() { return ani.getAnimationWait(); }
+		float& getAnimationDelay() { return ani.getAnimationDelay(); }
+		ofPoint& getCurrentPosition() { return ani.getCurrentPosition(); }
+		void setPositionX(float f) { ani.setPositionX(f); }
+		void setPositionY(float f) { ani.setPositionY(f); }
+		void setPositionZ(float f) { ani.setPositionZ(f); }
+		void setAnimationPosition(const ofPoint p) { ani.setPosition(p); }
+
+		bool  objectIsExpired() { return expired; }
+		bool okToDraw() { return true; }//bugbug move this to the right place
+		void operator++ () { ++usageCount; }
+		bool operator> (const MyAnimation& rhs) { return usageCount > rhs.usageCount; }
+		int getAnimationUsageCount() const { return usageCount; }
+		void setRefreshRate(float) {}//bugbug make part of animation
+		bool refreshAnimation() { return true; } ///bugbug find the real one
+	private:
+		AniWrapper ani;
+		void init() {
+			usageCount = 0;   // number of times this animation was used
+			objectlifetime = 0; // 0=forever, how long object lives after it starts drawing
+			expired = false;    // object is expired
+		}
+		string   locationPath;   // location of item to draw
+		int	     usageCount;   // number of times this animation was used
+		float    objectlifetime; // 0=forever, how long object lives after it starts drawing
+		bool	 expired;    // object is expired
+	};
+	// basic drawing info, bugbug maybe color set goes here too, not sure yet
+	class DrawingBasics : public MyAnimation {
+	public:
+		DrawingBasics() {  }
+		DrawingBasics(const string&path) { setLocationPath(path);  }
 		// helpers to wrap basic functions
 		virtual void setupBasic() {};
 		virtual void updateBasic() {};
 		virtual void drawBasic() {};
 		virtual bool loadBasic() { return true; };
-		void setRefreshRate(float) {}//bugbug make part of animation
-		bool refreshAnimation() { return true; } ///bugbug find the real one
-		ofPoint pos;
+
 		int w = 0;
 		int h = 0;
-		bool okToDraw() { return true; }//bugbug move this to the right place
-		string &getLocation() { return locationPath; }
-		void setLocation(const string&s) { locationPath = s; }
-		uint64_t &getWait() { return wait; }//bugbug put in the right place, something from animation
-		uint64_t &getLEARNINGDuration() { return dura; }//bugbug put in the right place, something from animation
-	private:
-		uint64_t wait = 0;
-		uint64_t dura = 0;
-		string locationPath; // location of item to draw
 
+		string &getLocationPath() { return locationPath; }
+		void setLocationPath(const string&s) { locationPath = s; }
+
+
+	private:
+		string   locationPath;   // location of item to draw
 	};
 
 	// animates colors
@@ -61,9 +98,6 @@ namespace Software2552 {
 		void startAnimation() { startTime = ofGetElapsedTimeMillis(); }
 		bool isExpired() const { return expired; }
 		bool okToDraw();
-		void operator++ () {++usageCount;}
-		bool operator> (const Animator& rhs) {	return getAnimationUsageCount() > rhs.getAnimationUsageCount();	}
-		int getAnimationUsageCount() const {	return usageCount;	}
 		template<typename T>void removeExpiredPtrToItems(vector<T>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), Animator::staticOKToRemovePtr), v.end());
 		}
@@ -95,7 +129,6 @@ namespace Software2552 {
 		bool		expired; // object is expired
 		bool		stopped;
 		bool		paused;
-		int			usageCount; // number of times this animation was used
 	};
 
 

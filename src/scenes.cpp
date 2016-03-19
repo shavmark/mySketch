@@ -130,11 +130,11 @@ namespace Software2552 {
 	void Stage::installLightAndMaterialThenDraw(shared_ptr<Camera>cam) {
 		material.begin();//bugbug figure out material
 		if (cam != nullptr) {
-			cam->setPosition(cam->pos);
+			cam->setAnimationPosition(cam->getCurrentPosition());
 			cam->begin();
 			cam->orbit(); 
 			for (auto& light : lights) {
-				light->setPosition(light->pos);
+				light->setAnimationPosition(light->getCurrentPosition());
 				light->enable();
 			}
 			if (cam->isOrbiting()) {
@@ -181,16 +181,16 @@ namespace Software2552 {
 		ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
 		ofSetColor(255, 100);//bugbug figure out alpha in color.h
 		for (const auto& image : images) {
-			image->draw(image->pos.x, image->pos.y, image->w, image->h);
+			image->draw(image->getCurrentPosition().x, image->getCurrentPosition().y, image->w, image->h);
 		}
 		ofSetColor(255, 125);
 		for (const auto& video : videos) {
-			video->draw(video->pos.x, video->pos.y, video->w, video->h);
+			video->draw(video->getCurrentPosition().x, video->getCurrentPosition().y, video->w, video->h);
 		}
 		ofSetColor(255, 175);
 		for (auto& grabber : grabbers) {
 			if (grabber->isInitialized()) {
-				grabber->draw(grabber->pos.x, grabber->pos.y, grabber->w, grabber->h);
+				grabber->draw(grabber->getCurrentPosition().x, grabber->getCurrentPosition().y, grabber->w, grabber->h);
 			}
 		}
 		ofEnableAlphaBlending();
@@ -223,8 +223,8 @@ namespace Software2552 {
 		pointLight->setDiffuseColor(ofColor(0.f, 255.f, 0.f));
 		// specular color, the highlight/shininess color //
 		pointLight->setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight->pos.x = ofGetWidth()*.2;
-		pointLight->pos.y = ofGetHeight()*.2;
+		pointLight->setPositionX(ofGetWidth()*.2);
+		pointLight->setPositionY(ofGetHeight()*.2);
 		pointLight->setPointLight();
 		add(pointLight);
 
@@ -232,8 +232,8 @@ namespace Software2552 {
 		pointLight2->setDiffuseColor(ofColor(0.f, 0, 255.f));
 		// specular color, the highlight/shininess color //
 		pointLight2->setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight2->pos.x = -ofGetWidth()*.2;
-		pointLight2->pos.y = ofGetHeight()*.2;
+		pointLight2->setPositionX(-ofGetWidth()*.2);
+		pointLight2->setPositionY(ofGetHeight()*.2);
 		pointLight2->setPointLight();
 		add(pointLight2);
 
@@ -249,8 +249,8 @@ namespace Software2552 {
 		add(directionalLight);
 
 		shared_ptr<Light> basic = std::make_shared<Light>();
-		basic->pos.x = -100;
-		basic->pos.z = 400;
+		basic->setPositionX(-100.0f);
+		basic->setPositionZ(400.0f);
 		add(basic);
 
 		shared_ptr<Light> spotLight = std::make_shared<Light>();
@@ -267,9 +267,8 @@ namespace Software2552 {
 		// rate of falloff, illumitation decreases as the angle from the cone axis increases //
 		// range 0 - 128, zero is even illumination, 128 is max falloff //
 		spotLight->setSpotConcentration(2);
-		spotLight->pos.x = -ofGetWidth()*.1;
-		spotLight->pos.y = ofGetHeight()*.1;
-		spotLight->pos.z = 100;
+		ofPoint pos(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
+		spotLight->setAnimationPosition(pos);
 		add(spotLight);
 		
 
@@ -351,22 +350,21 @@ namespace Software2552 {
 		videoSphere.set(250, 180);
 
 		shared_ptr<Light> light1 = std::make_shared<Light>();
-		light1->pos.x = 0;
-		light1->pos.y = 0;
-		light1->pos.z = videoSphere.getRadius() * 2 ;
+		ofPoint point(0,0, videoSphere.getRadius() * 2);
+		light1->setAnimationPosition(point);
 		add(light1);
 
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->setScale(-1, -1, 1); // showing video
 		cam1->setOrbit(true); // rotating
-		cam1->pos.z = videoSphere.getRadius() * 2 + 300;
+		cam1->setPositionZ(videoSphere.getRadius() * 2 + 300);
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
 		cam2->setScale(-1, -1, 1); // showing video
-		cam2->pos.z = videoSphere.getRadius()*2 + 100;
+		cam2->setPositionZ(videoSphere.getRadius()*2 + 100);
 		cam2->setFov(60);
 		add(cam2);
 

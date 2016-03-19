@@ -85,7 +85,7 @@ namespace Software2552 {
 
 
 	void Animator::resetAnimation() {
-		usageCount = 0;
+//		usageCount = 0;
 		startTime = 0;
 		expired = false;
 		paused = false;
