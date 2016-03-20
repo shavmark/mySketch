@@ -13,7 +13,7 @@ namespace Software2552 {
 		// return a possibly changed and live value from the cameras vector
 		shared_ptr<Camera> pickem(vector<shared_ptr<Camera>>&cameras, bool rotating);
 		// owns scenes, read, run, delete when duration is over
-		objectLifeTimeManager
+		//objectLifeTimeManager
 	};
 
 	// contains  elements of a stage
@@ -27,9 +27,9 @@ namespace Software2552 {
 
 		// drawing tools
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
-		void add(shared_ptr<Camera> camera) { cameras.push_back(camera); };
-		void add(shared_ptr<Light> light) { lights.push_back(light); };
-		void add(shared_ptr<TextureVideo>tv) { texturevideos.push_back(tv); };
+		void add(shared_ptr<Camera> camera) { addAnimatable(camera); cameras.push_back(camera); };
+		void add(shared_ptr<Light> light) { addAnimatable(light); lights.push_back(light); };
+		void add(shared_ptr<TextureVideo>tv) { addAnimatable(tv); texturevideos.push_back(tv); };
 		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
 		vector<shared_ptr<Light>>& getLights() { return lights; }
 		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
@@ -37,7 +37,9 @@ namespace Software2552 {
 		// things to draw
 		void addAnimatable(shared_ptr<DrawingBasics>p) { animatables.push_back(p); }
 		vector<shared_ptr<DrawingBasics>>& getAnimatables() { return animatables; }
-
+		void clear(bool force=false);
+		void pause();
+		void resume();
 	protected:
 		virtual void draw2d();
 		virtual void draw3dFixed() {};

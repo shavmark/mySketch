@@ -40,44 +40,69 @@ namespace Software2552 {
 		return staticOKToRemove(*me);
 	}
 	
-	bool objectLifeTimeManager::staticOKToRemove(const objectLifeTimeManager& me) {
+	bool objectLifeTimeManager::staticOKToRemove(objectLifeTimeManager& me) {
 		if (me.isExpired()) {
 			return true;
 		}
 		// duration == 0 means never go away, and start == 0 means we have not started yet
-		if (me.duration == 0 || me.startTime == 0) {
+		if (me.getOjectLifetime() == 0 || me.startTime == 0) {
 			return false; // no time out ever, or we have not started yet
 		}
-		uint64_t elapsed = ofGetElapsedTimeMillis() - me.startTime;
-		if (me.wait > elapsed) {
+		float elapsed = ofGetElapsedTimef() - me.startTime;
+		if (me.getWait() > elapsed) {
 			return false;
 		}
-		if (me.duration > elapsed) {
+		if (me.getOjectLifetime() > elapsed) {
 			return false;
 		}
 		return true;
 
 	}
+	// return true if a refresh was done
+	bool objectLifeTimeManager::refreshAnimation() {
+		if (startTime == 0) {
+			start();
+			return false;
+		}
+		uint64_t t = ofGetElapsedTimeMillis() - startTime;
+
+		if (t < getWait()) {
+			return false;// waiting to start
+		}
+		//wait = 0; // skip all future usage of wait once we start
+				  // check for expired flag 
+		if (getOjectLifetime() > 0 && t > getOjectLifetime()) {
+			expired = true; // duration of 0 means no expiration
+			return false;
+		}
+		// at this point we can start the time over w/o a wait
+		if (t > getRefreshRate()) {
+			startTime = ofGetElapsedTimeMillis();
+			return true;
+		}
+		return false;
+	}
+
 
 	bool DrawingBasics::okToDraw() {
-		if (paused || stopped || isExpired()) {
+		if (getAnimationHelper().paused() || lifetime.isExpired()) {
 			return false;
 		}
 		// if still in wait threshold
-		uint64_t t = ofGetElapsedTimeMillis() - startTime;
-		if (t < wait) {
+		uint64_t t = ofGetElapsedTimeMillis() - lifetime.getStart();
+		if (t < lifetime.getWait()) {
 			return false; // in wait mode, nothing else to do
 		}
-		wait = 0; // skip all future usage of wait once we start
+		//wait = 0; // skip all future usage of wait once we start
 				  // duration 0 means always draw
-		if (duration == 0) {
+		if (lifetime.getOjectLifetime() == 0) {
 			return true;
 		}
-		if (t < duration) {
+		if (t < lifetime.getOjectLifetime()) {
 			return true;
 		}
 		else {
-			expired = true;
+			lifetime.setExpired(true);
 			return false;
 		}
 	}
@@ -97,30 +122,5 @@ namespace Software2552 {
 		h = ofGetHeight();
 
 	}
-	// return true if a refresh was done
-	bool Animator::refreshAnimation() {
-		if (startTime == 0) {
-			startAnimation();
-			return false;
-		}
-		uint64_t t = ofGetElapsedTimeMillis() - startTime;
-
-		if (t < getWait()) {
-			return false;// waiting to start
-		}
-		wait = 0; // skip all future usage of wait once we start
-				  // check for expired flag 
-		if (duration > 0 && t > duration) {
-			expired = true; // duration of 0 means no expiration
-			return false;
-		}
-		// at this point we can start the time over w/o a wait
-		if (t > refreshRate()) {
-			startTime = ofGetElapsedTimeMillis();
-			return true;
-		}
-		return false;
-	}
-
 
 }

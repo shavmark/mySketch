@@ -57,6 +57,33 @@ namespace Software2552 {
 		//draw3d();
 		ofPopStyle();
 	}
+	// pause them all
+	void Stage::pause() {
+		for (auto& a : animatables) {
+			a->pause();
+		}
+	}
+	void Stage::resume() {
+		for (auto& a : animatables) {
+			a->resume();
+		}
+	}
+	// clear objects
+	void Stage::clear(bool force) {
+		if (force) {
+			animatables.clear();
+			cameras.clear();
+			lights.clear();
+			texturevideos.clear();
+		}
+		else {
+			objectLifeTimeManager::removeExpiredPtrToItems(animatables);
+			objectLifeTimeManager::removeExpiredPtrToItems(cameras);
+			objectLifeTimeManager::removeExpiredPtrToItems(lights);
+			objectLifeTimeManager::removeExpiredPtrToItems(texturevideos);
+		}
+	}
+
 	void Stage::setup() {
 		test();
 		if (backgroundImageName.size() > 0) {

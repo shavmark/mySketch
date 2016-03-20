@@ -10,46 +10,54 @@ namespace Software2552 {
 
 	class objectLifeTimeManager {
 	public:
+		void start() { startTime = ofGetElapsedTimeMillis(); };
+		void setWait(float w) { waitTime = w; }
+		void setRefreshRate(uint64_t rateIn) { refreshRate = rateIn; }
+		float getRefreshRate() {return refreshRate;	}
+		float getWait() { return waitTime; }
+		float getStart() { return startTime; }
 		bool isExpired() const { return expired; }
-		template<typename T>void removeExpiredPtrToItems(vector<T>&v) {
+		void setExpired(bool b = true) { expired = true; }
+		template<typename T> static void removeExpiredPtrToItems(vector<T>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::staticOKToRemovePtr), v.end());
 		}
-		template<typename T>void removeExpiredItems(vector<T>&v) {
+		template<typename T> static void removeExpiredItems(vector<T>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::staticOKToRemove), v.end());
 		}
 		float& getOjectLifetime() { return objectlifetime; }
 		static bool staticOKToRemovePtr(shared_ptr<objectLifeTimeManager> me);
-		static bool staticOKToRemove(const objectLifeTimeManager& me);
-		bool  objectIsExpired() { return expired; }
+		static bool staticOKToRemove(objectLifeTimeManager& me);
 		void operator++ () { ++usageCount; }
 		bool operator> (const objectLifeTimeManager& rhs) { return usageCount > rhs.usageCount; }
 		int getAnimationUsageCount() const { return usageCount; }
-
+		bool refreshAnimation();
 	private:
-		int	     usageCount=0;   // number of times this animation was used
-		float    objectlifetime=0; // 0=forever, how long object lives after it starts drawing
-		bool	 expired=false;    // object is expired
-
-	};
-	class AniPointWrapper : public ofxAnimatableOfPoint, public objectLifeTimeManager {
-	public:
-		float& getAnimationWait() { return waitTime_; }
-		float& getAnimationDelay() { return delay_; }
+		int	    usageCount=0;     // number of times this animation was used
+		float   objectlifetime=0; // 0=forever, how long object lives after it starts drawing
+		bool	expired=false;    // object is expired
+		float	startTime = 0;
+		float   waitTime = 0;
+		float	refreshRate = 0;
 	};
 	// animates colors
-	class ColorAnimation : public ofxAnimatableOfColor, public objectLifeTimeManager {
+	class ColorAnimation : public ofxAnimatableOfColor {
 	public:
+		void startAnimationAfterDelay(float delay) { startAnimationAfterDelay(delay); }
 		void draw();
+	private:
+		objectLifeTimeManager lifetime;
 	};
-
+	class PointAnimation : public ofxAnimatableOfPoint {
+	public:
+		void startAnimationAfterDelay(float delay) { ofxAnimatableOfPoint::startAnimationAfterDelay(delay); }
+		bool paused() {	return paused_;	}
+	};
 	class MyAnimation   {
 	public:
 		MyAnimation() {  }
 
 		// avoid name clashes and wrap the most used items, else access the contained object for more
-		AniPointWrapper& getAnimationHelper() { return ani; }
-		float& getAnimationWait() { return getAnimationHelper().getAnimationWait(); }
-		float& getAnimationDelay() { return getAnimationHelper().getAnimationDelay(); }
+		PointAnimation& getAnimationHelper() { return ani; }
 		ofPoint& getCurrentPosition() { return getAnimationHelper().getCurrentPosition(); }
 		void setPositionX(float f) { getAnimationHelper().setPositionX(f); }
 		void setPositionY(float f) { getAnimationHelper().setPositionY(f); }
@@ -71,8 +79,9 @@ namespace Software2552 {
 		void setRefreshRate(float) {}//bugbug make part of animation
 		bool refreshAnimation() { return true; } ///bugbug find the real one
 
-		AniPointWrapper ani; // call all the other items via here
-
+	protected:
+		PointAnimation ani; // call all the other items via here
+		objectLifeTimeManager lifetime;
 	private:
 		string   locationPath;   // location of item to draw
 	};

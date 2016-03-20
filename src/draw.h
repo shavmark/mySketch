@@ -255,7 +255,7 @@ namespace Software2552 {
 			ofTriangle(0, 0, -50, 100, 50, 100);
 		}
 	};
-	class Camera : public ofEasyCam, public MyAnimation {
+	class Camera : public ofEasyCam, public DrawingBasics {
 	public:
 
 		void orbit();
@@ -372,7 +372,7 @@ namespace Software2552 {
 		Fbo	fbo;
 
 	};
-	class Light : public ofLight, public MyAnimation {
+	class Light : public ofLight, public DrawingBasics {
 	public:
 	};
 	class Material : public ofMaterial {
