@@ -48,6 +48,9 @@ namespace Software2552 {
 		virtual void post3dDraw();
 		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>); // derive to change where cameras are
 	private:
+		template<typename T> void removeExpiredItems(vector<shared_ptr<T>>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
+		}
 		//bugbug maybe just animatables is needed, a a typeof or such can be used
 		vector<shared_ptr<DrawingBasics>> animatables;//bugbug make all these ptrs so dervied classes can be used
 		vector<shared_ptr<Camera>>	cameras;

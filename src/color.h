@@ -43,6 +43,7 @@ namespace Software2552 {
 		Colors() {
 			// there must always be at least one color
 			setup();
+			privatedata = std::make_shared<colordata>();
 		}
 		//modeled after http://www.creativecolorschemes.com/products/ccs1/rgbColorGuide.shtml
 		// just names of customer colors, when paired they are a color set
@@ -112,15 +113,19 @@ namespace Software2552 {
 				currentColor = -1;
 				smallest = -1;
 			}
+			vector<shared_ptr<ColorSet>> colorlist;
 			std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int> colorTable; // key,hex pair
-			vector<ColorSet> colorlist;
 			int currentColor;
 			int smallest;//index of smallest value
 			ColorSet::ColorGroup defaultGroup;
 		};
 
 	private:
-		static colordata privatedata;
+		template<typename T> void removeExpiredItems(vector<shared_ptr<T>>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
+		}
+
+		static shared_ptr<colordata> privatedata;
 		// foreground, background, font
 		static ColorSet& get();
 		void setup();
@@ -130,15 +135,15 @@ namespace Software2552 {
 		void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& light);
 		void Colors::add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& light);
 		void Colors::AddColorRow(ColorSet::ColorGroup group, ColorName name, int val);
-		static void setSmallest(int i) { privatedata.smallest = i; }
-		static int  getSmallest() { return privatedata.smallest; }
-		static void setCurrent(int i) { privatedata.currentColor = i; }
-		static int  getCurrent() { return privatedata.currentColor; }
-		static std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int>& getTable() { return privatedata.colorTable; }
-		static void setColorTableItem(pair <ColorSet::ColorGroup, ColorName> p, int i) { privatedata.colorTable[p] = i; }
-		static vector<ColorSet>& getList() { return privatedata.colorlist; }
-		static ColorSet& getListItem(int i) { return privatedata.colorlist[i]; }
-		static ColorSet::ColorGroup& getDefaultGroup() { return privatedata.defaultGroup; }
+		static void setSmallest(int i) { privatedata->smallest = i; }
+		static int  getSmallest() { return privatedata->smallest; }
+		static void setCurrent(int i) { privatedata->currentColor = i; }
+		static int  getCurrent() { return privatedata->currentColor; }
+		static std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int>& getTable() { return privatedata->colorTable; }
+		static void setColorTableItem(pair <ColorSet::ColorGroup, ColorName> p, int i) { privatedata->colorTable[p] = i; }
+		static vector<shared_ptr<ColorSet>>& getList() { return privatedata->colorlist; }
+		static shared_ptr<ColorSet> getListItem(int i) { return privatedata->colorlist[i]; }
+		static ColorSet::ColorGroup& getDefaultGroup() { return privatedata->defaultGroup; }
 		// call getNext at start up and when ever colors should change
 		// do not break colors up or thins will not match
 		// get next color based on type and usage count

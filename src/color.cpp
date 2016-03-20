@@ -3,8 +3,8 @@
 #include <map>
 
 namespace Software2552 {
-	Colors::colordata Colors::privatedata; // declare static data
-
+	shared_ptr<Colors::colordata> Colors::privatedata=nullptr; // declare static data
+	
 	ColorSet::ColorSet(const ColorGroup& groupIn) :objectLifeTimeManager() {
 		setGroup(groupIn);
 		// always set a color to avoid bad errors
@@ -33,15 +33,15 @@ namespace Software2552 {
 	// get a color set if the current one is not set or if its expired
 	ColorSet& Colors::get() {
 		// if first time in set things up
-		if (getSmallest() < 0 || getListItem(getCurrent()).refreshAnimation()) {
+		if (getSmallest() < 0 || getListItem(getCurrent())->refreshAnimation()) {
 			getNextColors(); 
 		}
 		// no data or no match found in data
 		if (getSmallest() < 0) {
 			return ColorSet(getDefaultGroup());// start with defaults
 		}
-		++getListItem(getCurrent());
-		return getListItem(getCurrent());
+		++(*getListItem(getCurrent()));
+		return *getListItem(getCurrent());
 	}
 	// get next color based on type and usage count
 	// example: type==cool gets the next cool type, type=Random gets any next color
@@ -54,12 +54,12 @@ namespace Software2552 {
 		// find smallest of type
 		//setSmallest(0); // code assume some data loaded
 		for (int i = 0; i < getList().size(); ++i) {
-			if (getListItem(getSmallest()).lessThan(getListItem(i), group)) {
+			if (getListItem(getSmallest())->lessThan(*getListItem(i), group)) {
 				setSmallest(i);
 				setCurrent(i);
 			}
 		}
-		return getListItem(getCurrent());
+		return *getListItem(getCurrent());
 	}
 	// make a bunch of colors that match using various techniques
 	// return hex color
@@ -99,19 +99,18 @@ namespace Software2552 {
 	}
 	void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, ColorName text, ColorName light) {
 
-		ColorSet s = ColorSet(group,
+		shared_ptr<ColorSet> s = std::make_shared<ColorSet>(group,
 			find(group, fore),
 			find(group, back),
 			find(group, text),
 			find(group, light)
 			);
-
 		getList().push_back(s);
 	}
 	void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& light) {
 
 		int h = light.getHex();
-		ColorSet s = ColorSet(group,
+		shared_ptr<ColorSet> s = std::make_shared<ColorSet>(group,
 			find(group, fore),
 			find(group, back),
 			text.getHex(),
@@ -122,7 +121,7 @@ namespace Software2552 {
 	}
 	void Colors::add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& light) {
 
-		ColorSet s = ColorSet(group,
+		shared_ptr<ColorSet> s = std::make_shared<ColorSet>(group,
 			fore.getHex(),
 			back.getHex(),
 			text.getHex(),

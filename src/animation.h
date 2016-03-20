@@ -18,7 +18,8 @@ namespace Software2552 {
 		float getStart() { return startTime; }
 		bool isExpired() const { return expired; }
 		void setExpired(bool b = true) { expired = true; }
-		float& getObjectLifetime() { return objectlifetime; }
+		float getObjectLifetime() { return objectlifetime; }
+		void setObjectLifetime(float t) { objectlifetime=t; }
 		void operator++ () { ++usageCount; }
 		bool operator> (const objectLifeTimeManager& rhs) { return usageCount > rhs.usageCount; }
 		int getAnimationUsageCount() const { return usageCount; }

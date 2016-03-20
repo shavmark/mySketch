@@ -78,11 +78,10 @@ namespace Software2552 {
 			texturevideos.clear();
 		}
 		else {
-			DrawingBasics d;
-			d.removeExpiredItems(animatables);
-			d.removeExpiredItems(cameras);
-			d.removeExpiredItems(lights);
-			d.removeExpiredItems(texturevideos);
+			removeExpiredItems(animatables);
+			removeExpiredItems(cameras);
+			removeExpiredItems(lights);
+			removeExpiredItems(texturevideos);
 		}
 	}
 
