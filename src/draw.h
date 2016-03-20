@@ -410,15 +410,15 @@ namespace Software2552 {
 		float getTimeBeforeStart(float t) {
 
 			// if json sets a wait use it
-			if (getAnimationWait() > 0) {
-				setIfGreater(t, getAnimationWait());
+			if (getAnimationHelper()->getWait() > 0) {
+				setIfGreater(t, getAnimationHelper()->getWait());
 			}
 			else {
 				// will need to load it now to get the true lenght
 				if (!isLoaded()) {
 					load(getLocationPath());
 				}
-				float duration = getOjectLifetime();
+				float duration = getAnimationHelper()->getObjectLifetime();
 				setIfGreater(t, duration);
 			}
 			return t;

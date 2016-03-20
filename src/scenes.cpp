@@ -1,5 +1,6 @@
 #include "2552software.h"
 #include "scenes.h"
+#include "animation.h"
 
 //By default, the screen is cleared with every draw() call.We can change that with 
 //  ofSetBackgroundAuto(...).Passing in a value of false turns off the automatic background clearing.
@@ -60,12 +61,12 @@ namespace Software2552 {
 	// pause them all
 	void Stage::pause() {
 		for (auto& a : animatables) {
-			a->pause();
+			a->getAnimationHelper()->pause();
 		}
 	}
 	void Stage::resume() {
 		for (auto& a : animatables) {
-			a->resume();
+			a->getAnimationHelper()->resume();
 		}
 	}
 	// clear objects
@@ -77,10 +78,11 @@ namespace Software2552 {
 			texturevideos.clear();
 		}
 		else {
-			objectLifeTimeManager::removeExpiredPtrToItems(animatables);
-			objectLifeTimeManager::removeExpiredPtrToItems(cameras);
-			objectLifeTimeManager::removeExpiredPtrToItems(lights);
-			objectLifeTimeManager::removeExpiredPtrToItems(texturevideos);
+			DrawingBasics d;
+			d.removeExpiredItems(animatables);
+			d.removeExpiredItems(cameras);
+			d.removeExpiredItems(lights);
+			d.removeExpiredItems(texturevideos);
 		}
 	}
 
@@ -111,13 +113,13 @@ namespace Software2552 {
 	//great animation example
 	void Stage::test() {
 		shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
-		b->setPositionY(b->floorLine - 100);
-		b->setCurve(EASE_IN);
-		b->setRepeatType(LOOP_BACK_AND_FORTH);
-		b->setDuration(0.55);
+		b->getAnimationHelper()->setPositionY(b->floorLine - 100);
+		b->getAnimationHelper()->setCurve(EASE_IN);
+		b->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
+		b->getAnimationHelper()->setDuration(0.55);
 		ofPoint p;
 		p.y = b->floorLine;
-		b->animateTo(p);
+		b->getAnimationHelper()->animateTo(p);
 		//b->setDuration(0.001);
 
 		shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
@@ -137,11 +139,11 @@ namespace Software2552 {
 	void Stage::installLightAndMaterialThenDraw(shared_ptr<Camera>cam) {
 		material.begin();//bugbug figure out material
 		if (cam != nullptr) {
-			cam->setAnimationPosition(cam->getCurrentPosition());
+			cam->getAnimationHelper()->setPosition(cam->getAnimationHelper()->getCurrentPosition());
 			cam->begin();
 			cam->orbit(); 
 			for (auto& light : lights) {
-				light->setAnimationPosition(light->getCurrentPosition());
+				light->getAnimationHelper()->setPosition(light->getAnimationHelper()->getCurrentPosition());
 				light->enable();
 			}
 			if (cam->isOrbiting()) {
@@ -216,8 +218,8 @@ namespace Software2552 {
 		pointLight->setDiffuseColor(ofColor(0.f, 255.f, 0.f));
 		// specular color, the highlight/shininess color //
 		pointLight->setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight->setPositionX(ofGetWidth()*.2);
-		pointLight->setPositionY(ofGetHeight()*.2);
+		pointLight->getAnimationHelper()->setPositionX(ofGetWidth()*.2);
+		pointLight->getAnimationHelper()->setPositionY(ofGetHeight()*.2);
 		pointLight->setPointLight();
 		add(pointLight);
 
@@ -225,8 +227,8 @@ namespace Software2552 {
 		pointLight2->setDiffuseColor(ofColor(0.f, 0, 255.f));
 		// specular color, the highlight/shininess color //
 		pointLight2->setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight2->setPositionX(-ofGetWidth()*.2);
-		pointLight2->setPositionY(ofGetHeight()*.2);
+		pointLight2->getAnimationHelper()->setPositionX(-ofGetWidth()*.2);
+		pointLight2->getAnimationHelper()->setPositionY(ofGetHeight()*.2);
 		pointLight2->setPointLight();
 		add(pointLight2);
 
@@ -242,8 +244,8 @@ namespace Software2552 {
 		add(directionalLight);
 
 		shared_ptr<Light> basic = std::make_shared<Light>();
-		basic->setPositionX(-100.0f);
-		basic->setPositionZ(400.0f);
+		basic->getAnimationHelper()->setPositionX(-100.0f);
+		basic->getAnimationHelper()->setPositionZ(400.0f);
 		add(basic);
 
 		shared_ptr<Light> spotLight = std::make_shared<Light>();
@@ -261,7 +263,7 @@ namespace Software2552 {
 		// range 0 - 128, zero is even illumination, 128 is max falloff //
 		spotLight->setSpotConcentration(2);
 		ofPoint pos(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
-		spotLight->setAnimationPosition(pos);
+		spotLight->getAnimationHelper()->setPosition(pos);
 		add(spotLight);
 		
 
@@ -344,20 +346,20 @@ namespace Software2552 {
 
 		shared_ptr<Light> light1 = std::make_shared<Light>();
 		ofPoint point(0,0, videoSphere.getRadius() * 2);
-		light1->setAnimationPosition(point);
+		light1->getAnimationHelper()->setPosition(point);
 		add(light1);
 
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->setScale(-1, -1, 1); // showing video
 		cam1->setOrbit(true); // rotating
-		cam1->setPositionZ(videoSphere.getRadius() * 2 + 300);
+		cam1->getAnimationHelper()->setPositionZ(videoSphere.getRadius() * 2 + 300);
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
 		cam2->setScale(-1, -1, 1); // showing video
-		cam2->setPositionZ(videoSphere.getRadius()*2 + 100);
+		cam2->getAnimationHelper()->setPositionZ(videoSphere.getRadius()*2 + 100);
 		cam2->setFov(60);
 		add(cam2);
 

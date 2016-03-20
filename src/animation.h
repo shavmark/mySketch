@@ -11,26 +11,27 @@ namespace Software2552 {
 	class objectLifeTimeManager {
 	public:
 		void start() { startTime = ofGetElapsedTimeMillis(); };
-		void setWait(float w) { waitTime = w; }
 		void setRefreshRate(uint64_t rateIn) { refreshRate = rateIn; }
 		float getRefreshRate() {return refreshRate;	}
+		void setWait(float w) { waitTime = w; }
 		float getWait() { return waitTime; }
 		float getStart() { return startTime; }
 		bool isExpired() const { return expired; }
 		void setExpired(bool b = true) { expired = true; }
-		template<typename T> static void removeExpiredPtrToItems(vector<T>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::staticOKToRemovePtr), v.end());
-		}
-		template<typename T> static void removeExpiredItems(vector<T>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::staticOKToRemove), v.end());
-		}
-		float& getOjectLifetime() { return objectlifetime; }
-		static bool staticOKToRemovePtr(shared_ptr<objectLifeTimeManager> me);
-		static bool staticOKToRemove(objectLifeTimeManager& me);
+		float& getObjectLifetime() { return objectlifetime; }
 		void operator++ () { ++usageCount; }
 		bool operator> (const objectLifeTimeManager& rhs) { return usageCount > rhs.usageCount; }
 		int getAnimationUsageCount() const { return usageCount; }
 		bool refreshAnimation();
+		// how long to wait
+		virtual void getTimeBeforeStart(float& t) {
+			setIfGreater(t, getObjectLifetime() + getWait());
+		}
+		static bool OKToRemove(shared_ptr<objectLifeTimeManager> me);
+		void removeExpiredItems(vector<shared_ptr<objectLifeTimeManager>>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
+		}
+
 	private:
 		int	    usageCount=0;     // number of times this animation was used
 		float   objectlifetime=0; // 0=forever, how long object lives after it starts drawing
@@ -40,57 +41,41 @@ namespace Software2552 {
 		float	refreshRate = 0;
 	};
 	// animates colors
-	class ColorAnimation : public ofxAnimatableOfColor {
+	class ColorAnimation : public ofxAnimatableOfColor, public objectLifeTimeManager {
 	public:
-		void startAnimationAfterDelay(float delay) { startAnimationAfterDelay(delay); }
 		void draw();
+		bool paused() { return paused_; }
+
 	private:
-		objectLifeTimeManager lifetime;
 	};
-	class PointAnimation : public ofxAnimatableOfPoint {
+	class PointAnimation : public ofxAnimatableOfPoint, public objectLifeTimeManager {
 	public:
 		void startAnimationAfterDelay(float delay) { ofxAnimatableOfPoint::startAnimationAfterDelay(delay); }
 		bool paused() {	return paused_;	}
 	};
-	class MyAnimation   {
-	public:
-		MyAnimation() {  }
-
-		// avoid name clashes and wrap the most used items, else access the contained object for more
-		PointAnimation& getAnimationHelper() { return ani; }
-		ofPoint& getCurrentPosition() { return getAnimationHelper().getCurrentPosition(); }
-		void setPositionX(float f) { getAnimationHelper().setPositionX(f); }
-		void setPositionY(float f) { getAnimationHelper().setPositionY(f); }
-		void setPositionZ(float f) { getAnimationHelper().setPositionZ(f); }
-		void setAnimationPosition(const ofPoint& p) { getAnimationHelper().setPosition(p); }
-		void setDuration(float seconds) { getAnimationHelper().setDuration(seconds); }
-		void setCurve(AnimCurve curveStyle) { getAnimationHelper().setCurve(curveStyle);	}
-		void setRepeatType(AnimRepeat repeat) {	getAnimationHelper().setRepeatType(repeat);	}
-
-		void pause() { getAnimationHelper().pause(); };
-		void resume() { getAnimationHelper().resume(); };
-		void reset() {	getAnimationHelper().reset();	}
-		void updateAnimation(float dt) { getAnimationHelper().update(dt); }//must be called
-		void animateTo(const ofPoint& where) { getAnimationHelper().animateTo(where); }
-		void animateToAfterDelay(const ofPoint& where, float delay) { getAnimationHelper().animateToAfterDelay(where, delay); }
-		void animateToIfFinished(const ofPoint& where) { getAnimationHelper().animateToIfFinished(where); }
-
-		bool okToDraw() { return true; }//bugbug move this to the right place
-		void setRefreshRate(float) {}//bugbug make part of animation
-		bool refreshAnimation() { return true; } ///bugbug find the real one
-
-	protected:
-		PointAnimation ani; // call all the other items via here
-		objectLifeTimeManager lifetime;
-	private:
-		string   locationPath;   // location of item to draw
-	};
 	// basic drawing info, bugbug maybe color set goes here too, not sure yet
-	class DrawingBasics : public MyAnimation {
+	class DrawingBasics  {
 	public:
 		DrawingBasics() {  }
-		DrawingBasics(const string&path) { setLocationPath(path);  }
+		DrawingBasics(const string&path) { 	setLocationPath(path); 		}
 		bool okToDraw();
+		// avoid name clashes and wrap the most used items, else access the contained object for more
+		shared_ptr<PointAnimation> getAnimationHelper() {
+			// allocate on demand, then objects not in need of animation will be smaller
+			if (ani == nullptr) {
+				ani = std::make_shared<PointAnimation>();
+			}
+			return ani; 
+		}
+		//template<typename T> static void removeExpiredItems(vector<T>&v) {
+			//v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
+		//}
+		static bool OKToRemove(shared_ptr<DrawingBasics> me) {
+			return me->getAnimationHelper()->OKToRemove(me->getAnimationHelper());
+		}
+		void removeExpiredItems(vector<shared_ptr<DrawingBasics>>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
+		}
 
 		// helpers to wrap basic functions
 		void setupForDrawing() { mySetup(); };
@@ -99,7 +84,7 @@ namespace Software2552 {
 			if (colorAnimation != nullptr) {
 				colorAnimation->update(dt);
 			}
-			getAnimationHelper().update(dt);
+			getAnimationHelper()->update(dt);
 			myUpdate(); // call derived classes
 		};
 		void drawIt() { myDraw(); };
@@ -122,7 +107,7 @@ namespace Software2552 {
 		virtual bool myObjectLoad() { return true; };
 		string   locationPath;   // location of item to draw
 		shared_ptr<ColorAnimation> colorAnimation = nullptr; // optional color
-
+		shared_ptr<PointAnimation> ani; // call all the other items via here
 	};
 
 
@@ -135,51 +120,6 @@ namespace Software2552 {
 
 	private:
 		shared_ptr<ColorAnimation> colorAnimation = nullptr; // optional color
-	};
-
-	// any object that moves, has size or color starts here
-	class Animator : public Animatable {
-	public:
-		Animator(bool setup=true);
-		//bugbug code for a bit then put in read/data in a derived class
-		// defined in model..
-		uint64_t refreshRate() { return rate; /*ms*/ }
-		void setRefreshRate(uint64_t rateIn) { rate = rateIn; };
-		bool refreshAnimation();
-		void startAnimation() { startTime = ofGetElapsedTimeMillis(); }
-		bool isExpired() const { return expired; }
-		bool okToDraw();
-		template<typename T>void removeExpiredPtrToItems(vector<T>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), Animator::staticOKToRemovePtr), v.end());
-		}
-		template<typename T>void removeExpiredItems(vector<T>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), Animator::staticOKToRemove), v.end());
-		}
-		virtual void resetAnimation();
-		virtual void pauseAnimation();
-		virtual void playAnimation();
-		virtual void stopAnimation() { stopped = true; }
-		// how long to wait
-		virtual void getTimeBeforeStart(uint64_t& t) {
-			setIfGreater(t, getDuration() + getWait());
-		}
-		uint64_t& getDuration() { return duration; }
-		uint64_t& getWait() { return wait; }
-		void setWait(uint64_t waitIn) { wait = waitIn; }
-		void addWait(uint64_t waitIn) { wait += waitIn; }
-		int w, h; // size
-
-	private:
-		vector<ofPoint> path;
-		static bool staticOKToRemovePtr(shared_ptr<Animator> me);
-		static bool staticOKToRemove(const Animator& me);
-		uint64_t	duration; // life time of object, 0 means forever
-		uint64_t	wait;     // time to wait before drawing
-		uint64_t	startTime;
-		uint64_t	rate;	 // refresh rate
-		bool		expired; // object is expired
-		bool		stopped;
-		bool		paused;
 	};
 
 

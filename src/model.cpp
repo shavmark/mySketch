@@ -170,11 +170,13 @@ namespace Software2552 {
 		// optional sizes, locations, durations for animation etc
 		readJsonValue(player->w, data["width"]);
 		readJsonValue(player->h, data["height"]);
-		readJsonValue(player->getOjectLifetime(), data["duration"]);
-		readJsonValue(player->getAnimationWait(), data["wait"]);
+		readJsonValue(player->getAnimationHelper().getObjectLifetime(), data["duration"]);
+		float w;
+		readJsonValue(w, data["wait"]);
+		player->getAnimationHelper().setWait(w);
 		Point3D point;
 		point.readFromScript(data["startingPoint"]);
-		player->setAnimationPosition(point);
+		player->getAnimationHelper().setPosition(point);
 
 		// read derived class data
 		readFromScript(data);
@@ -189,8 +191,8 @@ namespace Software2552 {
 			d.refreshAnimation();
 		}
 		// remove expired colors
-		Animator a(false);
-		a.removeExpiredItems(getList());
+		objectLifeTimeManager m;
+		m.removeExpiredItems(getList());
 	}
 
 	bool PlayItem::readFromScript(const Json::Value &data) {

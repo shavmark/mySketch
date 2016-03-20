@@ -186,7 +186,7 @@ namespace Software2552 {
 	void Ball2d::myDraw() {
 		ofFill();
 		ofSetBackgroundColor(ofColor::blue);
-		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), getCurrentPosition().y, width);
+		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), getAnimationHelper()->getCurrentPosition().y, width);
 		//glColor4ub(255, 255, 255, 255);
 		ofRect(0, floorLine + width, ofGetWidth(), 1);
 
@@ -227,7 +227,7 @@ namespace Software2552 {
 		ofFill();
 		ofSetRectMode(OF_RECTMODE_CENTER);	// center around the position
 		ofSetColor(255, 0, 0);
-		ofRect(getCurrentPosition().x, getCurrentPosition().y, w, h);
+		ofRect(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
 
 	}
 	void RolePlane::myDraw() {
@@ -294,12 +294,12 @@ namespace Software2552 {
 	}
 	void RoleRaster::myDraw() {
 		if (okToDraw()) {
-			ofImage::draw(getCurrentPosition().x, getCurrentPosition().y, w, h);
+			ofImage::draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
 		}
 	}
 	void RoleParagraph::myDraw() {
 		if (okToDraw()) {
-			ofxParagraph::setPosition(getCurrentPosition().x, getCurrentPosition().y);
+			ofxParagraph::setPosition(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
 			ofxParagraph::draw();
 		}
 	}
@@ -307,7 +307,7 @@ namespace Software2552 {
 	// add this one http://clab.concordia.ca/?page_id=944
 	void RoleVideo::myDraw() {
 		if (okToDraw()) {
-			ofVideoPlayer::draw(getCurrentPosition().x, getCurrentPosition().y);
+			ofVideoPlayer::draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
 		}
 	}
 	void RoleVideo::mySetup() {
@@ -326,13 +326,13 @@ namespace Software2552 {
 
 	void RoleBackground::mySetup() {
 		mode = OF_GRADIENT_LINEAR; 
-		setRefreshRate(60000);// just set something different while in dev
+		getAnimationHelper()->setRefreshRate(60000);// just set something different while in dev
 	}
 	// colors and background change over time but not at the same time
 	void RoleBackground::myUpdate() {
 		//bugbug can add other back grounds like a video loop, sound
 		// picture, any graphic etc
-		if (refreshAnimation()) {
+		if (getAnimationHelper()->refreshAnimation()) {
 			switch ((int)ofRandom(0, 3)) {
 			case 0:
 				mode = OF_GRADIENT_LINEAR;
@@ -366,7 +366,7 @@ namespace Software2552 {
 
 	void Grabber::myDraw() {
 		if (isInitialized() && okToDraw()) {
-			draw(getCurrentPosition().x, getCurrentPosition().y, w, h);
+			draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
 		}
 	}
 	void RoleBackground::myDraw(){
@@ -381,7 +381,7 @@ namespace Software2552 {
 	}
 	void RoleText::myDraw() {
 		if (okToDraw()) {
-			drawText(text, getCurrentPosition().x, getCurrentPosition().y); //bugbug add in some animation
+			drawText(text, getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y); //bugbug add in some animation
 		}
 	}
 
