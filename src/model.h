@@ -211,33 +211,17 @@ namespace Software2552 {
 	// class Character 3d, 2d, talking, movment, etc.  not for this release, way to complicated in this world, lots of tools, not all is compatable 
 	
 	// read a scene
-	class Scene : public Settings {
+	class SceneReader : public Settings {
 	public:
-		Scene(const string&keynameIn);
-		Scene() {};
-		bool read(Stage&stage, const Json::Value &data);
+		bool readFromScript(shared_ptr<Stage> p, const Json::Value &data);
 
-		bool operator==(const Scene& rhs) { return rhs.keyname == keyname; }
+		bool operator==(const SceneReader& rhs) { return rhs.keyname == keyname; }
 		string &getKey() { return keyname; }
-		uint64_t findMaxWait() {
-			uint64_t f = 0;
-			//for (auto& t : get()) {
-				//setIfGreater(f, t->getLEARNINGDuration() + t->getWait());
-			//}
-			return f;
-		}
-		// remove items that are timed out
-		void removeExpiredItems();
-
-		//bool dataAvailable();
-		//void bumpWaits(uint64_t wait);
-		uint64_t getLongestWaitTime();
 	protected:
 		string keyname;
 
 	private:
 		template<typename T> void createTimeLineItems(vector<shared_ptr<DrawingBasics>>&vec, const Json::Value &data, const string& key);
-
 	};
 	// item in a play list
 	class PlayItem {
@@ -247,7 +231,7 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 		bool operator==(const PlayItem rhs) { return rhs.keyname == keyname; }
 		string &getKeyName() { return keyname; }
-		Scene scene;
+		SceneReader scene;
 
 	private:
 		string keyname;

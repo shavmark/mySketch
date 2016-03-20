@@ -27,9 +27,9 @@ namespace Software2552 {
 
 		// drawing tools
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
-		void add(shared_ptr<Camera> camera) { addAnimatable(camera); cameras.push_back(camera); };
-		void add(shared_ptr<Light> light) { addAnimatable(light); lights.push_back(light); };
-		void add(shared_ptr<TextureVideo>tv) { addAnimatable(tv); texturevideos.push_back(tv); };
+		void add(shared_ptr<Camera> camera) {  cameras.push_back(camera); };
+		void add(shared_ptr<Light> light) {  lights.push_back(light); };
+		void add(shared_ptr<TextureVideo>tv) { texturevideos.push_back(tv); };
 		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
 		vector<shared_ptr<Light>>& getLights() { return lights; }
 		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
@@ -40,12 +40,15 @@ namespace Software2552 {
 		void clear(bool force=false);
 		void pause();
 		void resume();
+		float findMaxWait();
+
 	protected:
 		virtual void draw2d();
 		virtual void draw3dFixed() {};
 		virtual void draw3dMoving() {};
 		virtual void pre3dDraw();
 		virtual void post3dDraw();
+		virtual void create() {};
 		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>); // derive to change where cameras are
 	private:
 		template<typename T> void removeExpiredItems(vector<shared_ptr<T>>&v) {
@@ -69,6 +72,12 @@ namespace Software2552 {
 	public:
 		RoleSphere sphere;
 		ofTexture texture;
+	};
+
+	class TestBallScene :public Stage {
+	public:
+		TestBallScene() :Stage() {}
+		void create();
 	};
 
 	class TestScene :public Stage {

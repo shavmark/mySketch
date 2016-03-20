@@ -13,8 +13,15 @@ namespace Software2552 {
 	//	return ColorSet(group); // always do something
 	//}
 
-	
-	
+	objectLifeTimeManager::objectLifeTimeManager() {
+		usageCount = 0;     // number of times this animation was used
+		objectlifetime = 0; // 0=forever, how long object lives after it starts drawing
+		expired = false;    // object is expired
+		startTime = 0;
+		waitTime = 0;
+		refreshRate = 0;
+	}
+
 	bool objectLifeTimeManager::OKToRemove(shared_ptr<objectLifeTimeManager> me) {
 		if (me->isExpired()) {
 			return true;

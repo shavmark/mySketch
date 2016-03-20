@@ -322,7 +322,7 @@ namespace Software2552 {
 
 		return true;
 	}
-	template<typename T> void Scene::createTimeLineItems(vector<shared_ptr<DrawingBasics>>& vec, const Json::Value &data, const string& key)
+	template<typename T> void SceneReader::createTimeLineItems(vector<shared_ptr<DrawingBasics>>& vec, const Json::Value &data, const string& key)
 	{
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			shared_ptr<T> v = std::make_shared<T>();
@@ -366,7 +366,7 @@ namespace Software2552 {
 
 		return true;
 	}
-	bool Scene::read(Stage&stage, const Json::Value &data) {
+	bool SceneReader::readFromScript(shared_ptr<Stage> p, const Json::Value &data) {
 
 		try {
 			READSTRING(keyname, data);
@@ -376,13 +376,14 @@ namespace Software2552 {
 			Settings::readFromScript(data);
 			// add in a known type if data found
 			// keep add in its own vector
-
-			createTimeLineItems<Video>(stage.getAnimatables(), data, "videos");
-			createTimeLineItems<Audio>(stage.getAnimatables(), data, "audios");
-			createTimeLineItems<Paragraph>(stage.getAnimatables(), data, "paragraphs");
-			createTimeLineItems<Picture>(stage.getAnimatables(), data,"images");
-			createTimeLineItems<Text>(stage.getAnimatables(), data, "texts");
-			createTimeLineItems<Sphere>(stage.getAnimatables(), data, "spheres");
+			if (p != nullptr) {
+				createTimeLineItems<Video>(p->getAnimatables(), data, "videos");
+				createTimeLineItems<Audio>(p->getAnimatables(), data, "audios");
+				createTimeLineItems<Paragraph>(p->getAnimatables(), data, "paragraphs");
+				createTimeLineItems<Picture>(p->getAnimatables(), data, "images");
+				createTimeLineItems<Text>(p->getAnimatables(), data, "texts");
+				createTimeLineItems<Sphere>(p->getAnimatables(), data, "spheres");
+			}
 			return true;
 		}
 		catch (std::exception e) {
@@ -392,20 +393,7 @@ namespace Software2552 {
 
 		return false;
 	}
-	Scene::Scene(const string&keynameIn) {
-		keyname = keynameIn;
-	}
-	//bugbug where to remove expired items? most likely animaiton in the drawing code
-	void Scene::removeExpiredItems() {
-		//Animator a(false);
-		//a.removeExpiredPtrToItems(get());
-	}
-
-	uint64_t Scene::getLongestWaitTime() {
-		return findMaxWait();
-	}
-
-
+	
 	// read as many jason files as needed, each becomes a deck
 	bool Act::read(Stage&stage, const string& fileName) {
 		
@@ -432,7 +420,7 @@ namespace Software2552 {
 					//bugbug json needs to add in a named scene that data gets tied to, and what if there is no playlist? we do not want to blow up
 					for (auto& item : *getPlayList()) {
 						if (item->getKeyName() == keyname) {
-							item->scene.read(stage, json["scenes"][i]);
+							item->scene.readFromScript(nullptr,json["scenes"][i]);
 						}
 					}
 				}

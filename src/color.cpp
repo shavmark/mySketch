@@ -3,7 +3,7 @@
 #include <map>
 
 namespace Software2552 {
-	shared_ptr<Colors::colordata> Colors::privatedata=nullptr; // declare static data
+	shared_ptr<Colors::colordata> Colors::privateData=nullptr; // declare static data
 	
 	ColorSet::ColorSet(const ColorGroup& groupIn) :objectLifeTimeManager() {
 		setGroup(groupIn);
@@ -30,22 +30,35 @@ namespace Software2552 {
 		va_end(args);
 	}
 
+	shared_ptr<ColorSet> Colors::getDefaultColors() {
+		if (getprivateData()->defaultColorset == nullptr) {
+			getprivateData()->defaultColorset = std::make_shared<ColorSet>(ColorSet::Default);
+		}
+		++(*getprivateData()->defaultColorset);
+		return getprivateData()->defaultColorset;
+	}
+
 	// get a color set if the current one is not set or if its expired
-	ColorSet& Colors::get() {
+	shared_ptr<ColorSet> Colors::get() {
+		if (getListItem(getCurrent()) == nullptr) {
+			return getDefaultColors();
+		}
 		// if first time in set things up
 		if (getSmallest() < 0 || getListItem(getCurrent())->refreshAnimation()) {
 			getNextColors(); 
 		}
 		// no data or no match found in data
 		if (getSmallest() < 0) {
-			return ColorSet(getDefaultGroup());// start with defaults
+			return getDefaultColors();
 		}
-		++(*getListItem(getCurrent()));
-		return *getListItem(getCurrent());
+		if (getListItem(getCurrent()) != nullptr) {
+			++(*getListItem(getCurrent()));
+		}
+		return getListItem(getCurrent());
 	}
 	// get next color based on type and usage count
 	// example: type==cool gets the next cool type, type=Random gets any next color
-	ColorSet& Colors::getNextColors(ColorSet::ColorGroup group) {
+	shared_ptr<ColorSet> Colors::getNextColors(ColorSet::ColorGroup group) {
 		if (getSmallest() < 0) {
 			// first call 
 			setSmallest(0);
@@ -59,8 +72,15 @@ namespace Software2552 {
 				setCurrent(i);
 			}
 		}
-		return *getListItem(getCurrent());
+		return getListItem(getCurrent());
 	}
+	shared_ptr<ColorSet> Colors::getListItem(int i) { 
+		if (i < 0 || i >= getprivateData()->colorlist.size())	{
+			return nullptr;
+		}
+		return getprivateData()->colorlist[i]; 
+	}
+
 	// make a bunch of colors that match using various techniques
 	// return hex color
 	int Colors::find(ColorSet::ColorGroup group, ColorName name)	{
@@ -70,6 +90,12 @@ namespace Software2552 {
 			return it->second;
 		}
 		return 0; // none found
+	}
+	shared_ptr<Colors::colordata> Colors::getprivateData() {
+		if (privateData == nullptr) {
+			privateData = std::make_shared<colordata>();
+		}
+		return privateData;
 	}
 
 	void Colors::AddColorRow(ColorSet::ColorGroup group, ColorName name, int val) {

@@ -43,7 +43,6 @@ namespace Software2552 {
 		Colors() {
 			// there must always be at least one color
 			setup();
-			privatedata = std::make_shared<colordata>();
 		}
 		//modeled after http://www.creativecolorschemes.com/products/ccs1/rgbColorGuide.shtml
 		// just names of customer colors, when paired they are a color set
@@ -60,39 +59,39 @@ namespace Software2552 {
 		};
 		// hue helpers, example getHue(getBackground()) bugbug maybe cache some data if needed
 		static float getSaturation(int index) {
-			return ofColor().fromHex(getCurrentColors().getHex(index)).getSaturation();
+			return ofColor().fromHex(getCurrentColors()->getHex(index)).getSaturation();
 		}
 		static float getBrightness(int index) {
-			return ofColor().fromHex(getCurrentColors().getHex(index)).getBrightness();
+			return ofColor().fromHex(getCurrentColors()->getHex(index)).getBrightness();
 		}
 		static float getHue(int index) {
-			return ofColor().fromHex(getCurrentColors().getHex(index)).getHue();
+			return ofColor().fromHex(getCurrentColors()->getHex(index)).getHue();
 		}
 		static ofColor getOfColor(int index) {
-			return ofColor().fromHex(getCurrentColors().getHex(index));
+			return ofColor().fromHex(getCurrentColors()->getHex(index));
 		}
 		static ofFloatColor getFloatColor(int index) {
-			return ofFloatColor().fromHex(getCurrentColors().getHex(index));
+			return ofFloatColor().fromHex(getCurrentColors()->getHex(index));
 		}
 		// more like painting
 		static float getHueAngle(int index)	{
-			return ofColor().fromHex(getCurrentColors().getHex(index)).getHueAngle();
+			return ofColor().fromHex(getCurrentColors()->getHex(index)).getHueAngle();
 		}
 
 		static int getForeground() {
-			return getCurrentColors().getHex(foreColor);
+			return getCurrentColors()->getHex(foreColor);
 		}
 		static int getLight() {
 			return getFontColor();
 		}
 		static  int getBackground() {
-			return getCurrentColors().getHex(backColor);
+			return getCurrentColors()->getHex(backColor);
 		}
 		static  int getFontColor() {
-			if (getCurrentColors().size() < fontColor) {
+			if (getCurrentColors()->size() < fontColor) {
 				return getForeground(); // no need to force a font color
 			}
-			return getCurrentColors().getHex(fontColor);
+			return getCurrentColors()->getHex(fontColor);
 		}
 #define COLORNAME_COUNT 15
 		void update();
@@ -106,7 +105,7 @@ namespace Software2552 {
 		static void setBackgroundColor() {
 			ofSetBackgroundColorHex(getBackground());
 		}
-		static ColorSet& getCurrentColors() { return get(); }
+		static shared_ptr<ColorSet> getCurrentColors() { return get(); }
 		class colordata {
 		public:
 			colordata() {
@@ -117,7 +116,7 @@ namespace Software2552 {
 			std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int> colorTable; // key,hex pair
 			int currentColor;
 			int smallest;//index of smallest value
-			ColorSet::ColorGroup defaultGroup;
+			shared_ptr<ColorSet> defaultColorset=nullptr;
 		};
 
 	private:
@@ -125,9 +124,11 @@ namespace Software2552 {
 			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
 		}
 
-		static shared_ptr<colordata> privatedata;
+		static shared_ptr<colordata> privateData;// never call directly to assure allocation
+		static shared_ptr<colordata> getprivateData();
+		static shared_ptr<ColorSet> getDefaultColors();
 		// foreground, background, font
-		static ColorSet& get();
+		static shared_ptr<ColorSet> get();
 		void setup();
 		int find(ColorSet::ColorGroup group, ColorName name);
 		void setupBasicColors(ColorSet::ColorGroup type, std::array<int, COLORNAME_COUNT>);
@@ -135,20 +136,19 @@ namespace Software2552 {
 		void Colors::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& light);
 		void Colors::add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& light);
 		void Colors::AddColorRow(ColorSet::ColorGroup group, ColorName name, int val);
-		static void setSmallest(int i) { privatedata->smallest = i; }
-		static int  getSmallest() { return privatedata->smallest; }
-		static void setCurrent(int i) { privatedata->currentColor = i; }
-		static int  getCurrent() { return privatedata->currentColor; }
-		static std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int>& getTable() { return privatedata->colorTable; }
-		static void setColorTableItem(pair <ColorSet::ColorGroup, ColorName> p, int i) { privatedata->colorTable[p] = i; }
-		static vector<shared_ptr<ColorSet>>& getList() { return privatedata->colorlist; }
-		static shared_ptr<ColorSet> getListItem(int i) { return privatedata->colorlist[i]; }
-		static ColorSet::ColorGroup& getDefaultGroup() { return privatedata->defaultGroup; }
+		static void setSmallest(int i) { getprivateData()->smallest = i; }
+		static int  getSmallest() { return getprivateData()->smallest; }
+		static void setCurrent(int i) { getprivateData()->currentColor = i; }
+		static int  getCurrent() { return getprivateData()->currentColor; }
+		static std::map<std::pair <ColorSet::ColorGroup, Colors::ColorName>, int>& getTable() { return getprivateData()->colorTable; }
+		static void setColorTableItem(pair <ColorSet::ColorGroup, ColorName> p, int i) { getprivateData()->colorTable[p] = i; }
+		static vector<shared_ptr<ColorSet>>& getList() { return getprivateData()->colorlist; }
+		static shared_ptr<ColorSet> getListItem(int i);
 		// call getNext at start up and when ever colors should change
 		// do not break colors up or thins will not match
 		// get next color based on type and usage count
 		// example: type==cool gets the next cool type, type=Random gets any next color
-		static ColorSet& getNextColors(ColorSet::ColorGroup type = getDefaultGroup());
+		static shared_ptr<ColorSet> getNextColors(ColorSet::ColorGroup type = ColorSet::ColorGroup::Default);
 		// there must always be at least one color
 	};
 

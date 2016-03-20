@@ -109,30 +109,7 @@ namespace Software2552 {
 		}
 
 	}
-	//great animation example
 	void Stage::test() {
-		shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
-		b->getAnimationHelper()->setPositionY(b->floorLine - 100);
-		b->getAnimationHelper()->setCurve(EASE_IN);
-		b->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
-		b->getAnimationHelper()->setDuration(0.55);
-		ofPoint p;
-		p.y = b->floorLine;
-		b->getAnimationHelper()->animateTo(p);
-		//b->setDuration(0.001);
-
-		shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
-
-		c->setColor(ofColor::blue);
-		c->setDuration(0.5f);
-		c->setRepeatType(LOOP_BACK_AND_FORTH);
-		c->setCurve(LINEAR);
-		c->animateTo(ofColor::red);
-		b->setColorAnimation(c);
-
-		animatables.push_back(b);
-
-
 	}
 	// setup light and material for drawing
 	void Stage::installLightAndMaterialThenDraw(shared_ptr<Camera>cam) {
@@ -177,8 +154,18 @@ namespace Software2552 {
 		installLightAndMaterialThenDraw(director.pickem(cameras, true));
 
 		post3dDraw();
-
 	}
+	// find overall duration of a scene
+	float Stage::findMaxWait() {
+		float f = 0;
+		
+		for (const auto& a : getAnimatables()) {
+			setIfGreater(f, a->getAnimationHelper()->getObjectLifetime() + a->getAnimationHelper()->getWait());
+		}
+
+		return f;
+	}
+
 	void Stage::draw2d() {
 		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
 		for (auto& a : animatables) {
@@ -188,6 +175,30 @@ namespace Software2552 {
 		//ofBackground(ofColor::black);
 		//bugbug option is to add vs replace:ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
 		//ofEnableAlphaBlending();
+	}
+	//great animation example
+	void TestBallScene::create() {
+		shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
+		b->getAnimationHelper()->setPositionY(b->floorLine - 100);
+		b->getAnimationHelper()->setCurve(EASE_IN);
+		b->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
+		b->getAnimationHelper()->setDuration(0.55);
+		ofPoint p;
+		p.y = b->floorLine;
+		b->getAnimationHelper()->animateTo(p);
+		//b->setDuration(0.001);
+
+		shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
+
+		c->setColor(ofColor::blue);
+		c->setDuration(0.5f);
+		c->setRepeatType(LOOP_BACK_AND_FORTH);
+		c->setCurve(LINEAR);
+		c->animateTo(ofColor::red);
+		b->setColorAnimation(c);
+
+		addAnimatable(b);
+
 	}
 	// juse need to draw the SpaceScene, base class does the rest
 	void TestScene::draw3dMoving() {

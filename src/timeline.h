@@ -14,10 +14,10 @@ namespace Software2552 {
 		void draw();
 		void pause();
 		void play();
-
+		const int frameRate = 60;
 
 		bool readScript(const string& path);
-
+		shared_ptr<Stage> stage;
 	private:
 		// stat all objects in vector to playing
 		template<typename T> void startAnimation(T& v) {
@@ -26,7 +26,7 @@ namespace Software2552 {
 			}
 		}
 		MoreMesh mesh; // just for now bugbug, move into class hiearchey when ready
-		Stage scene;
+		TestBallScene scene;
 		vector<Act> acts; // timeline is a series of acts
 						  // objects in model, timing code in model, colors from json
 	};
