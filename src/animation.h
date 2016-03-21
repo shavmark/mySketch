@@ -69,10 +69,10 @@ namespace Software2552 {
 			}
 			return ani; 
 		}
-		//template<typename T> static void removeExpiredItems(vector<T>&v) {
-			//v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
-		//}
 		static bool OKToRemove(shared_ptr<DrawingBasics> me) {
+			return me->getAnimationHelper()->OKToRemove(me->getAnimationHelper());
+		}
+		static bool OKToRemoveNormalPointer(DrawingBasics* me) {
 			return me->getAnimationHelper()->OKToRemove(me->getAnimationHelper());
 		}
 		void removeExpiredItems(vector<shared_ptr<DrawingBasics>>&v) {

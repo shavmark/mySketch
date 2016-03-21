@@ -42,7 +42,6 @@ namespace Software2552 {
 		int widthCol = 60;
 		float width=100;
 	};
-
 	//bugbug many more moving shapes, or do all things move?
 
 	// https://github.com/openframeworks/ofBook/blob/master/chapters/lines/chapter.md
@@ -392,7 +391,7 @@ namespace Software2552 {
 	// put advanced drawing in these objects
 	class RoleParagraph :public ofxParagraph, public DrawingBasics {
 	public:
-
+		RoleParagraph() : ofxParagraph() {}
 		void myDraw();
 
 	private:

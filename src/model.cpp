@@ -154,7 +154,7 @@ namespace Software2552 {
 		}
 		return false;
 	}
-	 template <class T> bool Actor<T>::read(const Json::Value &data) {
+	 bool Actor::read(const Json::Value &data) {
 		// any actor can have settings set, or defaults used
 		Settings::readFromScript(data["settings"]);
 
@@ -284,7 +284,7 @@ namespace Software2552 {
 		return true;
 	}
 	bool Text::readFromScript(const Json::Value &data) {
-		readStringFromJson(getPlayer()->getText(), data["text"]["str"]);
+		readStringFromJson(((RoleText*)getPlayer())->getText(), data["text"]["str"]);
 		return true;
 	}
 
@@ -322,17 +322,6 @@ namespace Software2552 {
 
 		return true;
 	}
-	template<typename T> void SceneReader::createTimeLineItems(vector<shared_ptr<DrawingBasics>>& vec, const Json::Value &data, const string& key)
-	{
-		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
-			shared_ptr<T> v = std::make_shared<T>();
-			v->setSettings(this); // inherit settings
-			if (v->read(data[key][j])) {
-				// only save if data was read in 
-				vec.push_back(v->getPlayer());
-			}
-		}
-	}
 
 	void Settings::setSettings(const Settings& rhs) {
 		// only copy items that change as a default
@@ -366,80 +355,6 @@ namespace Software2552 {
 
 		return true;
 	}
-	bool SceneReader::readFromScript(shared_ptr<Stage> p, const Json::Value &data) {
 
-		try {
-			READSTRING(keyname, data);
-			if (keyname == "ClydeBellecourt") {
-				int i = 1;
-			}
-			Settings::readFromScript(data);
-			// add in a known type if data found
-			// keep add in its own vector
-			if (p != nullptr) {
-				createTimeLineItems<Video>(p->getAnimatables(), data, "videos");
-				createTimeLineItems<Audio>(p->getAnimatables(), data, "audios");
-				createTimeLineItems<Paragraph>(p->getAnimatables(), data, "paragraphs");
-				createTimeLineItems<Picture>(p->getAnimatables(), data, "images");
-				createTimeLineItems<Text>(p->getAnimatables(), data, "texts");
-				createTimeLineItems<Sphere>(p->getAnimatables(), data, "spheres");
-			}
-			return true;
-		}
-		catch (std::exception e) {
-			logErrorString(e.what());
-			return false;
-		}
-
-		return false;
-	}
 	
-	// read as many jason files as needed, each becomes a deck
-	bool Act::read(Stage&stage, const string& fileName) {
-		
-		ofxJSON json;
-
-		if (!json.open(fileName)) {
-			logErrorString("Failed to parse JSON " + fileName);
-			return false;
-		}
-
-		// parser uses exepections but openFrameworks does not so exceptions end here
-		try {
-			playlist.readFromScript(json);
-			
-			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
-				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
-				string keyname;
-				if (readStringFromJson(keyname, json["scenes"][i]["keyname"])) {
-					if (playlist.getList() == nullptr) {
-						logErrorString("missing scene "+keyname);
-						continue;// not found
-					}
-					// if a scene is not in the play list do not save it
-					//bugbug json needs to add in a named scene that data gets tied to, and what if there is no playlist? we do not want to blow up
-					for (auto& item : *getPlayList()) {
-						if (item->getKeyName() == keyname) {
-							item->scene.readFromScript(nullptr,json["scenes"][i]);
-						}
-					}
-				}
-			}
-			// space out waits, but calc out video and other lengths (will result in loading videos)
-			float wait = 0;
-			if (playlist.getList() == nullptr) {
-				for (auto& item : *playlist.getList()) {
-					//item.scene.getDrawingEngines()->bumpWaits(wait);
-					//wait = item.scene.getDrawingEngines()->getLongestWaitTime();
-				}
-			}
-		}
-		catch (std::exception e) {
-			logErrorString(e.what());
-			return false;
-		}
-
-		return true;
-	}
-
 }

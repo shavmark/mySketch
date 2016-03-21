@@ -1,5 +1,6 @@
 #pragma once
 #include "2552software.h"
+#include "model.h"
 #include "ofxBox2d.h"
 #include "draw.h"
 
@@ -22,43 +23,63 @@ namespace Software2552 {
 		void setup();
 		virtual void update();
 		void draw();
+		virtual void create(const Json::Value &data) {};
 
 		virtual void test();//shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
 
-		// drawing tools
-		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
-		void add(shared_ptr<Camera> camera) {  cameras.push_back(camera); };
-		void add(shared_ptr<Light> light) {  lights.push_back(light); };
-		void add(shared_ptr<TextureVideo>tv) { texturevideos.push_back(tv); };
-		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
-		vector<shared_ptr<Light>>& getLights() { return lights; }
-		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
-
-		// things to draw
-		void addAnimatable(shared_ptr<DrawingBasics>p) { animatables.push_back(p); }
-		vector<shared_ptr<DrawingBasics>>& getAnimatables() { return animatables; }
 		void clear(bool force=false);
 		void pause();
 		void resume();
 		float findMaxWait();
+		Settings settings;
 
 	protected:
+		// drawing tools
+		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
+		void add(shared_ptr<Camera> camera) { cameras.push_back(camera); };
+		void add(shared_ptr<Light> light) { lights.push_back(light); };
+		void add(shared_ptr<TextureVideo>tv) { texturevideos.push_back(tv); };
+		void add(shared_ptr<Grabber>g) { grabbers.push_back(g); };
+		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
+		vector<shared_ptr<Light>>& getLights() { return lights; }
+		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
+		vector<shared_ptr<Grabber>>& getGrabbers() { return grabbers; }
+
+		// things to draw
+		void addAnimatable(shared_ptr<Actor>p) { animatables.push_back(p); }
+		vector<shared_ptr<Actor>>& getAnimatables() { return animatables; }
 		virtual void draw2d();
 		virtual void draw3dFixed() {};
 		virtual void draw3dMoving() {};
 		virtual void pre3dDraw();
 		virtual void post3dDraw();
-		virtual void create() {};
 		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>); // derive to change where cameras are
+		string keyname;
 	private:
-		template<typename T> void removeExpiredItems(vector<shared_ptr<T>>&v) {
+		static bool OKToRemove(shared_ptr<Actor> me) {
+			return me->getPlayer()->OKToRemoveNormalPointer(me->getPlayer());
+		}
+		void removeExpiredItems(vector<shared_ptr<Actor>>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
+		}
+		void removeExpiredItems(vector<shared_ptr<Camera>>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
+		}
+		void removeExpiredItems(vector<shared_ptr<Light>>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
+		}
+		void removeExpiredItems(vector<shared_ptr<TextureVideo>>&v) {
+			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
+		}
+		void removeExpiredItems(vector<shared_ptr<Grabber>>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
 		}
 		//bugbug maybe just animatables is needed, a a typeof or such can be used
-		vector<shared_ptr<DrawingBasics>> animatables;//bugbug make all these ptrs so dervied classes can be used
+		vector<shared_ptr<Actor>> animatables;
 		vector<shared_ptr<Camera>>	cameras;
 		vector<shared_ptr<Light>>	lights;
 		vector<shared_ptr<TextureVideo>>	texturevideos;
+		vector<shared_ptr<Grabber>>	grabbers;
 		//bugbug can put more things like spheres here once spheres work and if it makes sense
 
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
@@ -66,6 +87,7 @@ namespace Software2552 {
 		void draw3d();
 		ofImage imageForBackground;//bugbug change this to use the background object that includes just a color background
 		string backgroundImageName;
+
 	};
 
 	class Planet : public RoleSphere {
@@ -74,10 +96,17 @@ namespace Software2552 {
 		ofTexture texture;
 	};
 
+	// over time this just does whats in the data
+	class GenericScene :public Stage {
+	public:
+		void create(const Json::Value &data);
+	private:
+	};
+
 	class TestBallScene :public Stage {
 	public:
-		TestBallScene() :Stage() {}
-		void create();
+		void create(const Json::Value &data);
+	private:
 	};
 
 	class TestScene :public Stage {

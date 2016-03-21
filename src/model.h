@@ -1,9 +1,9 @@
 #pragma once
 
 #include "2552software.h"
+#include "animation.h"
 #include "color.h"
 #include "draw.h"
-#include "scenes.h"
 
 // json driven model
 
@@ -106,6 +106,7 @@ namespace Software2552 {
 		shared_ptr<ofxSmartFont> getFontPointer() { return font.getPointer(); }
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
+		void setSettings(const Settings& rhs);
 
 		void setSettings(Settings* rhs) {
 			if (rhs != nullptr) {
@@ -113,20 +114,17 @@ namespace Software2552 {
 			}
 		}
 
-
 	protected:
 		Font   font;
 		string notes;// unstructured string of info, can be shown to the user
 		string title; // title object
 		string name; // any object can have a name, note, date, reference, duration
 	protected:
-		void setSettings(const Settings& rhs);
 
 	private:
 		void init() {
 			//Poco::Timespan totalTime = 1 * 1000 * 1000;
 		}
-
 	};
 
 	class Dates : public Settings {
@@ -150,79 +148,97 @@ namespace Software2552 {
 	};
 
 	// an actor is a drawable that contains the drawing object for that graphic
-	template <class T> class Actor : public Settings {
+	class Actor : public Settings {
 	public:
-		Actor() :Settings() {
-			player = std::make_shared<T>();
+		Actor(DrawingBasics *p) :Settings() {
 			references = nullptr;
+			player = p;
+		}
+		~Actor() {
+			if (player != nullptr) {
+				delete player;
+			}
 		}
 
 		bool read(const Json::Value &data);
 
-		shared_ptr<T> getPlayer() {	return player;	}
 		shared_ptr<vector<shared_ptr<Reference>>>  getReferences() { return references; }
 
-	private:
 		virtual bool readFromScript(const Json::Value &data) { return true; };
-		shared_ptr<T> player;
+
+		DrawingBasics* getPlayer() { return player; }
+	private:
+		DrawingBasics* player; // need a down cast
 		shared_ptr<vector<shared_ptr<Reference>>> references;
 	};
+	template<typename T> void createTimeLineItems(const Settings& settings, vector<shared_ptr<Actor>>& vec, const Json::Value &data, const string& key) {
+		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
+			shared_ptr<T> v = std::make_shared<T>();
+			v->setSettings(settings); // inherit settings
+			if (v->readFromScript(data[key][j])) {
+				// only save if data was read in 
+				vec.push_back(v);
+			}
+		}
+	}
 
-	
-	class Background : public Actor<RoleBackground> {
+
+	class Background : public Actor {
 	public:
+		Background() :Actor(new RoleBackground()) {  }
+		RoleBackground* getPlayer() { return ((RoleBackground*)getPlayer()); }
+	};
+	class Ball : public Actor {
+	public:
+		Ball() :Actor(new Ball2d()) {  }
+		Ball2d* getPlayer() { return ((Ball2d*)getPlayer()); }
 	};
 
-	class Picture : public Actor<RoleRaster> {
+	class Picture : public Actor {
 	public:
+		Picture() :Actor(new RoleRaster()) {  }
+		Picture(const string&s) :Actor(new RoleRaster(s)) {  }
+		RoleRaster* getPlayer() { return ((RoleRaster*)getPlayer()); }
 	};
 	
-	class Text : public Actor<RoleText> {
+	class Text : public Actor {
 	public:
-	private:
+		Text() :Actor(new RoleText()) {  }
+		RoleText* getPlayer() { return ((RoleText*)getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 
-	class Paragraph : public Actor<RoleParagraph> {
+	class Paragraph : public Actor {
 	public:
-	private:
+		Paragraph() :Actor(new RoleParagraph()) {  }
+		RoleParagraph* getPlayer() { return ((RoleParagraph*)getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 
 	
-	class Sphere : public Actor<RoleSphere> {
+	class Sphere : public Actor {
 	public:
-	private:
+		Sphere() :Actor(new RoleSphere()) {  }
+		RoleSphere* getPlayer() { return ((RoleSphere*)getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
-	class Audio : public Actor<RoleSound> {
+	class Audio : public Actor {
 	public:
-	private:
+		Audio() :Actor(new RoleSound()) {  }
+		RoleSound* getPlayer() { return ((RoleSound*)getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 
-	class Video : public Actor<RoleVideo> {
+	class Video : public Actor {
 	public:
-	private:
+		Video(const string&s) :Actor(new RoleVideo(s)) {  }
+		Video() :Actor(new RoleVideo()) {  }
+		RoleVideo* getPlayer() { return ((RoleVideo*)getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 
 	// class Character 3d, 2d, talking, movment, etc.  not for this release, way to complicated in this world, lots of tools, not all is compatable 
-	
-	// read a scene
-	class SceneReader : public Settings {
-	public:
-		bool readFromScript(shared_ptr<Stage> p, const Json::Value &data);
-
-		bool operator==(const SceneReader& rhs) { return rhs.keyname == keyname; }
-		string &getKey() { return keyname; }
-	protected:
-		string keyname;
-
-	private:
-		template<typename T> void createTimeLineItems(vector<shared_ptr<DrawingBasics>>&vec, const Json::Value &data, const string& key);
-	};
 	// item in a play list
 	class PlayItem {
 	public:
@@ -231,7 +247,6 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 		bool operator==(const PlayItem rhs) { return rhs.keyname == keyname; }
 		string &getKeyName() { return keyname; }
-		SceneReader scene;
 
 	private:
 		string keyname;
@@ -242,19 +257,6 @@ namespace Software2552 {
 		shared_ptr<vector<shared_ptr<PlayItem>>> getList() { return list; }
 	private:
 		shared_ptr<vector<shared_ptr<PlayItem>>> list;
-	};
-
-	// an Act is one json file that contains 1 or more scenes
-	class Act {
-	public:
-		Act() {}
-
-		// read a deck from json (you can also just build one in code)
-		bool read(Stage&stage, const string& fileName = "json.json");
-		shared_ptr<vector<shared_ptr<PlayItem>>> getPlayList() { return playlist.getList(); };
-	private:
-		Playlist playlist;
-
 	};
 
 }

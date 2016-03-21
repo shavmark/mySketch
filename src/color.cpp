@@ -1,4 +1,5 @@
 #include "2552software.h"
+#include "model.h"
 #include "color.h"
 #include <map>
 

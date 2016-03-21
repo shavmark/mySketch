@@ -1,4 +1,5 @@
 #include "2552software.h"
+#include "model.h"
 #include "scenes.h"
 #include "animation.h"
 
@@ -42,7 +43,7 @@ namespace Software2552 {
 	}
 	void Stage::draw() {
 		for (auto& a : animatables) {
-			a->drawIt();
+			a->getPlayer()->drawIt();
 		}
 
 		if (backgroundImageName.size() > 0) {
@@ -61,12 +62,12 @@ namespace Software2552 {
 	// pause them all
 	void Stage::pause() {
 		for (auto& a : animatables) {
-			a->getAnimationHelper()->pause();
+			a->getPlayer()->getAnimationHelper()->pause();
 		}
 	}
 	void Stage::resume() {
 		for (auto& a : animatables) {
-			a->getAnimationHelper()->resume();
+			a->getPlayer()->getAnimationHelper()->resume();
 		}
 	}
 	// clear objects
@@ -76,12 +77,14 @@ namespace Software2552 {
 			cameras.clear();
 			lights.clear();
 			texturevideos.clear();
+			grabbers.clear();
 		}
 		else {
 			removeExpiredItems(animatables);
 			removeExpiredItems(cameras);
 			removeExpiredItems(lights);
 			removeExpiredItems(texturevideos);
+			removeExpiredItems(grabbers);
 		}
 	}
 
@@ -91,7 +94,7 @@ namespace Software2552 {
 			imageForBackground.load(backgroundImageName);
 		}
 		for (auto& a : animatables) {
-			a->loadForDrawing();
+			a->getPlayer()->loadForDrawing();
 		}
 
 		material.setShininess(90);
@@ -101,7 +104,7 @@ namespace Software2552 {
 	void Stage::update() {
 
 		for (auto& a : animatables) {
-			a->updateForDrawing();
+			a->getPlayer()->updateForDrawing();
 		}
 
 		if (backgroundImageName.size() > 0) {
@@ -160,7 +163,7 @@ namespace Software2552 {
 		float f = 0;
 		
 		for (const auto& a : getAnimatables()) {
-			setIfGreater(f, a->getAnimationHelper()->getObjectLifetime() + a->getAnimationHelper()->getWait());
+			setIfGreater(f, a->getPlayer()->getAnimationHelper()->getObjectLifetime() + a->getPlayer()->getAnimationHelper()->getWait());
 		}
 
 		return f;
@@ -169,23 +172,60 @@ namespace Software2552 {
 	void Stage::draw2d() {
 		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
 		for (auto& a : animatables) {
-			a->drawIt();
+			a->getPlayer()->drawIt();
 		}
 		
 		//ofBackground(ofColor::black);
 		//bugbug option is to add vs replace:ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
 		//ofEnableAlphaBlending();
 	}
+	void GenericScene::create(const Json::Value &data) {
+		READSTRING(keyname, data);
+		settings.readFromScript(data);
+		// read needed common types
+
+		createTimeLineItems<Video>(settings, getAnimatables(), data, "videos");
+		createTimeLineItems<Audio>(settings, getAnimatables(), data, "audios");
+		createTimeLineItems<Paragraph>(settings, getAnimatables(), data, "paragraphs");
+		createTimeLineItems<Picture>(settings, getAnimatables(), data, "images");
+		createTimeLineItems<Text>(settings, getAnimatables(), data, "texts");
+		createTimeLineItems<Sphere>(settings, getAnimatables(), data, "spheres");
+	}
 	//great animation example
-	void TestBallScene::create() {
-		shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
-		b->getAnimationHelper()->setPositionY(b->floorLine - 100);
-		b->getAnimationHelper()->setCurve(EASE_IN);
-		b->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
-		b->getAnimationHelper()->setDuration(0.55);
+	void TestBallScene::create(const Json::Value &data) {
+		try {
+			string keyname;
+			READSTRING(keyname, data);
+			if (keyname == "ClydeBellecourt") {
+				int i = 1; // just for debugging
+			}
+				
+			settings.readFromScript(data);
+				
+			int radius=0; // read items unique to this scene
+			READINT(radius, data);
+
+			// read needed common types
+
+			//createTimeLineItems<Video>(p->getAnimatables(), data, "videos");
+			//createTimeLineItems<Audio>(p->getAnimatables(), data, "audios");
+			//createTimeLineItems<Paragraph>(p->getAnimatables(), data, "paragraphs");
+			//createTimeLineItems<Picture>(p->getAnimatables(), data, "images");
+			//createTimeLineItems<Text>(p->getAnimatables(), data, "texts");
+			//createTimeLineItems<Sphere>(p->getAnimatables(), data, "spheres");
+		}
+		catch (std::exception e) {
+			logErrorString(e.what());
+		}
+
+		shared_ptr<Ball> b = std::make_shared<Ball>();
+		b->getPlayer()->getAnimationHelper()->setPositionY(b->getPlayer()->floorLine - 100);
+		b->getPlayer()->getAnimationHelper()->setCurve(EASE_IN);
+		b->getPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
+		b->getPlayer()->getAnimationHelper()->setDuration(0.55);
 		ofPoint p;
-		p.y = b->floorLine;
-		b->getAnimationHelper()->animateTo(p);
+		p.y = b->getPlayer()->floorLine;
+		b->getPlayer()->getAnimationHelper()->animateTo(p);
 		//b->setDuration(0.001);
 
 		shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
@@ -195,7 +235,7 @@ namespace Software2552 {
 		c->setRepeatType(LOOP_BACK_AND_FORTH);
 		c->setCurve(LINEAR);
 		c->animateTo(ofColor::red);
-		b->setColorAnimation(c);
+		b->getPlayer()->setColorAnimation(c);
 
 		addAnimatable(b);
 
@@ -275,21 +315,22 @@ namespace Software2552 {
 		ofPoint pos(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		spotLight->getAnimationHelper()->setPosition(pos);
 		add(spotLight);
-		
-
-		shared_ptr<RoleRaster> raster = std::make_shared<RoleRaster>("t1_0010.jpg");
-		//raster.w = ofGetWidth() / 3;
-		addAnimatable(raster);
-
-		shared_ptr<RoleVideo> video = std::make_shared<RoleVideo>("carride.mp4");
-		//video.w = ofGetWidth() / 3;
-		//video.x = raster.w;
-		addAnimatable(video);
 
 		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
 		//grabber.w = ofGetWidth() / 3;
 		//grabber.x = video.x + video.w;
-		addAnimatable(grabber);
+		add(grabber);
+
+
+		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
+		//raster.w = ofGetWidth() / 3;
+		addAnimatable(raster);
+
+		shared_ptr<Video> video = std::make_shared<Video>("carride.mp4");
+		//video.w = ofGetWidth() / 3;
+		//video.x = raster.w;
+		addAnimatable(video);
+
 
 
 	}

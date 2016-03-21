@@ -35,8 +35,10 @@ namespace Software2552 {
 					if (sceneType == "TestBall") {
 						p = std::make_shared<TestBallScene>();
 					}
-					SceneReader reader;
-					reader.readFromScript(p,json["scenes"][i]);
+					else {
+						p = std::make_shared<GenericScene>();
+					}
+					p->create(json["scenes"][i]);
 					//shared_ptr<vector<shared_ptr<PlayItem>>> v = playlist.getList();
 					//(*v)[i]->scene.readFromScript(json["scenes"][i]);
 				}
@@ -102,28 +104,12 @@ namespace Software2552 {
 		}
 		// read in story then let those objects go free as they are set in enumerate(Setup)
 		//scene.create();
-		Act act;
-		if (act.read(scene, path)) {
-			acts.push_back(act);
-			return true;
-		}
 		return false;
 	}
 	void Timeline::play() { 
-		return;
 
-		for (auto& a : acts) {
-			for (auto& item : *a.getPlayList()) {
-				//bugbug this is not clear yet, do we need acts? item.scene.play();
-			}
-		}
 	}
 	void Timeline::pause() {
-		for (auto& a : acts) {
-			for (auto& item : *a.getPlayList()) {
-				//bugbug this is not clear yet item.scene.getDrawingEngines()->pause();
-			}
-		}
 	}
 	void Timeline::setup() {
 		//ofSeedRandom(); // turn of to debug if needed
@@ -132,28 +118,14 @@ namespace Software2552 {
 		return;
 
 		mesh.setup();
-		return;
-
-		for (auto& a : acts) {
-			for (auto& item : *a.getPlayList()) {
-			}
-		}
 	}
 	// keep this super fast
 	void Timeline::update() { 
 		scene.update();
-		return;
-
-		for (auto& a : acts) {
-			for (auto& item : *a.getPlayList()) {
-				//bugbug this is not clear yetitem.scene.getDrawingEngines()->removeExpiredItems();
-			}
-		}
 	};
 
 	// keep as fast as possible
 	void Timeline::draw() {
-		//theSet.draw();
 		//mesh.draw();
 		scene.draw();
 		return;
