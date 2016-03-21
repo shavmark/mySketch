@@ -57,6 +57,24 @@ namespace Software2552 {
 		}
 		return getListItem(getCurrent());
 	}
+	shared_ptr<ColorSet> Colors::getFirstColors(ColorSet::ColorGroup group) {
+		for (const auto& a : getList()) {
+			if (a->getGroup() == group) {
+				return a;
+			}
+		}
+		return getDefaultColors();
+	}
+	shared_ptr<ColorSet> Colors::getLastColors(ColorSet::ColorGroup group) {
+		std::vector<shared_ptr<ColorSet>>::reverse_iterator rit = getList().rbegin();
+		for (; rit != getList().rend(); ++rit) {
+			if (rit->get()->getGroup() == group) {
+				return *rit;
+			}
+		}
+		return getDefaultColors();
+	}
+
 	// get next color based on type and usage count
 	// example: type==cool gets the next cool type, type=Random gets any next color
 	shared_ptr<ColorSet> Colors::getNextColors(ColorSet::ColorGroup group) {
@@ -157,36 +175,33 @@ namespace Software2552 {
 
 		getList().push_back(s);
 	}
-	void ColorSet::setGroup(const string&name) {
+	ColorSet::ColorGroup ColorSet::setGroup(const string&name) {
 		if (name == "Modern") {
-			setGroup(Modern);
+			return Modern;
 		}
 		else if (name == "Smart") {
-			setGroup(Smart);
-		}
-		else if (name == "Smart") {
-			setGroup(Smart);
+			return Smart;
 		}
 		else if (name == "Extreme") {
-			setGroup(Extreme);
+			return Extreme;
 		}
 		else if (name == "EarthTone") {
-			setGroup(EarthTone);
+			return EarthTone;
 		}
 		else if (name == "Black") {
-			setGroup(Black);
+			return Black;
 		}
 		else if (name == "White") {
-			setGroup(White);
+			return White;
 		}
 		else if (name == "Blue") {
-			setGroup(Blue);
+			return Blue;
 		}
 		else if (name == "Random") {
-			setGroup(Random);
+			return Random;
 		}
 		else {
-			setGroup(Default);
+			return Default;
 		}
 	}
 
@@ -249,25 +264,25 @@ namespace Software2552 {
 			add(ColorSet::Smart, E, H, ofColor::black, ofColor::white);
 
 			setupBasicColors(ColorSet::Extreme, extreme);
-			add(ColorSet::Smart, B, K, ofColor::white, ofColor::white);
-			add(ColorSet::Smart, E, M, ofColor::black, ofColor::white);
-			add(ColorSet::Smart, G, D, ofColor::black, ofColor::white);
-			add(ColorSet::Smart, D, O, ofColor::black, ofColor::white);
-			add(ColorSet::Smart, F, I, ofColor::black, ofColor::white);
-			add(ColorSet::Smart, H, K, ofColor::black, ofColor::white);
-			add(ColorSet::Smart, L, C, ofColor::black, ofColor::white);
+			add(ColorSet::Extreme, B, K, ofColor::white, ofColor::white);
+			add(ColorSet::Extreme, E, M, ofColor::black, ofColor::white);
+			add(ColorSet::Extreme, G, D, ofColor::black, ofColor::white);
+			add(ColorSet::Extreme, D, O, ofColor::black, ofColor::white);
+			add(ColorSet::Extreme, F, I, ofColor::black, ofColor::white);
+			add(ColorSet::Extreme, H, K, ofColor::black, ofColor::white);
+			add(ColorSet::Extreme, L, C, ofColor::black, ofColor::white);
 
 			setupBasicColors(ColorSet::EarthTone, earthtone);
-			add(ColorSet::Modern, D, B, ofColor::black, ofColor::white);
-			add(ColorSet::Modern, E, A, ofColor::black, ofColor::white);
-			add(ColorSet::Modern, J, I, ofColor::black, ofColor::white);
-			add(ColorSet::Modern, F, N, ofColor::black, ofColor::white);
-			add(ColorSet::Modern, D, H, ofColor::black, ofColor::white);
-			add(ColorSet::Modern, H, J, ofColor::black, ofColor::white);
-			add(ColorSet::Modern, N, J, ofColor::black, ofColor::white);
-			add(ColorSet::Modern, A, H, ofColor::black, ofColor::white);
-			add(ColorSet::Modern, I, K, ofColor::black, ofColor::white);
-			add(ColorSet::Modern, ofColor::green, C, ofColor::black, ofColor::white); // just a demo of using the built in colors
+			add(ColorSet::EarthTone, D, B, ofColor::black, ofColor::white);
+			add(ColorSet::EarthTone, E, A, ofColor::black, ofColor::white);
+			add(ColorSet::EarthTone, J, I, ofColor::black, ofColor::white);
+			add(ColorSet::EarthTone, F, N, ofColor::black, ofColor::white);
+			add(ColorSet::EarthTone, D, H, ofColor::black, ofColor::white);
+			add(ColorSet::EarthTone, H, J, ofColor::black, ofColor::white);
+			add(ColorSet::EarthTone, N, J, ofColor::black, ofColor::white);
+			add(ColorSet::EarthTone, A, H, ofColor::black, ofColor::white);
+			add(ColorSet::EarthTone, I, K, ofColor::black, ofColor::white);
+			add(ColorSet::EarthTone, ofColor::green, C, ofColor::black, ofColor::white); // just a demo of using the built in colors
 
 			// setup the built in colors
 			add(ColorSet::Blue, ofColor::lightBlue, ofColor::white, ofColor::blue, ofColor::white);

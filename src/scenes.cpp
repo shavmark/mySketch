@@ -197,25 +197,25 @@ namespace Software2552 {
 		try {
 			
 			int radius=0; // read items unique to this scene
-			READINT(radius, data);
 			
 			shared_ptr<Ball> b = std::make_shared<Ball>();
 			b->getPlayer()->getAnimationHelper()->setPositionY(b->getPlayer()->floorLine - 100);
 			b->getPlayer()->getAnimationHelper()->setCurve(EASE_IN);
 			b->getPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 			b->getPlayer()->getAnimationHelper()->setDuration(0.55);
+			b->getPlayer()->radius = radius;
+			readJsonValue(b->getPlayer()->radius, data["radius"]);
 			ofPoint p;
 			p.y = b->getPlayer()->floorLine;
 			b->getPlayer()->getAnimationHelper()->animateTo(p);
 			//b->setDuration(0.001);
 
 			shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
-
-			c->setColor(settings.getColor().getOfColor(0));
+			c->setColor(Colors::getFirstColors(settings.getColor().getGroup())->getOfColor(Colors::foreColor));
 			c->setDuration(0.5f);
 			c->setRepeatType(LOOP_BACK_AND_FORTH);
 			c->setCurve(LINEAR);
-			c->animateTo(settings.getColor().getOfColor((settings.getColor().size()-1)));
+			c->animateTo(Colors::getLastColors(settings.getColor().getGroup())->getOfColor(Colors::foreColor));
 			b->getPlayer()->setColorAnimation(c);
 
 			addAnimatable(b);

@@ -35,7 +35,7 @@ namespace Software2552 {
 		int floorLine = 630;
 		int xMargin = 0;
 		int widthCol = 60;
-		float width=100;
+		float radius=100;
 	};
 	//bugbug many more moving shapes, or do all things move?
 

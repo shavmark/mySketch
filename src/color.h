@@ -25,7 +25,7 @@ namespace Software2552 {
 		ColorSet(const ColorGroup&groupIn, int color1, int color2, int color3, int color4);
 		void setSetcolors(int c, ...);
 		void setGroup(const ColorGroup&groupin) {group = groupin;}
-		void setGroup(const string&name);
+		static ColorGroup setGroup(const string&name);
 		ColorGroup getGroup() const {return group;}
 		int getHex(int index) const  {return colors[index];	}
 		bool operator== (const ColorSet& rhs) {	return getGroup() == rhs.getGroup();}
@@ -110,6 +110,14 @@ namespace Software2552 {
 			ofSetBackgroundColorHex(getBackground());
 		}
 		static shared_ptr<ColorSet> getCurrentColors() { return get(); }
+		// call getNext at start up and when ever colors should change
+		// do not break colors up or things will not match
+		// get next color based on type and usage count
+		// example: type==cool gets the next cool type, type=Random gets any next color
+		static shared_ptr<ColorSet> getNextColors(ColorSet::ColorGroup type = ColorSet::ColorGroup::Default);
+		static shared_ptr<ColorSet> getFirstColors(ColorSet::ColorGroup group);
+		static shared_ptr<ColorSet> getLastColors(ColorSet::ColorGroup group);
+
 		class colordata {
 		public:
 			colordata() {
@@ -148,11 +156,6 @@ namespace Software2552 {
 		static void setColorTableItem(pair <ColorSet::ColorGroup, ColorName> p, int i) { getprivateData()->colorTable[p] = i; }
 		static vector<shared_ptr<ColorSet>>& getList() { return getprivateData()->colorlist; }
 		static shared_ptr<ColorSet> getListItem(int i);
-		// call getNext at start up and when ever colors should change
-		// do not break colors up or thins will not match
-		// get next color based on type and usage count
-		// example: type==cool gets the next cool type, type=Random gets any next color
-		static shared_ptr<ColorSet> getNextColors(ColorSet::ColorGroup type = ColorSet::ColorGroup::Default);
 		// there must always be at least one color
 	};
 

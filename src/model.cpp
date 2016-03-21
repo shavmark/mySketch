@@ -300,8 +300,7 @@ namespace Software2552 {
 	bool ColorChoice::readFromScript(const Json::Value &data) {
 		string colorgroup;
 		READSTRING(colorgroup, data);
-		Colors
-		setGroup(colorgroup);
+		group = ColorSet::setGroup(colorgroup);
 		return true;
 	}
 	bool Point3D::readFromScript(const Json::Value &data) {

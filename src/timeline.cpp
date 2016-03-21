@@ -49,6 +49,9 @@ namespace Software2552 {
 					}
 				}
 			}
+			playlist.getCurrent()->start();
+			playlist.getCurrent()->getStage()->setup();
+
 					// if a scene is not in the play list do not save it
 					//bugbug json needs to add in a named scene that data gets tied to, and what if there is no playlist? we do not want to blow up
 					//for (auto& item : *getPlayList()) {
@@ -120,8 +123,7 @@ namespace Software2552 {
 	void Timeline::setup() {
 		//ofSeedRandom(); // turn of to debug if needed
 		ofSetFrameRate(frameRate);
-		playlist.getCurrent()->start();
-		playlist.getCurrent()->getStage()->setup();
+		Colors colors;// setup colors
 
 		return;
 

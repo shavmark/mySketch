@@ -276,13 +276,13 @@ namespace Software2552 {
 
 	void Ball2d::myDraw() {
 		ofFill();
-		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), getAnimationHelper()->getCurrentPosition().y, width);
+		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), getAnimationHelper()->getCurrentPosition().y, radius);
 		//glColor4ub(255, 255, 255, 255);
-		ofRect(0, floorLine + width, ofGetWidth(), 1);
+		ofRect(0, floorLine + radius, ofGetWidth(), 1);
 
 		//vertical lines
-		ofRect(xMargin, 0, 1, floorLine + width);
-		ofRect(xMargin + widthCol + width, 0, 1, floorLine + width);
+		ofRect(xMargin, 0, 1, floorLine + radius);
+		ofRect(xMargin + widthCol + radius, 0, 1, floorLine + radius);
 
 	}
 	int Grabber::find() {

@@ -37,10 +37,12 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 	};
 
-	class ColorChoice : public Colors {
+	class ColorChoice  {
 	public:
-		ColorChoice() : Colors() {};
 		bool readFromScript(const Json::Value &data);
+		ColorSet::ColorGroup getGroup() { return group; }
+	private:
+		ColorSet::ColorGroup group = ColorSet::ColorGroup::Default;
 	};
 	//http://pocoproject.org/slides/070-DateAndTime.pdf
 	class DateAndTime : public Poco::DateTime {

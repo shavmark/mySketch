@@ -8,8 +8,8 @@ void ofApp::setup(){
 	//Software2552::SoundOut::setup();// move to timeline or scene
 
 	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
-	timeline.readScript("json3.json");
 	timeline.setup();
+	timeline.readScript("json3.json");
 	timeline.play();
 	//paragraphs.build(ofGetWidth());
 	
