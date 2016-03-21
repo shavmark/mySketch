@@ -1,20 +1,27 @@
 #include "model.h"
 #include "animation.h"
 #include "scenes.h"
+#include <algorithm>
+
 namespace Software2552 {
-	shared_ptr<vector<shared_ptr<PlayItem>>> Playlist::getList() {
+	vector<shared_ptr<PlayItem>>& Playlist::getList() {
 		return list;
 	}
 	// since list is maintained 0 is always current
 	shared_ptr<PlayItem> Playlist::getCurrent() {
-		if (list == nullptr || list->size() == 0) {
+		if (list.size() == 0) {
 			return nullptr;
 		}
-		return (*list)[0];
+		return list[0];
 	}
 
 	bool Playlist::readFromScript(const Json::Value &data) {
-		list = parse<PlayItem>(data["playList"]);
+
+		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
+			shared_ptr<PlayItem> item = std::make_shared<PlayItem>();
+			item->readFromScript(data[j]);
+			list.push_back(item);
+		}
 		return true;
 	}
 
@@ -390,10 +397,10 @@ namespace Software2552 {
 
 		return true;
 	}
-
+	// match the keynames 
 	void Playlist::setStage(shared_ptr<Stage> p) {
 		if (p != nullptr) {
-			for (auto& item : *list) {
+			for (auto& item : list) {
 				if (item->getKeyName() == p->getKeyName()) {
 					item->setStage(p);
 				}
@@ -410,8 +417,8 @@ namespace Software2552 {
 		}
 		try {
 
-			readFromScript(json);
-			if (getList() == nullptr) {
+			readFromScript(json["playList"]);
+			if (getList().size() == 0) {
 				logErrorString("missing playlist");
 				return false;
 			}
@@ -440,7 +447,16 @@ namespace Software2552 {
 					}
 				}
 			}
-
+			// remove unattached stages, user forgot them in the input file
+			std::vector<shared_ptr<PlayItem>>::iterator iter = list.begin();
+			while (iter != list.end())	{
+				if ((*iter)->getStage() == nullptr) {
+					iter = list.erase(iter);
+				}
+				else {
+					++iter;
+				}
+			}
 		}
 		catch (std::exception e) {
 			logErrorString(e.what());

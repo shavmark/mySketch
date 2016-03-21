@@ -38,6 +38,9 @@ namespace Software2552 {
 		if (playlist.getCurrent() != nullptr) {
 			playlist.getCurrent()->getStage()->update();
 		}
+		else {
+			ofExit();
+		}
 	};
 
 	// keep as fast as possible

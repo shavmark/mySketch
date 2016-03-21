@@ -235,13 +235,13 @@ namespace Software2552 {
 		shared_ptr<PlayItem> getCurrent();// since list is maintained 0 is always current
 		bool readFromScript(const Json::Value &data);
 		void removeExpiredItems() {
-			list->erase(std::remove_if(list->begin(), list->end(), objectLifeTimeManager::OKToRemove), list->end());
+			list.erase(std::remove_if(list.begin(), list.end(), objectLifeTimeManager::OKToRemove), list.end());
 		}
 		bool read(const string&path);
 		void setStage(shared_ptr<Stage> p);
-		shared_ptr<vector<shared_ptr<PlayItem>>> getList();
+		vector<shared_ptr<PlayItem>>& getList();
 	private:
-		shared_ptr<vector<shared_ptr<PlayItem>>> list;
+		vector<shared_ptr<PlayItem>> list;
 	};
 
 
