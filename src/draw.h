@@ -32,6 +32,7 @@ namespace Software2552 {
 	class Ball2d : public DrawingBasics {
 	public:
 		void myDraw();
+
 		int floorLine = 630;
 		int xMargin = 0;
 		int widthCol = 60;

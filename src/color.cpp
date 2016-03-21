@@ -68,7 +68,7 @@ namespace Software2552 {
 	shared_ptr<ColorSet> Colors::getLastColors(ColorSet::ColorGroup group) {
 		std::vector<shared_ptr<ColorSet>>::reverse_iterator rit = getList().rbegin();
 		for (; rit != getList().rend(); ++rit) {
-			if (rit->get()->getGroup() == group) {
+			if ((*rit)->getGroup() == group) {
 				return *rit;
 			}
 		}

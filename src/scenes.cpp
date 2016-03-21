@@ -170,7 +170,6 @@ namespace Software2552 {
 	}
 
 	void Stage::draw2d() {
-		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
 		for (auto& a : animatables) {
 			a->getPlayer()->drawIt(DrawingBasics::draw2d);
 		}
