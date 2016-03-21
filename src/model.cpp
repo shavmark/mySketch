@@ -400,5 +400,14 @@ namespace Software2552 {
 		return true;
 	}
 
-	
+	void Playlist::setStage(shared_ptr<Stage> p, const string& keyname) {
+		if (p != nullptr) {
+			for (auto& item : *list) {
+				if (item->getKeyName() == keyname) {
+					item->setStage(p);
+				}
+			}
+		}
+	}
+
 }

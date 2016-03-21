@@ -45,7 +45,8 @@ namespace Software2552 {
 					}
 
 					if (p->create(json["scenes"][i])) {
-						playlist.getCurrent()->setStage(p);
+						// find stage and set it
+						playlist.setStage(p, p->getKeyName());
 					}
 				}
 			}

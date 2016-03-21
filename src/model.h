@@ -236,6 +236,7 @@ namespace Software2552 {
 		void removeExpiredItems() {
 			list->erase(std::remove_if(list->begin(), list->end(), objectLifeTimeManager::OKToRemove), list->end());
 		}
+		void setStage(shared_ptr<Stage> p, const string& keyname);
 		shared_ptr<vector<shared_ptr<PlayItem>>> getList();
 	private:
 		shared_ptr<vector<shared_ptr<PlayItem>>> list;
