@@ -182,6 +182,97 @@ namespace Software2552 {
 			colorAnimation->draw();
 		}
 	}
+	void RandomDots::draw() {
+		for (int i = 0; i < ofGetMouseX() * 5; i++) {
+			ofSetColor(ofRandom(96));
+			ofRect(ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 4, 4);
+		}
+	}
+	void ComplexLines::draw() {
+		for (const auto& line : lines) {
+			ofDrawLine(line.a, line.b);
+		}
+	}
+	//bugbug convert to code vs mouse using random
+	void ComplexLines::mouseDragged(int x, int y, int button) {
+		for (auto point : drawnPoints) {
+			ofPoint mouse;
+			mouse.set(x, y);
+			float dist = (mouse - point).length();
+			if (dist < 30) {
+				Line lineTemp;
+				lineTemp.a = mouse;
+				lineTemp.b = point;
+				lines.push_back(lineTemp);
+			}
+		}
+		drawnPoints.push_back(ofPoint(x, y));
+	}
+	void VectorPattern::matrix(int twistx, int shifty) {
+		ofPushMatrix();
+		for (int i = -50; i < 50; ++i) {
+			ofTranslate(0, i*shifty);
+			ofRotate(i*twistx);
+			stripe(true);
+		}
+		ofPopMatrix();
+	}
+	void VectorPattern::stripe(bool rotate) {
+		ofSetColor(ofColor::black);
+		ofSetLineWidth(3);
+		for (int i = -50; i < 50; ++i) {
+			ofPushMatrix();
+			ofTranslate(i * 20, 0);
+			if (rotate) {
+				ofRotate(i * 5);
+			}
+			ofLine(0, -100, 0, 100);
+			ofPopMatrix();
+		}
+	}
+	void VectorPattern::triangle(bool rotate) {
+		ofSetColor(ofColor::black);
+		ofSetLineWidth(3);
+		ofNoFill();
+		for (int i = -50; i < 50; ++i) {
+			ofPushMatrix();
+			ofTranslate(i * 20, 0);
+			if (rotate) {
+				ofRotate(i * 5);
+			}
+			ofScale(6, 6); // enlarge 6x
+			ofTriangle(0, 0, -50, 100, 50, 100);
+			ofPopMatrix();
+		}
+	}
+	void VectorPattern::shape(int twistx, int shifty, bool rect, bool fill, int rotate, int alpha) {
+		ofColor color = ofColor::black;
+		color.a = alpha;
+		ofSetColor(color);
+		ofSetLineWidth(1);
+		if (fill) {
+			ofFill();
+		}
+		else {
+			ofNoFill();
+		}
+		for (int i = -50; i < 50; ++i) {
+			ofPushMatrix();
+			ofRotate(i * twistx);
+			ofTranslate(i * 20, shifty);
+			ofRotate(rotate);
+			ofScale(6, 6); // enlarge 6x
+			if (rect) {
+				ofRect(-50, -50, 100, 100);
+			}
+			else {
+				ofTriangle(0, 0, -50, 100, 50, 100);
+			}
+			ofPopMatrix();
+		}
+		ofScale(6, 6); // enlarge 6x
+		ofTriangle(0, 0, -50, 100, 50, 100);
+	}
 
 	void Ball2d::myDraw() {
 		ofFill();
@@ -195,6 +286,59 @@ namespace Software2552 {
 		ofRect(xMargin + widthCol + width, 0, 1, floorLine + width);
 
 	}
+	int Grabber::find() {
+		//bugbug does Kintect show up?
+		ofVideoGrabber grabber;
+		vector<ofVideoDevice> devices = grabber.listDevices();
+		for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
+			if (it->deviceName == name) {
+				return it->id;
+			}
+		}
+	}
+	void TextureFromImage::create(const string& name, float w, float h) {
+		// create texture
+		ofLoadImage(*this, name);
+		fbo.allocate(w, h, GL_RGB);
+		fbo.begin();//fbo does drawing
+		ofSetColor(ofColor::white); // no image color change when using white
+		draw(0, 0, w, h);
+		fbo.end();// normal drawing resumes
+	}
+	float RoleVideo::getTimeBeforeStart(float t) {
+
+		// if json sets a wait use it
+		if (getAnimationHelper()->getWait() > 0) {
+			setIfGreater(t, getAnimationHelper()->getWait());
+		}
+		else {
+			// will need to load it now to get the true lenght
+			if (!isLoaded()) {
+				load(getLocationPath());
+			}
+			float duration = getAnimationHelper()->getObjectLifetime();
+			setIfGreater(t, duration);
+		}
+		return t;
+	}
+
+
+	bool TextureVideo::bind() {
+		if (isInitialized() && isUsingTexture()) {
+			getTexture().bind();
+			return true;
+		}
+		return false;
+	}
+	bool TextureVideo::unbind() {
+		if (isInitialized() && isUsingTexture()) {
+			getTexture().unbind();
+			return true;
+		}
+		return false;
+	}
+
+
 	void Line3D::setup() {
 		//required ofEnableDepthTest();
 		baseNode.setPosition(0, 0, 0);

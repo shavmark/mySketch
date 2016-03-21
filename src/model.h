@@ -2,7 +2,6 @@
 
 #include "2552software.h"
 #include "animation.h"
-#include "color.h"
 #include "draw.h"
 
 // json driven model
@@ -40,37 +39,16 @@ namespace Software2552 {
 	class DateAndTime : public Poco::DateTime {
 	public:
 		// default to no no date to avoid the current date being set for bad data
-		DateAndTime() : Poco::DateTime(0, 1, 1) {
-			timeZoneDifferential = 0;
-			bc = 0;
-		}
-		void operator=(const DateAndTime& rhs) {
-			timeZoneDifferential = rhs.timeZoneDifferential;
-			bc = rhs.bc;
-			assign(rhs.year(), rhs.month(), rhs.day(), rhs.hour(), rhs.minute(), rhs.second(), rhs.microsecond(), rhs.microsecond());
-		}
+		DateAndTime();
+		void operator=(const DateAndTime& rhs);
 		const string format = "%dd %H:%M:%S.%i";
 		string getDate() {
 			return Poco::DateTimeFormatter::format(timestamp(), format);
 		}
 		bool readFromScript(const Json::Value &data);
+	private:
 		int timeZoneDifferential;
 		int bc; // non zero if its a bc date
-
-#if _DEBUG
-		// echo object (debug only)
-		void trace() {
-			logVerbose(STRINGIFY(DateAndTime));
-			if (bc) {
-				logVerbose("BC");
-				logVerbose(ofToString(bc));
-			}
-			else {
-				logVerbose(getDate());
-				logVerbose(ofToString(timeZoneDifferential));
-			}
-		}
-#endif // _DEBUG
 	};
 
 	// simple helper to read in font data from json 
@@ -92,13 +70,8 @@ namespace Software2552 {
 	//  settings get copied a lot as they are the default data for all classes so they need to stay small
 	class Settings {
 	public:
-		Settings() {
-			init();
-		}
-		Settings(const string& nameIn) {
-			init();
-			name = nameIn;
-		}
+		Settings() {	}
+		Settings(const string& nameIn) {name = nameIn;	}
 		void operator=(const Settings& rhs) {setSettings(rhs);	}
 		bool readFromScript(const Json::Value &data);
 
@@ -108,11 +81,7 @@ namespace Software2552 {
 		string &getName() { return name; }
 		void setSettings(const Settings& rhs);
 
-		void setSettings(Settings* rhs) {
-			if (rhs != nullptr) {
-				setSettings(*rhs);
-			}
-		}
+		void setSettings(Settings* rhs);
 
 	protected:
 		Font   font;
@@ -122,9 +91,6 @@ namespace Software2552 {
 	protected:
 
 	private:
-		void init() {
-			//Poco::Timespan totalTime = 1 * 1000 * 1000;
-		}
 	};
 
 	class Dates : public Settings {

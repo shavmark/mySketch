@@ -66,6 +66,22 @@ namespace Software2552 {
 		return false;
 	}
 
+	shared_ptr<PointAnimation> DrawingBasics::getAnimationHelper() {
+		// allocate on demand, then objects not in need of animation will be smaller
+		if (ani == nullptr) {
+			ani = std::make_shared<PointAnimation>();
+		}
+		return ani;
+	}
+
+	void DrawingBasics::updateForDrawing() {
+		float dt = 1.0f / 60.0f;//bugbug does this time to frame count? I think so
+		if (colorAnimation != nullptr) {
+			colorAnimation->update(dt);
+		}
+		getAnimationHelper()->update(dt);
+		myUpdate(); // call derived classes
+	};
 
 	bool DrawingBasics::okToDraw() {
 		if (getAnimationHelper()->paused() || getAnimationHelper()->isExpired()) {

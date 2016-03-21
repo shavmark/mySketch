@@ -8,7 +8,6 @@
 
 namespace Software2552 {
 
-
 	// simple drawing 
 	class Rectangle : public DrawingBasics {
 	public:
@@ -16,15 +15,11 @@ namespace Software2552 {
 		void draw();
 	};
 
+	// internal helpers
 	class RandomDots {
 	public:
 
-		void draw() {
-			for (int i = 0; i < ofGetMouseX() * 5; i++) {
-				ofSetColor(ofRandom(96));
-				ofRect(ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 4, 4);
-			}
-		}
+		void draw();
 	};
 
 	class Line {
@@ -47,26 +42,9 @@ namespace Software2552 {
 	// https://github.com/openframeworks/ofBook/blob/master/chapters/lines/chapter.md
 	class ComplexLines {
 	public:
-		void draw() {
-			for (const auto& line : lines) {
-				ofDrawLine(line.a, line.b);
-			}
-		}
+		void draw();
 		//bugbug convert to code vs mouse using random
-		void mouseDragged(int x, int y, int button) {
-			for (auto point : drawnPoints) {
-				ofPoint mouse;
-				mouse.set(x, y);
-				float dist = (mouse - point).length();
-				if (dist < 30) {
-					Line lineTemp;
-					lineTemp.a = mouse;
-					lineTemp.b = point;
-					lines.push_back(lineTemp);
-				}
-			}
-			drawnPoints.push_back(ofPoint(x, y));
-		}
+		void mouseDragged(int x, int y, int button);
 	private:
 		vector < ofPoint > drawnPoints;
 		vector < Line > lines;
@@ -188,71 +166,10 @@ namespace Software2552 {
 	};
 	class VectorPattern : public DrawingBasics {
 	public:
-		void matrix(int twistx, int shifty) {
-			ofPushMatrix();
-			for (int i = -50; i < 50; ++i) {
-				ofTranslate(0, i*shifty);
-				ofRotate(i*twistx);
-				stripe(true);
-			}
-			ofPopMatrix();
-		}
-		void stripe(bool rotate=false) {
-			ofSetColor(ofColor::black);
-			ofSetLineWidth(3);
-			for (int i = -50; i < 50; ++i) {
-				ofPushMatrix();
-				ofTranslate(i * 20, 0);
-				if (rotate) {
-					ofRotate(i * 5);
-				}
-				ofLine(0, -100, 0, 100);
-				ofPopMatrix();
-			}
-		}
-		void triangle(bool rotate = false) {
-			ofSetColor(ofColor::black);
-			ofSetLineWidth(3);
-			ofNoFill();
-			for (int i = -50; i < 50; ++i) {
-				ofPushMatrix();
-				ofTranslate(i * 20, 0);
-				if (rotate) {
-					ofRotate(i * 5);
-				}
-				ofScale(6, 6); // enlarge 6x
-				ofTriangle(0, 0, -50, 100, 50, 100);
-				ofPopMatrix();
-			}
-		}
-		void shape(int twistx, int shifty, bool rect, bool fill, int rotate, int alpha=100) {
-			ofColor color = ofColor::black;
-			color.a = alpha;
-			ofSetColor(color);
-			ofSetLineWidth(1);
-			if (fill) {
-				ofFill();
-			}
-			else {
-				ofNoFill();
-			}
-			for (int i = -50; i < 50; ++i) {
-				ofPushMatrix();
-				ofRotate(i * twistx);
-				ofTranslate(i * 20, shifty);
-				ofRotate(rotate);
-				ofScale(6, 6); // enlarge 6x
-				if (rect) {
-					ofRect(-50, -50, 100, 100);
-				}
-				else {
-					ofTriangle(0, 0, -50, 100, 50, 100);
-				}
-				ofPopMatrix();
-			}
-			ofScale(6, 6); // enlarge 6x
-			ofTriangle(0, 0, -50, 100, 50, 100);
-		}
+		void matrix(int twistx, int shifty);
+		void stripe(bool rotate = false);
+		void triangle(bool rotate = false);
+		void shape(int twistx, int shifty, bool rect, bool fill, int rotate, int alpha = 100);
 	};
 	class Camera : public ofEasyCam, public DrawingBasics {
 	public:
@@ -275,16 +192,7 @@ namespace Software2552 {
 		bool myObjectLoad() { return loadGrabber(w, h); }
 		bool loadGrabber(int wIn, int hIn);
 	private:
-		int find() {
-			//bugbug does Kintect show up?
-			ofVideoGrabber grabber;
-			vector<ofVideoDevice> devices = grabber.listDevices();
-			for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
-				if (it->deviceName == name) {
-					return it->id;
-				}
-			}
-		}
+		int find();
 		string name;
 		int id=0;
 	};
@@ -331,37 +239,15 @@ namespace Software2552 {
 		}
 		void myUpdate() { ofVideoPlayer::update(); }
 
-		bool textureReady() {
-			return isInitialized();
-		}
-		bool bind() { 
-			if (isInitialized() && isUsingTexture()) {
-				getTexture().bind();
-				return true;
-			}
-			return false;
-		}
-		bool unbind() {
-			if (isInitialized() && isUsingTexture()) {
-				getTexture().unbind();
-				return true;
-			}
-			return false;
-		}
+		bool textureReady() {	return isInitialized();		}
+		bool bind();
+		bool unbind();
 	private:
 
 	};
 	class TextureFromImage : public ofTexture {
 	public:
-		void create(const string& name, float w, float h) {
-			// create texture
-			ofLoadImage(*this, name);
-			fbo.allocate(w,h, GL_RGB);
-			fbo.begin();//fbo does drawing
-			ofSetColor(ofColor::white); // no image color change when using white
-			draw(0, 0, w,h);
-			fbo.end();// normal drawing resumes
-		}
+		void create(const string& name, float w, float h);
 		float getWidth() { return fbo.getWidth(); }
 		float getHeight() { return fbo.getHeight(); }
 		void bind() { fbo.getTextureReference().bind(); }
@@ -405,26 +291,7 @@ namespace Software2552 {
 		void myDraw();
 		void mySetup();
 		bool myObjectLoad();
-		//virtual uint64_t getTimeBeforeStart(uint64_t t = 0);
-		float getTimeBeforeStart(float t) {
-
-			// if json sets a wait use it
-			if (getAnimationHelper()->getWait() > 0) {
-				setIfGreater(t, getAnimationHelper()->getWait());
-			}
-			else {
-				// will need to load it now to get the true lenght
-				if (!isLoaded()) {
-					load(getLocationPath());
-				}
-				float duration = getAnimationHelper()->getObjectLifetime();
-				setIfGreater(t, duration);
-			}
-			return t;
-		}
-
-		// 
-
+		float getTimeBeforeStart(float t);
 	private:
 	};
 	class RoleText :  public DrawingBasics {

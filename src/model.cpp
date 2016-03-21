@@ -154,6 +154,22 @@ namespace Software2552 {
 		}
 		return false;
 	}
+	DateAndTime::DateAndTime() : Poco::DateTime(0, 1, 1) {
+		timeZoneDifferential = 0;
+		bc = 0;
+	}
+	void DateAndTime::operator=(const DateAndTime& rhs) {
+		timeZoneDifferential = rhs.timeZoneDifferential;
+		bc = rhs.bc;
+		assign(rhs.year(), rhs.month(), rhs.day(), rhs.hour(), rhs.minute(), rhs.second(), rhs.microsecond(), rhs.microsecond());
+	}
+	void Settings::setSettings(Settings* rhs) {
+		if (rhs != nullptr) {
+			setSettings(*rhs);
+		}
+	}
+
+
 	 bool Actor::read(const Json::Value &data) {
 		// any actor can have settings set, or defaults used
 		Settings::readFromScript(data["settings"]);

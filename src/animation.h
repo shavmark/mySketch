@@ -26,9 +26,7 @@ namespace Software2552 {
 		int getAnimationUsageCount() const { return usageCount; }
 		bool refreshAnimation();
 		// how long to wait
-		virtual void getTimeBeforeStart(float& t) {
-			setIfGreater(t, getObjectLifetime() + getWait());
-		}
+		virtual void getTimeBeforeStart(float& t) {	setIfGreater(t, getObjectLifetime() + getWait());		}
 		static bool OKToRemove(shared_ptr<objectLifeTimeManager> me);
 		void removeExpiredItems(vector<shared_ptr<objectLifeTimeManager>>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
@@ -62,13 +60,8 @@ namespace Software2552 {
 		DrawingBasics(const string&path) { 	setLocationPath(path); 		}
 		bool okToDraw();
 		// avoid name clashes and wrap the most used items, else access the contained object for more
-		shared_ptr<PointAnimation> getAnimationHelper() {
-			// allocate on demand, then objects not in need of animation will be smaller
-			if (ani == nullptr) {
-				ani = std::make_shared<PointAnimation>();
-			}
-			return ani; 
-		}
+		shared_ptr<PointAnimation> getAnimationHelper();
+		virtual float getTimeBeforeStart(float t) { return getAnimationHelper()->getWait(); }
 		static bool OKToRemove(shared_ptr<DrawingBasics> me) {
 			return me->getAnimationHelper()->OKToRemove(me->getAnimationHelper());
 		}
@@ -81,20 +74,11 @@ namespace Software2552 {
 
 		// helpers to wrap basic functions
 		void setupForDrawing() { mySetup(); };
-		void updateForDrawing() { 
-			float dt = 1.0f / 60.0f;//bugbug does this time to frame count? I think so
-			if (colorAnimation != nullptr) {
-				colorAnimation->update(dt);
-			}
-			getAnimationHelper()->update(dt);
-			myUpdate(); // call derived classes
-		};
+		void updateForDrawing();
 		void drawIt() { myDraw(); };
 		bool loadForDrawing() { return myObjectLoad(); };
 
-		void setColorAnimation(shared_ptr<ColorAnimation>p) {
-			colorAnimation = p;
-		}
+		void setColorAnimation(shared_ptr<ColorAnimation>p) {			colorAnimation = p;		}
 		int w = 0;
 		int h = 0;
 
