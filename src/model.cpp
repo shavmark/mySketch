@@ -300,6 +300,7 @@ namespace Software2552 {
 	bool ColorChoice::readFromScript(const Json::Value &data) {
 		string colorgroup;
 		READSTRING(colorgroup, data);
+		Colors
 		setGroup(colorgroup);
 		return true;
 	}

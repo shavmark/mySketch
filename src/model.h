@@ -37,9 +37,9 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 	};
 
-	class ColorChoice : public ColorSet {
+	class ColorChoice : public Colors {
 	public:
-		ColorChoice() : ColorSet() {};
+		ColorChoice() : Colors() {};
 		bool readFromScript(const Json::Value &data);
 	};
 	//http://pocoproject.org/slides/070-DateAndTime.pdf

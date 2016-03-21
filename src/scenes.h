@@ -33,7 +33,7 @@ namespace Software2552 {
 		void resume();
 		float findMaxWait();
 		Settings settings;
-
+		string &getKeyName() { return keyname; }
 	protected:
 		// drawing tools
 		void setBackgroundImageName(const string&name) { backgroundImageName = name; }

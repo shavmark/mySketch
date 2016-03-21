@@ -9,7 +9,7 @@ namespace Software2552 {
 	ColorSet::ColorSet(const ColorGroup& groupIn) :objectLifeTimeManager() {
 		setGroup(groupIn);
 		// always set a color to avoid bad errors
-		setSetcolors(4, ofColor(ofColor::blue).getHex(), ofColor(ofColor::orangeRed).getHex(), ofColor(ofColor::azure).getHex());
+		setSetcolors(4, ofColor(ofColor::blue).getHex(), ofColor(ofColor::orangeRed).getHex(), ofColor(ofColor::azure).getHex(), ofColor(ofColor::green).getHex());
 	}
 	ColorSet::ColorSet(const ColorGroup& groupIn, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4) : objectLifeTimeManager() {
 		// always store as hex

@@ -20,7 +20,7 @@ namespace Software2552 {
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
 		// just use multiple ColorSets, find out more as we continue on
-		ColorSet(const ColorGroup& groupIn= Default);
+		ColorSet(const ColorGroup& groupIn);
 		ColorSet(const ColorGroup& groupIn, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4);
 		ColorSet(const ColorGroup&groupIn, int color1, int color2, int color3, int color4);
 		void setSetcolors(int c, ...);
@@ -36,7 +36,6 @@ namespace Software2552 {
 		ofColor getOfColor(int index) {
 			return ofColor().fromHex(getHex(index));
 		}
-
 	private:
 		ColorGroup group;
 		vector<int> colors; //hex values of all matching colors

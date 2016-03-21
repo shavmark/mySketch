@@ -1,5 +1,5 @@
 #include "timeline.h"
-
+#include "model.h"
 namespace Software2552 {
 
 	Timeline::Timeline(){
@@ -37,6 +37,13 @@ namespace Software2552 {
 					else {
 						p = std::make_shared<GenericScene>();
 					}
+					// read common items here
+					p->settings.readFromScript(json["scenes"][i]["settings"]);
+					readStringFromJson(p->getKeyName(), json["scenes"][i]["keyname"]);
+					if (p->getKeyName() == "ClydeBellecourt") {
+						int i = 1; // just for debugging
+					}
+
 					if (p->create(json["scenes"][i])) {
 						playlist.getCurrent()->setStage(p);
 					}

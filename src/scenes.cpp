@@ -47,7 +47,7 @@ namespace Software2552 {
 			imageForBackground.draw(0, 0);
 		}
 		else {
-			ofSetBackgroundColor(ofColor::blue);
+			ofSetBackgroundColor(ofColor::white);
 		}
 
 		ofPushStyle();
@@ -195,14 +195,7 @@ namespace Software2552 {
 	//great animation example
 	bool TestBallScene::create(const Json::Value &data) {
 		try {
-			string keyname;
-			READSTRING(keyname, data);
-			if (keyname == "ClydeBellecourt") {
-				int i = 1; // just for debugging
-			}
-				
-			settings.readFromScript(data);
-				
+			
 			int radius=0; // read items unique to this scene
 			READINT(radius, data);
 			
