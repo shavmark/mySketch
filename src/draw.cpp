@@ -1,3 +1,5 @@
+#include "2552software.h"
+#include "animation.h"
 #include "draw.h"
 #include "model.h"
 

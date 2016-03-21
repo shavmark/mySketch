@@ -1,5 +1,4 @@
 #include "2552software.h"
-#include "model.h"
 #include "animation.h"
 
 namespace Software2552 {
@@ -23,6 +22,10 @@ namespace Software2552 {
 		refreshRate = 0;
 	}
 
+	void objectLifeTimeManager::start() { 
+		startTime = ofGetElapsedTimef(); 
+	}
+
 	bool objectLifeTimeManager::OKToRemove(shared_ptr<objectLifeTimeManager> me) {
 		if (me->isExpired()) {
 			return true;
@@ -31,6 +34,7 @@ namespace Software2552 {
 		if (me->getObjectLifetime() == 0 || me->startTime == 0) {
 			return false; // no time out ever, or we have not started yet
 		}
+		float t = ofGetElapsedTimef();
 		float elapsed = ofGetElapsedTimef() - me->startTime;
 		if (me->getWait() > elapsed) {
 			return false;

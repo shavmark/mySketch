@@ -1,6 +1,6 @@
 #include "model.h"
 #include "animation.h"
-
+#include "scenes.h"
 namespace Software2552 {
 	shared_ptr<vector<shared_ptr<PlayItem>>> Playlist::getList() {
 		return list;
@@ -219,15 +219,6 @@ namespace Software2552 {
 		return true;
 	}
 
-	 
-	void Colors::update() {
-		// clean up deleted items every so often
-		for (auto& d : getList()) {
-			d->refreshAnimation();
-		}
-		// remove expired colors
-		removeExpiredItems(getList());
-	}
 
 	bool PlayItem::readFromScript(const Json::Value &data) {
 		READSTRING(keyname, data);
@@ -400,14 +391,62 @@ namespace Software2552 {
 		return true;
 	}
 
-	void Playlist::setStage(shared_ptr<Stage> p, const string& keyname) {
+	void Playlist::setStage(shared_ptr<Stage> p) {
 		if (p != nullptr) {
 			for (auto& item : *list) {
-				if (item->getKeyName() == keyname) {
+				if (item->getKeyName() == p->getKeyName()) {
 					item->setStage(p);
 				}
 			}
 		}
 	}
+
+	bool Playlist::read(const string&path) {
+		ofxJSON json;
+
+		if (!json.open(path)) {
+			logErrorString("Failed to parse JSON " + path);
+			return false;
+		}
+		try {
+
+			readFromScript(json);
+			if (getList() == nullptr) {
+				logErrorString("missing playlist");
+				return false;
+			}
+			// read all the scenes
+			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
+				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
+				string sceneType;
+				if (readStringFromJson(sceneType, json["scenes"][i]["sceneType"])) {
+					shared_ptr<Stage> p = nullptr;
+					if (sceneType == "TestBall") {
+						p = std::make_shared<TestBallScene>();
+					}
+					else {
+						p = std::make_shared<GenericScene>();
+					}
+					// read common items here
+					p->settings.readFromScript(json["scenes"][i]["settings"]);
+					readStringFromJson(p->getKeyName(), json["scenes"][i]["keyname"]);
+					if (p->getKeyName() == "ClydeBellecourt") {
+						int i = 1; // just for debugging
+					}
+
+					if (p->create(json["scenes"][i])) {
+						// find stage and set it
+						setStage(p);
+					}
+				}
+			}
+
+		}
+		catch (std::exception e) {
+			logErrorString(e.what());
+			return false;
+		}
+	}
+
 
 }

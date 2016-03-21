@@ -1,8 +1,8 @@
 #pragma once
 
 #include "2552software.h"
-#include "color.h"
 #include "animation.h"
+#include "color.h"
 #include "draw.h"
 
 // json driven model
@@ -215,6 +215,7 @@ namespace Software2552 {
 		bool readFromScript(const Json::Value &data);
 	};
 	// item in a play list
+
 	class Stage;
 	class PlayItem : public objectLifeTimeManager {
 	public:
@@ -236,7 +237,8 @@ namespace Software2552 {
 		void removeExpiredItems() {
 			list->erase(std::remove_if(list->begin(), list->end(), objectLifeTimeManager::OKToRemove), list->end());
 		}
-		void setStage(shared_ptr<Stage> p, const string& keyname);
+		bool read(const string&path);
+		void setStage(shared_ptr<Stage> p);
 		shared_ptr<vector<shared_ptr<PlayItem>>> getList();
 	private:
 		shared_ptr<vector<shared_ptr<PlayItem>>> list;

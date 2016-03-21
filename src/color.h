@@ -1,6 +1,7 @@
 #pragma once
 #include "2552software.h"
 #include "animation.h"
+
 #include <cstdarg>
 
 namespace Software2552 {

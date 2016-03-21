@@ -11,7 +11,7 @@ namespace Software2552 {
 	class objectLifeTimeManager {
 	public:
 		objectLifeTimeManager();
-		void start() { startTime = ofGetElapsedTimeMillis(); };
+		void start();
 		void setRefreshRate(uint64_t rateIn) { refreshRate = rateIn; }
 		float getRefreshRate() {return refreshRate;	}
 		void setWait(float w) { waitTime = w; }

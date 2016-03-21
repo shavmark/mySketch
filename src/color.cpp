@@ -1,4 +1,5 @@
 #include "2552software.h"
+#include "animation.h"
 #include "model.h"
 #include "color.h"
 #include <map>
@@ -57,6 +58,16 @@ namespace Software2552 {
 		}
 		return getListItem(getCurrent());
 	}
+
+	void Colors::update() {
+		// clean up deleted items every so often
+		for (auto& d : getList()) {
+			d->refreshAnimation();
+		}
+		// remove expired colors
+		removeExpiredItems(getList());
+	}
+
 	shared_ptr<ColorSet> Colors::getFirstColors(ColorSet::ColorGroup group) {
 		for (const auto& a : getList()) {
 			if (a->getGroup() == group) {

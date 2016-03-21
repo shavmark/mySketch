@@ -1,7 +1,7 @@
 #pragma once
 #include "2552software.h"
-#include "model.h"
 #include "scenes.h"
+#include "model.h"
 
 // join data and view, this class knows about both the data and how its shown
 
