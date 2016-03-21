@@ -20,11 +20,12 @@ namespace Software2552 {
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
 		// just use multiple ColorSets, find out more as we continue on
-		ColorSet(const ColorGroup& groupIn);
+		ColorSet(const ColorGroup& groupIn= Default);
 		ColorSet(const ColorGroup& groupIn, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4);
 		ColorSet(const ColorGroup&groupIn, int color1, int color2, int color3, int color4);
 		void setSetcolors(int c, ...);
 		void setGroup(const ColorGroup&groupin) {group = groupin;}
+		void setGroup(const string&name);
 		ColorGroup getGroup() const {return group;}
 		int getHex(int index) const  {return colors[index];	}
 		bool operator== (const ColorSet& rhs) {	return getGroup() == rhs.getGroup();}
@@ -32,6 +33,10 @@ namespace Software2552 {
 		bool lessThan(const ColorSet& j, ColorGroup type);
 		ColorSet& operator=(const ColorSet& rhs);
 		int size() { return colors.size(); }
+		ofColor getOfColor(int index) {
+			return ofColor().fromHex(getHex(index));
+		}
+
 	private:
 		ColorGroup group;
 		vector<int> colors; //hex values of all matching colors

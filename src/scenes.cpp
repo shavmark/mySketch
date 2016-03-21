@@ -7,7 +7,6 @@
 //  ofSetBackgroundAuto(...).Passing in a value of false turns off the automatic background clearing.
 
 namespace Software2552 {
-
 	// return a possibly modifed version such as camera moved
 	shared_ptr<Camera> Director::pickem(vector<shared_ptr<Camera>>&cameras, bool orbiting) {
 		// maybe build this out using the color count techqiue (make that a base class?)
@@ -42,12 +41,13 @@ namespace Software2552 {
 		return nullptr;
 	}
 	void Stage::draw() {
-		for (auto& a : animatables) {
-			a->getPlayer()->drawIt();
-		}
 
+		//bugbug code in the data driven background object
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.draw(0, 0);
+		}
+		else {
+			ofSetBackgroundColor(ofColor::blue);
 		}
 
 		ofPushStyle();
@@ -56,7 +56,7 @@ namespace Software2552 {
 		ofPopStyle();
 
 		ofPushStyle();
-		//draw3d();
+		draw3d();
 		ofPopStyle();
 	}
 	// pause them all
@@ -172,14 +172,14 @@ namespace Software2552 {
 	void Stage::draw2d() {
 		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // move 0,0 to center
 		for (auto& a : animatables) {
-			a->getPlayer()->drawIt();
+			a->getPlayer()->drawIt(DrawingBasics::draw2d);
 		}
-		
+
 		//ofBackground(ofColor::black);
 		//bugbug option is to add vs replace:ofEnableBlendMode(OF_BLENDMODE_ADD);//bugbug can make these attributes somewhere
 		//ofEnableAlphaBlending();
 	}
-	void GenericScene::create(const Json::Value &data) {
+	bool GenericScene::create(const Json::Value &data) {
 		READSTRING(keyname, data);
 		settings.readFromScript(data);
 		// read needed common types
@@ -190,9 +190,10 @@ namespace Software2552 {
 		createTimeLineItems<Picture>(settings, getAnimatables(), data, "images");
 		createTimeLineItems<Text>(settings, getAnimatables(), data, "texts");
 		createTimeLineItems<Sphere>(settings, getAnimatables(), data, "spheres");
+		return true;
 	}
 	//great animation example
-	void TestBallScene::create(const Json::Value &data) {
+	bool TestBallScene::create(const Json::Value &data) {
 		try {
 			string keyname;
 			READSTRING(keyname, data);
@@ -204,62 +205,50 @@ namespace Software2552 {
 				
 			int radius=0; // read items unique to this scene
 			READINT(radius, data);
+			
+			shared_ptr<Ball> b = std::make_shared<Ball>();
+			b->getPlayer()->getAnimationHelper()->setPositionY(b->getPlayer()->floorLine - 100);
+			b->getPlayer()->getAnimationHelper()->setCurve(EASE_IN);
+			b->getPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
+			b->getPlayer()->getAnimationHelper()->setDuration(0.55);
+			ofPoint p;
+			p.y = b->getPlayer()->floorLine;
+			b->getPlayer()->getAnimationHelper()->animateTo(p);
+			//b->setDuration(0.001);
 
+			shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
+
+			c->setColor(settings.getColor().getOfColor(0));
+			c->setDuration(0.5f);
+			c->setRepeatType(LOOP_BACK_AND_FORTH);
+			c->setCurve(LINEAR);
+			c->animateTo(settings.getColor().getOfColor((settings.getColor().size()-1)));
+			b->getPlayer()->setColorAnimation(c);
+
+			addAnimatable(b);
 			// read needed common types
+			return true;
 
-			//createTimeLineItems<Video>(p->getAnimatables(), data, "videos");
-			//createTimeLineItems<Audio>(p->getAnimatables(), data, "audios");
-			//createTimeLineItems<Paragraph>(p->getAnimatables(), data, "paragraphs");
-			//createTimeLineItems<Picture>(p->getAnimatables(), data, "images");
-			//createTimeLineItems<Text>(p->getAnimatables(), data, "texts");
-			//createTimeLineItems<Sphere>(p->getAnimatables(), data, "spheres");
 		}
 		catch (std::exception e) {
 			logErrorString(e.what());
+			return false;
 		}
-
-		shared_ptr<Ball> b = std::make_shared<Ball>();
-		b->getPlayer()->getAnimationHelper()->setPositionY(b->getPlayer()->floorLine - 100);
-		b->getPlayer()->getAnimationHelper()->setCurve(EASE_IN);
-		b->getPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
-		b->getPlayer()->getAnimationHelper()->setDuration(0.55);
-		ofPoint p;
-		p.y = b->getPlayer()->floorLine;
-		b->getPlayer()->getAnimationHelper()->animateTo(p);
-		//b->setDuration(0.001);
-
-		shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
-
-		c->setColor(ofColor::blue);
-		c->setDuration(0.5f);
-		c->setRepeatType(LOOP_BACK_AND_FORTH);
-		c->setCurve(LINEAR);
-		c->animateTo(ofColor::red);
-		b->getPlayer()->setColorAnimation(c);
-
-		addAnimatable(b);
-
 	}
 	// juse need to draw the SpaceScene, base class does the rest
-	void TestScene::draw3dMoving() {
+	void Stage::draw3dMoving() {
+		for (auto& a : animatables) {
+			a->getPlayer()->drawIt(DrawingBasics::draw3dMovingCamera);
+		}
 	}
-	void TestScene::draw2d() {
-		Stage::draw2d();
-		
-		
-		//for (int i = 0; i < 10; i++) {
-			//rect[i].draw();
-		//}
-		VectorPattern p;
-		//p.stripe(true);
-		//p.triangle(true);
-		//p.shape(15, 5, false, true, 5);
-		//p.matrix(10, 20);
+	void Stage::draw3dFixed() {
+		for (auto& a : animatables) {
+			a->getPlayer()->drawIt(DrawingBasics::draw3dFixedCamera);
+		}
 	}
 	// bugbug all items in test() to come from json or are this is done in Director
 	void TestScene::test() {
 		Stage::test();
-		
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		add(cam1);
@@ -324,9 +313,11 @@ namespace Software2552 {
 
 		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
+		raster->getPlayer()->setType(DrawingBasics::draw3dMovingCamera);
 		addAnimatable(raster);
 
 		shared_ptr<Video> video = std::make_shared<Video>("carride.mp4");
+		video->getPlayer()->setType(DrawingBasics::draw3dFixedCamera);
 		//video.w = ofGetWidth() / 3;
 		//video.x = raster.w;
 		addAnimatable(video);

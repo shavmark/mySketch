@@ -56,12 +56,29 @@ namespace Software2552 {
 	// basic drawing info, bugbug maybe color set goes here too, not sure yet
 	class DrawingBasics  {
 	public:
+		enum drawtype { draw2d, draw3dFixedCamera, draw3dMovingCamera };
 		DrawingBasics() {  }
 		DrawingBasics(const string&path) { 	setLocationPath(path); 		}
-		bool okToDraw();
+
 		// avoid name clashes and wrap the most used items, else access the contained object for more
 		shared_ptr<PointAnimation> getAnimationHelper();
 		virtual float getTimeBeforeStart(float t) { return getAnimationHelper()->getWait(); }
+
+		// helpers to wrap basic functions
+		void setupForDrawing() { mySetup(); };
+		void updateForDrawing();
+		void drawIt(drawtype type);
+		bool loadForDrawing() { return myObjectLoad(); };
+
+		void setColorAnimation(shared_ptr<ColorAnimation>p) { colorAnimation = p;		}
+		shared_ptr<ColorAnimation> getColorAnimation() {return colorAnimation;}
+
+		int w = 0;
+		int h = 0;
+
+		string &getLocationPath() { return locationPath; }
+		void setLocationPath(const string&s) { locationPath = s; }
+
 		static bool OKToRemove(shared_ptr<DrawingBasics> me) {
 			return me->getAnimationHelper()->OKToRemove(me->getAnimationHelper());
 		}
@@ -71,21 +88,15 @@ namespace Software2552 {
 		void removeExpiredItems(vector<shared_ptr<DrawingBasics>>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
 		}
+		void setType(drawtype typeIn) { type = typeIn; }
 
-		// helpers to wrap basic functions
-		void setupForDrawing() { mySetup(); };
-		void updateForDrawing();
-		void drawIt() { myDraw(); };
-		bool loadForDrawing() { return myObjectLoad(); };
-
-		void setColorAnimation(shared_ptr<ColorAnimation>p) {			colorAnimation = p;		}
-		int w = 0;
-		int h = 0;
-
-		string &getLocationPath() { return locationPath; }
-		void setLocationPath(const string&s) { locationPath = s; }
+	protected:
+		drawtype getType() { return type; }
+		bool okToDraw();
+		void applyColor();
 
 	private:
+		drawtype type = draw2d;
 		// derived classes supply these if they need them to be called
 		virtual void mySetup() {};
 		virtual void myUpdate() {};

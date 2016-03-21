@@ -17,7 +17,6 @@ namespace Software2552 {
 			return false;
 		}
 
-		Playlist playlist;
 
 		// parser uses exepections but openFrameworks does not so exceptions end here
 		try {
@@ -38,9 +37,9 @@ namespace Software2552 {
 					else {
 						p = std::make_shared<GenericScene>();
 					}
-					p->create(json["scenes"][i]);
-					//shared_ptr<vector<shared_ptr<PlayItem>>> v = playlist.getList();
-					//(*v)[i]->scene.readFromScript(json["scenes"][i]);
+					if (p->create(json["scenes"][i])) {
+						playlist.getCurrent()->setStage(p);
+					}
 				}
 			}
 					// if a scene is not in the play list do not save it
@@ -114,20 +113,23 @@ namespace Software2552 {
 	void Timeline::setup() {
 		//ofSeedRandom(); // turn of to debug if needed
 		ofSetFrameRate(frameRate);
-		scene.setup();
+		playlist.getCurrent()->start();
+		playlist.getCurrent()->getStage()->setup();
+
 		return;
 
 		mesh.setup();
 	}
 	// keep this super fast
 	void Timeline::update() { 
-		scene.update();
+		playlist.removeExpiredItems();
+		playlist.getCurrent()->getStage()->update();
 	};
 
 	// keep as fast as possible
 	void Timeline::draw() {
 		//mesh.draw();
-		scene.draw();
+		playlist.getCurrent()->getStage()->draw();
 		return;
 	};
 

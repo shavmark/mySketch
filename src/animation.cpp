@@ -82,6 +82,18 @@ namespace Software2552 {
 		getAnimationHelper()->update(dt);
 		myUpdate(); // call derived classes
 	};
+	void DrawingBasics::applyColor() {
+		if (getColorAnimation()) {
+			getColorAnimation()->applyCurrentColor();
+		}
+	}
+
+	void DrawingBasics::drawIt(drawtype type) {//DrawingBasics::drawtype
+		if (type == getType() && okToDraw()) {
+			applyColor();
+			myDraw();
+		}
+	};
 
 	bool DrawingBasics::okToDraw() {
 		if (getAnimationHelper()->paused() || getAnimationHelper()->isExpired()) {

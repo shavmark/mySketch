@@ -276,7 +276,6 @@ namespace Software2552 {
 
 	void Ball2d::myDraw() {
 		ofFill();
-		ofSetBackgroundColor(ofColor::blue);
 		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), getAnimationHelper()->getCurrentPosition().y, width);
 		//glColor4ub(255, 255, 255, 255);
 		ofRect(0, floorLine + width, ofGetWidth(), 1);
@@ -367,12 +366,12 @@ namespace Software2552 {
 	}
 
 	void Rectangle::draw() {
-
-		ofFill();
-		ofSetRectMode(OF_RECTMODE_CENTER);	// center around the position
-		ofSetColor(255, 0, 0);
-		ofRect(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
-
+		if (okToDraw()) {
+			ofFill();
+			ofSetRectMode(OF_RECTMODE_CENTER);	// center around the position
+			ofSetColor(255, 0, 0);
+			ofRect(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
+		}
 	}
 	void RolePlane::myDraw() {
 		if (useWireframe()) {
@@ -437,22 +436,16 @@ namespace Software2552 {
 		ofPopStyle();
 	}
 	void RoleRaster::myDraw() {
-		if (okToDraw()) {
-			ofImage::draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
-		}
+		ofImage::draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
 	}
 	void RoleParagraph::myDraw() {
-		if (okToDraw()) {
-			ofxParagraph::setPosition(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
-			ofxParagraph::draw();
-		}
+		ofxParagraph::setPosition(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
+		ofxParagraph::draw();
 	}
 
 	// add this one http://clab.concordia.ca/?page_id=944
 	void RoleVideo::myDraw() {
-		if (okToDraw()) {
-			ofVideoPlayer::draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
-		}
+		ofVideoPlayer::draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
 	}
 	void RoleVideo::mySetup() {
 		if (!isLoaded()) {
@@ -509,34 +502,28 @@ namespace Software2552 {
 	}
 
 	void Grabber::myDraw() {
-		if (isInitialized() && okToDraw()) {
+		if (isInitialized()) {
 			draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
 		}
 	}
 	void RoleBackground::myDraw(){
-		if (okToDraw()) {
-			//ofBackgroundHex this is an option too bugbug enable background type
+		//ofBackgroundHex this is an option too bugbug enable background type
 
-			ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
-				ofColor::fromHex(Colors::getBackground()), mode);
-			RoleText text;
-			text.drawText("print", 100, 200);
-		}
+		ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
+			ofColor::fromHex(Colors::getBackground()), mode);
+		RoleText text;
+		text.drawText("print", 100, 200);
 	}
 	void RoleText::myDraw() {
-		if (okToDraw()) {
-			drawText(text, getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y); //bugbug add in some animation
-		}
+		drawText(text, getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y); //bugbug add in some animation
 	}
 
 	void RoleText::drawText(const string &s, int x, int y) {
-		if (okToDraw()) {
-			ofPushStyle();
-			Colors::setFontColor();
-			Font font;
-			font.get().drawString(s, x, y);
-			ofPopStyle();
-		}
+		ofPushStyle();
+		Colors::setFontColor();
+		Font font;
+		font.get().drawString(s, x, y);
+		ofPopStyle();
 	}
 	void MeshEngine::setup() {
 		//setMode(OF_PRIMITIVE_POINTS);

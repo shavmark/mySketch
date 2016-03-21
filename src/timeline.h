@@ -17,16 +17,11 @@ namespace Software2552 {
 		const int frameRate = 60;
 
 		bool readScript(const string& path);
-		shared_ptr<Stage> stage;
+		Playlist playlist;
+
 	private:
-		// stat all objects in vector to playing
-		template<typename T> void startAnimation(T& v) {
-			for (auto& t : v) {
-				t.play();
-			}
-		}
+
 		MoreMesh mesh; // just for now bugbug, move into class hiearchey when ready
-		TestBallScene scene;
 	};
 
 

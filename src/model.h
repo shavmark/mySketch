@@ -1,6 +1,7 @@
 #pragma once
 
 #include "2552software.h"
+#include "color.h"
 #include "animation.h"
 #include "draw.h"
 
@@ -33,6 +34,12 @@ namespace Software2552 {
 
 	class Point3D : public ofVec3f {
 	public:
+		bool readFromScript(const Json::Value &data);
+	};
+
+	class ColorChoice : public ColorSet {
+	public:
+		ColorChoice() : ColorSet() {};
 		bool readFromScript(const Json::Value &data);
 	};
 	//http://pocoproject.org/slides/070-DateAndTime.pdf
@@ -77,14 +84,16 @@ namespace Software2552 {
 
 		ofTrueTypeFont& getFont() { return font.get(); }
 		shared_ptr<ofxSmartFont> getFontPointer() { return font.getPointer(); }
+		ColorChoice& getColor();
+		void setColor(const ColorChoice& c) { colors = c; }
 		bool operator==(const Settings& rhs) { return rhs.name == name; }
 		string &getName() { return name; }
 		void setSettings(const Settings& rhs);
-
 		void setSettings(Settings* rhs);
-
+		
 	protected:
 		Font   font;
+		ColorChoice  colors;
 		string notes;// unstructured string of info, can be shown to the user
 		string title; // title object
 		string name; // any object can have a name, note, date, reference, duration
@@ -152,32 +161,32 @@ namespace Software2552 {
 	class Background : public Actor {
 	public:
 		Background() :Actor(new RoleBackground()) {  }
-		RoleBackground* getPlayer() { return ((RoleBackground*)getPlayer()); }
+		RoleBackground* getPlayer() { return ((RoleBackground*)Actor::getPlayer()); }
 	};
 	class Ball : public Actor {
 	public:
 		Ball() :Actor(new Ball2d()) {  }
-		Ball2d* getPlayer() { return ((Ball2d*)getPlayer()); }
+		Ball2d* getPlayer() { return ((Ball2d*)Actor::getPlayer()); }
 	};
 
 	class Picture : public Actor {
 	public:
 		Picture() :Actor(new RoleRaster()) {  }
 		Picture(const string&s) :Actor(new RoleRaster(s)) {  }
-		RoleRaster* getPlayer() { return ((RoleRaster*)getPlayer()); }
+		RoleRaster* getPlayer() { return ((RoleRaster*)Actor::getPlayer()); }
 	};
 	
 	class Text : public Actor {
 	public:
 		Text() :Actor(new RoleText()) {  }
-		RoleText* getPlayer() { return ((RoleText*)getPlayer()); }
+		RoleText* getPlayer() { return ((RoleText*)Actor::getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 
 	class Paragraph : public Actor {
 	public:
 		Paragraph() :Actor(new RoleParagraph()) {  }
-		RoleParagraph* getPlayer() { return ((RoleParagraph*)getPlayer()); }
+		RoleParagraph* getPlayer() { return ((RoleParagraph*)Actor::getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 
@@ -185,14 +194,14 @@ namespace Software2552 {
 	class Sphere : public Actor {
 	public:
 		Sphere() :Actor(new RoleSphere()) {  }
-		RoleSphere* getPlayer() { return ((RoleSphere*)getPlayer()); }
+		RoleSphere* getPlayer() { return ((RoleSphere*)Actor::getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
 	class Audio : public Actor {
 	public:
 		Audio() :Actor(new RoleSound()) {  }
-		RoleSound* getPlayer() { return ((RoleSound*)getPlayer()); }
+		RoleSound* getPlayer() { return ((RoleSound*)Actor::getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 
@@ -200,29 +209,35 @@ namespace Software2552 {
 	public:
 		Video(const string&s) :Actor(new RoleVideo(s)) {  }
 		Video() :Actor(new RoleVideo()) {  }
-		RoleVideo* getPlayer() { return ((RoleVideo*)getPlayer()); }
+		RoleVideo* getPlayer() { return ((RoleVideo*)Actor::getPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
-
-	// class Character 3d, 2d, talking, movment, etc.  not for this release, way to complicated in this world, lots of tools, not all is compatable 
 	// item in a play list
-	class PlayItem {
+	class Stage;
+	class PlayItem : public objectLifeTimeManager {
 	public:
-		PlayItem() {}
-		PlayItem(const string&keynameIn) { keyname = keynameIn; }
+		PlayItem() :objectLifeTimeManager() { setObjectLifetime(30000); }
+		PlayItem(const string&keynameIn) { keyname = keynameIn; setObjectLifetime(30000); }
 		bool readFromScript(const Json::Value &data);
 		bool operator==(const PlayItem rhs) { return rhs.keyname == keyname; }
 		string &getKeyName() { return keyname; }
-
+		shared_ptr<Stage> getStage() { return stage; }
+		void setStage(shared_ptr<Stage>p) { stage = p; }
 	private:
+		shared_ptr<Stage> stage = nullptr;
 		string keyname;
 	};
 	class Playlist {
 	public:
+		shared_ptr<PlayItem> getCurrent();// since list is maintained 0 is always current
 		bool readFromScript(const Json::Value &data);
-		shared_ptr<vector<shared_ptr<PlayItem>>> getList() { return list; }
+		void removeExpiredItems() {
+			list->erase(std::remove_if(list->begin(), list->end(), objectLifeTimeManager::OKToRemove), list->end());
+		}
+		shared_ptr<vector<shared_ptr<PlayItem>>> getList();
 	private:
 		shared_ptr<vector<shared_ptr<PlayItem>>> list;
 	};
+
 
 }

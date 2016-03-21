@@ -225,9 +225,7 @@ namespace Software2552 {
 		RoleRaster(const string& path) :ofImage(), DrawingBasics(path) { }
 
 		void myUpdate() { ofImage::update(); }
-		bool myObjectLoad() {
-			return ofLoadImage(*this, getLocationPath());
-		}
+		bool myObjectLoad() {		return ofLoadImage(*this, getLocationPath());	}
 		void myDraw();
 	};
 

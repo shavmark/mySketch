@@ -2,6 +2,23 @@
 #include "animation.h"
 
 namespace Software2552 {
+	shared_ptr<vector<shared_ptr<PlayItem>>> Playlist::getList() {
+		return list;
+	}
+	// since list is maintained 0 is always current
+	shared_ptr<PlayItem> Playlist::getCurrent() {
+		if (list == nullptr || list->size() == 0) {
+			return nullptr;
+		}
+		return (*list)[0];
+	}
+
+	bool Playlist::readFromScript(const Json::Value &data) {
+		list = parse<PlayItem>(data["playList"]);
+		return true;
+	}
+
+
 	// helpers
 	ofTrueTypeFont& Font::get() {
 		if (font == nullptr) {
@@ -214,13 +231,11 @@ namespace Software2552 {
 
 	bool PlayItem::readFromScript(const Json::Value &data) {
 		READSTRING(keyname, data);
+		float lifetime=getObjectLifetime();
+		READFLOAT(lifetime, data);
+		setObjectLifetime(lifetime);
 		return true;
 	}
-	bool Playlist::readFromScript(const Json::Value &data) {
-		list = parse<PlayItem>(data["playList"]);
-		return true;
-	}
-
 	bool Font::readFromScript(const Json::Value &data) {
 
 		string name;
@@ -245,6 +260,10 @@ namespace Software2552 {
 		}
 		return true;
 	}
+	ColorChoice& Settings::getColor() {
+		return colors;
+	}
+
 	// always return true as these are optional items
 	bool Settings::readFromScript(const Json::Value &data) {
 		// dumps too much so only enable if there is a bug: ECHOAll(data);
@@ -253,6 +272,7 @@ namespace Software2552 {
 			READSTRING(title, data);
 			READSTRING(notes, data);
 			font.readFromScript(data["font"]);
+			getColor().readFromScript(data);
 		}
 
 		return true;
@@ -275,6 +295,13 @@ namespace Software2552 {
 			return true;
 		}
 		return false;
+	}
+
+	bool ColorChoice::readFromScript(const Json::Value &data) {
+		string colorgroup;
+		READSTRING(colorgroup, data);
+		setGroup(colorgroup);
+		return true;
 	}
 	bool Point3D::readFromScript(const Json::Value &data) {
 		READFLOAT(x, data);
@@ -342,6 +369,7 @@ namespace Software2552 {
 	void Settings::setSettings(const Settings& rhs) {
 		// only copy items that change as a default
 		font = rhs.font;
+		colors = rhs.colors;
 	}
 
 	bool Video::readFromScript(const Json::Value &data) {

@@ -157,6 +157,39 @@ namespace Software2552 {
 
 		getList().push_back(s);
 	}
+	void ColorSet::setGroup(const string&name) {
+		if (name == "Modern") {
+			setGroup(Modern);
+		}
+		else if (name == "Smart") {
+			setGroup(Smart);
+		}
+		else if (name == "Smart") {
+			setGroup(Smart);
+		}
+		else if (name == "Extreme") {
+			setGroup(Extreme);
+		}
+		else if (name == "EarthTone") {
+			setGroup(EarthTone);
+		}
+		else if (name == "Black") {
+			setGroup(Black);
+		}
+		else if (name == "White") {
+			setGroup(White);
+		}
+		else if (name == "Blue") {
+			setGroup(Blue);
+		}
+		else if (name == "Random") {
+			setGroup(Random);
+		}
+		else {
+			setGroup(Default);
+		}
+	}
+
 	bool ColorSet::lessThan(const ColorSet& j, ColorGroup group) {
 		if (isExpired() || (group != Random && getGroup() != j.getGroup())) {
 			return false;
