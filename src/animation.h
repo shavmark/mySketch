@@ -104,7 +104,7 @@ namespace Software2552 {
 		virtual bool myObjectLoad() { return true; };
 		string   locationPath;   // location of item to draw
 		shared_ptr<ColorAnimation> colorAnimation = nullptr; // optional color
-		shared_ptr<PointAnimation> ani; // call all the other items via here
+		shared_ptr<PointAnimation> ani = nullptr; // call all the other items via here
 	};
 
 

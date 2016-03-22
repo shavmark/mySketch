@@ -125,17 +125,13 @@ namespace Software2552 {
 	};
 
 	// an actor is a drawable that contains the drawing object for that graphic
-	class Actor : public Settings {
+	class ActorBaseClass : public Settings {
 	public:
-		Actor(DrawingBasics *p) :Settings() {
+		ActorBaseClass(DrawingBasics *p) :Settings() {
 			references = nullptr;
 			player = p;
 		}
-		~Actor() {
-			if (player != nullptr) {
-				delete player;
-			}
-		}
+		~ActorBaseClass();
 
 		bool read(const Json::Value &data);
 
@@ -143,12 +139,13 @@ namespace Software2552 {
 
 		virtual bool readFromScript(const Json::Value &data) { return true; };
 
-		DrawingBasics* getPlayer() { return player; }
+		DrawingBasics* getDefaultPlayer() { return player; }
+	protected:
 	private:
-		DrawingBasics* player; // need a down cast
-		shared_ptr<vector<shared_ptr<Reference>>> references;
+		DrawingBasics* player=nullptr; // need a down cast
+		shared_ptr<vector<shared_ptr<Reference>>> references=nullptr;
 	};
-	template<typename T> void createTimeLineItems(const Settings& settings, vector<shared_ptr<Actor>>& vec, const Json::Value &data, const string& key) {
+	template<typename T> void createTimeLineItems(const Settings& settings, vector<shared_ptr<ActorBaseClass>>& vec, const Json::Value &data, const string& key) {
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			shared_ptr<T> v = std::make_shared<T>();
 			v->setSettings(settings); // inherit settings
@@ -160,58 +157,57 @@ namespace Software2552 {
 	}
 
 
-	class Background : public Actor {
+	class Background : public ActorBaseClass {
 	public:
-		Background() :Actor(new RoleBackground()) {  }
-		RoleBackground* getPlayer() { return ((RoleBackground*)Actor::getPlayer()); }
+		Background() :ActorBaseClass(new RoleBackground()) {  }
+		RoleBackground* getPlayer() { return ((RoleBackground*)getDefaultPlayer()); }
 	};
-	class Ball : public Actor {
+	class Ball : public ActorBaseClass {
 	public:
-		Ball() :Actor(new Ball2d()) {  }
-		Ball2d* getPlayer() { return ((Ball2d*)Actor::getPlayer()); }
+		Ball() :ActorBaseClass(new Ball2d()) {  }
+		Ball2d* getPlayer() { return ((Ball2d*)getDefaultPlayer()); }
 	};
 
-	class Picture : public Actor {
+	class Picture : public ActorBaseClass {
 	public:
-		Picture() :Actor(new RoleRaster()) {  }
-		Picture(const string&s) :Actor(new RoleRaster(s)) {  }
-		RoleRaster* getPlayer() { return ((RoleRaster*)Actor::getPlayer()); }
+		Picture() :ActorBaseClass(new RoleRaster()) {  }
+		Picture(const string&s) :ActorBaseClass(new RoleRaster(s)) {  }
+		RoleRaster* getPlayer() { return ((RoleRaster*)getDefaultPlayer()); }
 	};
 	
-	class Text : public Actor {
+	class Text : public ActorBaseClass {
 	public:
-		Text() :Actor(new RoleText()) {  }
-		RoleText* getPlayer() { return ((RoleText*)Actor::getPlayer()); }
+		Text() :ActorBaseClass(new RoleText()) {  }
+		RoleText* getPlayer() { return ((RoleText*)getDefaultPlayer()); }
 		bool readFromScript(const Json::Value &data);
 	};
 
-	class Paragraph : public Actor {
+	class Paragraph : public ActorBaseClass {
 	public:
-		Paragraph() :Actor(new RoleParagraph()) {  }
-		RoleParagraph* getPlayer() { return ((RoleParagraph*)Actor::getPlayer()); }
+		Paragraph() :ActorBaseClass(new RoleParagraph()) {  }
+		ofxParagraph& getPlayer() { return (((RoleParagraph*)getDefaultPlayer())->player); }
 		bool readFromScript(const Json::Value &data);
 	};
 
 	
-	class Sphere : public Actor {
+	class Sphere : public ActorBaseClass {
 	public:
-		Sphere() :Actor(new RoleSphere()) {  }
-		RoleSphere* getPlayer() { return ((RoleSphere*)Actor::getPlayer()); }
+		Sphere() :ActorBaseClass(new RoleSphere()) {  }
+		ofSpherePrimitive& getPlayer() { return (((RoleSphere*)getDefaultPlayer())->player); }
 		bool readFromScript(const Json::Value &data);
 	};
-	// audio gets an x,y,z which can be ignored for now but maybe surround sound will use these for depth
-	class Audio : public Actor {
+	class Audio : public ActorBaseClass {
 	public:
-		Audio() :Actor(new RoleSound()) {  }
-		RoleSound* getPlayer() { return ((RoleSound*)Actor::getPlayer()); }
+		Audio() :ActorBaseClass(new RoleSound()) {  }
+		ofSoundPlayer& getPlayer() { return (((RoleSound*)getDefaultPlayer())->player); }
 		bool readFromScript(const Json::Value &data);
 	};
 
-	class Video : public Actor {
+	class Video : public ActorBaseClass {
 	public:
-		Video(const string&s) :Actor(new RoleVideo(s)) {  }
-		Video() :Actor(new RoleVideo()) {  }
-		RoleVideo* getPlayer() { return ((RoleVideo*)Actor::getPlayer()); }
+		Video(const string&s) :ActorBaseClass(new RoleVideo(s)) {  }
+		Video() :ActorBaseClass(new RoleVideo()) {  }
+		ofVideoPlayer& getPlayer() { return (((RoleVideo*)getDefaultPlayer())->player);}
 		bool readFromScript(const Json::Value &data);
 	};
 	// item in a play list

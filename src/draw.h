@@ -197,52 +197,55 @@ namespace Software2552 {
 		string name;
 		int id=0;
 	};
-	class RolePlane : public ofPlanePrimitive, public Primitive {
+	class RolePlane :  public Primitive {
 	public:
 		void myDraw();
+		ofPlanePrimitive player;
 	};
-	class RoleCube : public ofBoxPrimitive, public Primitive {
+	class RoleCube : public Primitive {
 	public:
 		void myDraw();
+		ofBoxPrimitive player;
 	};
-	class RoleSphere : public ofSpherePrimitive, public Primitive {
+	class RoleSphere : public Primitive {
 	public:
 		void myDraw();
-
+		ofSpherePrimitive player;
 	private:
 	};
 
 	// sound gets drawing basics for path and possibly other items in the future
-	class RoleSound : public ofSoundPlayer, public DrawingBasics {
+	class RoleSound :  public DrawingBasics {
 	public:
 		//bugbug tie into the main sound code we added
 
 		void mySetup();
-
+		ofSoundPlayer player;
 	};
-	class RoleRaster : public ofImage, public DrawingBasics {
+	class RoleRaster :  public DrawingBasics {
 	public:
-		RoleRaster() :ofImage(), DrawingBasics() {  }
-		RoleRaster(const string& path) :ofImage(), DrawingBasics(path) { }
+		RoleRaster() : DrawingBasics() {  }
+		RoleRaster(const string& path) : DrawingBasics(path) { }
 
-		void myUpdate() { ofImage::update(); }
-		bool myObjectLoad() {		return ofLoadImage(*this, getLocationPath());	}
+		void myUpdate() { player.update(); }
+		bool myObjectLoad() {		return ofLoadImage(player, getLocationPath());	}
 		void myDraw();
+		ofImage player;
 	};
 
-	class TextureVideo : public ofVideoPlayer, public DrawingBasics {
+	class TextureVideo :  public DrawingBasics {
 	public:
 		void create(const string& name, float w, float h) {
-			load(name);
-			play();
+			player.load(name);
+			player.play();
 		}
-		void myUpdate() { ofVideoPlayer::update(); }
+		void myUpdate() { player.update(); }
 
-		bool textureReady() {	return isInitialized();		}
+		bool textureReady() {	return  player.isInitialized();		}
 		bool bind();
 		bool unbind();
+		ofVideoPlayer player;
 	private:
-
 	};
 	class TextureFromImage : public ofTexture {
 	public:
@@ -256,41 +259,44 @@ namespace Software2552 {
 		Fbo	fbo;
 
 	};
-	class Light : public ofLight, public DrawingBasics {
+	class Light : public DrawingBasics {
 	public:
+		ofLight player;
 	};
 	class Material : public ofMaterial {
 	public:
 	};
-	class RoleBackground : public Colors, public DrawingBasics {
+	class RoleBackground : public DrawingBasics {
 	public:
 		RoleBackground(){ mode = OF_GRADIENT_LINEAR; }
 		void mySetup();
 		void myDraw();
 		void myUpdate();
+		Colors player;
 	private:
 		ofGradientMode mode;
 
 		//ofBackgroundHex this is an option too bugbug enable background type
 	};
 	// put advanced drawing in these objects
-	class RoleParagraph :public ofxParagraph, public DrawingBasics {
+	class RoleParagraph : public DrawingBasics {
 	public:
-		RoleParagraph() : ofxParagraph() {}
+		RoleParagraph() : DrawingBasics() {}
 		void myDraw();
-
+		ofxParagraph player;
 	private:
 	};
 	// put advanced drawing in these objects
-	class RoleVideo :public ofVideoPlayer, public DrawingBasics {
+	class RoleVideo :public DrawingBasics {
 	public:
-		RoleVideo() :ofVideoPlayer(), DrawingBasics() {  }
-		RoleVideo(const string& path) :ofVideoPlayer(), DrawingBasics(path) { }
-		void myUpdate() { ofVideoPlayer::update(); }
+		RoleVideo() : DrawingBasics() {  }
+		RoleVideo(const string& path) : DrawingBasics(path) { }
+		void myUpdate() { player.update(); }
 		void myDraw();
 		void mySetup();
 		bool myObjectLoad();
 		float getTimeBeforeStart(float t);
+		ofVideoPlayer player;
 	private:
 	};
 	class RoleText :  public DrawingBasics {

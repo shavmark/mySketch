@@ -22,11 +22,9 @@ namespace Software2552 {
 	class Stage {
 	public:
 		void setup();
-		virtual void update();
+		void update();
 		void draw();
-		virtual bool create(const Json::Value &data) { return true; };
-
-		virtual void test();//shared_ptr<Ball2d> b = std::make_shared<Ball2d>();
+		virtual bool create(const Json::Value &data) { return myCreate(data); };
 
 		void clear(bool force=false);
 		void pause();
@@ -49,23 +47,28 @@ namespace Software2552 {
 		vector<shared_ptr<Grabber>>& getGrabbers() { return grabbers; }
 
 		// things to draw
-		void addAnimatable(shared_ptr<Actor>p) { animatables.push_back(p); }
-		vector<shared_ptr<Actor>>& getAnimatables() { return animatables; }
+		void addAnimatable(shared_ptr<ActorBaseClass>p) { animatables.push_back(p); }
+		vector<shared_ptr<ActorBaseClass>>& getAnimatables() { return animatables; }
 
 		virtual void draw2d();
 		virtual void draw3dFixed();
 		virtual void draw3dMoving();
 		virtual void pre3dDraw();
 		virtual void post3dDraw();
-
+		virtual void mySetup() {}
+		virtual void myUpdate() {}
+		virtual void myPause() {}
+		virtual void myResume() {}
+		virtual void myClear(bool force) {}
+		virtual bool myCreate(const Json::Value &data) { return true; }
 		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>); // derive to change where cameras are
 		string keyname;
 
 	private:
-		static bool OKToRemove(shared_ptr<Actor> me) {
-			return me->getPlayer()->OKToRemoveNormalPointer(me->getPlayer());
+		static bool OKToRemove(shared_ptr<ActorBaseClass> me) {
+			return me->getDefaultPlayer()->OKToRemoveNormalPointer(me->getDefaultPlayer());
 		}
-		void removeExpiredItems(vector<shared_ptr<Actor>>&v) {
+		void removeExpiredItems(vector<shared_ptr<ActorBaseClass>>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
 		}
 		void removeExpiredItems(vector<shared_ptr<Camera>>&v) {
@@ -81,7 +84,7 @@ namespace Software2552 {
 			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
 		}
 		//bugbug maybe just animatables is needed, a a typeof or such can be used
-		vector<shared_ptr<Actor>> animatables;
+		vector<shared_ptr<ActorBaseClass>> animatables;
 		vector<shared_ptr<Camera>> cameras;
 		vector<shared_ptr<Light>> lights;
 		vector<shared_ptr<TextureVideo>> texturevideos;
@@ -107,38 +110,38 @@ namespace Software2552 {
 	// over time this just does whats in the data
 	class GenericScene :public Stage {
 	public:
-		bool create(const Json::Value &data);
+		bool myCreate(const Json::Value &data);
 	private:
 	};
 
 	class TestBallScene :public Stage {
 	public:
-		bool create(const Json::Value &data);
+		bool myCreate(const Json::Value &data);
 	private:
 	};
 
 	class TestScene :public Stage {
 	public:
 		TestScene():Stage() {}
-		void setup();
-		void update();
-		void test();
-		void draw3dFixed();
+		void mySetup();
+		void myUpdate();
+		bool myCreate(const Json::Value &data);
 	private:
+		void draw3dFixed();
 
 		RoleCube cube;
 		CrazyMesh mesh;
 	};
 	class SpaceScene : public Stage {
 	public:
-		void setup();
-		void test();
-		void update();
+		void mySetup();
+		void myUpdate();
+		bool myCreate(const Json::Value &data);
+	private:
 		void draw2d();
 		void draw3dFixed();
 		void draw3dMoving();
 		void addPlanet(const string&textureName, const ofVec3f& Start);
-	private:
 		// things a scene can have (infinte list really)
 		RoleSphere	videoSphere;
 		vector<shared_ptr<Planet>> pictureSpheres;//bugbug move up to baseclass with a pointer vector to drawing items

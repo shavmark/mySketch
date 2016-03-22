@@ -194,7 +194,7 @@ namespace Software2552 {
 	}
 
 
-	 bool Actor::read(const Json::Value &data) {
+	 bool ActorBaseClass::read(const Json::Value &data) {
 		// any actor can have settings set, or defaults used
 		Settings::readFromScript(data["settings"]);
 
@@ -204,7 +204,7 @@ namespace Software2552 {
 		// all actors can have a location
 		readStringFromJson(player->getLocationPath(), data["location"]);
 		if (player->getLocationPath().size() > 0) {
-			getPlayer()->loadForDrawing();//bugbug if things get too slow etc do not load here
+			getDefaultPlayer()->loadForDrawing();//bugbug if things get too slow etc do not load here
 		}
 
 		// optional sizes, locations, durations for animation etc
@@ -373,15 +373,15 @@ namespace Software2552 {
 	bool Video::readFromScript(const Json::Value &data) {
 		float volume=1;//default
 		READFLOAT(volume, data);
-		getPlayer()->setVolume(volume);
+		getPlayer().setVolume(volume);
 		return true;
 	}
 	bool Audio::readFromScript(const Json::Value &data) {
 		float volume = 1;//default
 		READFLOAT(volume, data);
-		getPlayer()->setVolume(volume);
-		getPlayer()->setMultiPlay(true);
-		getPlayer()->setSpeed(ofRandom(0.8, 1.2));// get from data
+		getPlayer().setVolume(volume);
+		getPlayer().setMultiPlay(true);
+		getPlayer().setSpeed(ofRandom(0.8, 1.2));// get from data
 
 		return true;
 	}
@@ -407,7 +407,12 @@ namespace Software2552 {
 			}
 		}
 	}
-
+	ActorBaseClass::~ActorBaseClass() {
+		if (player != nullptr) {
+			delete player;
+			player = nullptr;
+		}
+	}
 	bool Playlist::read(const string&path) {
 		ofxJSON json;
 
@@ -422,6 +427,11 @@ namespace Software2552 {
 				logErrorString("missing playlist");
 				return false;
 			}
+			string s="hi";
+			RoleSound* r = new RoleSound();
+			delete r;
+			{ActorBaseClass bs = ActorBaseClass(new RoleSound()); }
+
 			// read all the scenes
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
@@ -430,6 +440,9 @@ namespace Software2552 {
 					shared_ptr<Stage> p = nullptr;
 					if (sceneType == "TestBall") {
 						p = std::make_shared<TestBallScene>();
+					}
+					if (sceneType == "Test") {
+						p = std::make_shared<TestScene>();
 					}
 					else {
 						p = std::make_shared<GenericScene>();

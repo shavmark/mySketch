@@ -314,8 +314,8 @@ namespace Software2552 {
 		}
 		else {
 			// will need to load it now to get the true lenght
-			if (!isLoaded()) {
-				load(getLocationPath());
+			if (!player.isLoaded()) {
+				player.load(getLocationPath());
 			}
 			float duration = getAnimationHelper()->getObjectLifetime();
 			setIfGreater(t, duration);
@@ -325,15 +325,15 @@ namespace Software2552 {
 
 
 	bool TextureVideo::bind() {
-		if (isInitialized() && isUsingTexture()) {
-			getTexture().bind();
+		if (player.isInitialized() && player.isUsingTexture()) {
+			player.getTexture().bind();
 			return true;
 		}
 		return false;
 	}
 	bool TextureVideo::unbind() {
-		if (isInitialized() && isUsingTexture()) {
-			getTexture().unbind();
+		if (player.isInitialized() && player.isUsingTexture()) {
+			player.getTexture().unbind();
 			return true;
 		}
 		return false;
@@ -377,38 +377,38 @@ namespace Software2552 {
 	}
 	void RolePlane::myDraw() {
 		if (useWireframe()) {
-			drawWireframe();
+			player.drawWireframe();
 		}
 		else {
-			ofPlanePrimitive::draw();
+			player.draw();
 		}
 	}
 
 	void RoleCube::myDraw() {
 		if (useWireframe()) {
-			drawWireframe();
+			player.drawWireframe();
 		}
 		else {
-			ofBoxPrimitive::draw();
+			player.draw();
 		}
 	}
 	void RoleSphere::myDraw() {
 		if (useWireframe()) {
-			drawWireframe();
+			player.drawWireframe();
 		}
 		else {
-			ofSpherePrimitive::draw();
+			player.draw();
 		}
 		//drawFaces();
 		//drawVertices();
 	}
 
 	void RoleSound::mySetup() {
-		if (!load(getLocationPath())) {
+		if (!player.load(getLocationPath())) {
 			logErrorString("setup audio Player");
 		}
 		// some of this data could come from data in the future
-		play();
+		player.play();
 	}
 
 	void CrazyMesh::setup() {
@@ -438,24 +438,24 @@ namespace Software2552 {
 		ofPopStyle();
 	}
 	void RoleRaster::myDraw() {
-		ofImage::draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
+		player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
 	}
 	void RoleParagraph::myDraw() {
-		ofxParagraph::setPosition(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
-		ofxParagraph::draw();
+		player.setPosition(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
+		player.draw();
 	}
 
 	// add this one http://clab.concordia.ca/?page_id=944
 	void RoleVideo::myDraw() {
-		ofVideoPlayer::draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
+		player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
 	}
 	void RoleVideo::mySetup() {
-		if (!isLoaded()) {
-			if (!load(getLocationPath())) {
+		if (!player.isLoaded()) {
+			if (!player.load(getLocationPath())) {
 				logErrorString("setup video Player");
 			}
 		}
-		play();
+		player.play();
 
 	}
 	bool RoleVideo::myObjectLoad() { 
