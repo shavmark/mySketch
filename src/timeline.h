@@ -20,7 +20,7 @@ namespace Software2552 {
 		bool readScript(const string& path);
 
 	private:
-		Playlist playlist;
+		ChannelList playlist;
 
 		MoreMesh mesh; // just for now bugbug, move into class hiearchey when ready
 	};

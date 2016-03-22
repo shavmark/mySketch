@@ -178,6 +178,12 @@ namespace Software2552 {
 		ofImage& getPlayer() { return (((RoleRaster*)getDefaultPlayer())->player); }
 	};
 	
+	class Cube : public ActorBaseClass	{
+	public:
+		Cube() :ActorBaseClass(new RoleCube()) {  }
+		ofBoxPrimitive& getPlayer() { return (((RoleCube*)getDefaultPlayer())->player); }
+		bool readFromScript(const Json::Value &data);
+	};
 	class Text : public ActorBaseClass {
 	public:
 		Text() :ActorBaseClass(new RoleText()) {  }
@@ -216,31 +222,44 @@ namespace Software2552 {
 	// item in a play list
 
 	class Stage;
-	class PlayItem : public objectLifeTimeManager {
+	class Channel : public objectLifeTimeManager {
 	public:
-		PlayItem() :objectLifeTimeManager() { setObjectLifetime(30000); }
-		PlayItem(const string&keynameIn) { keyname = keynameIn; setObjectLifetime(30000); }
+		Channel() :objectLifeTimeManager() { setObjectLifetime(30000); }
+		Channel(const string&keynameIn) { keyname = keynameIn; setObjectLifetime(30000); }
+		enum ChannelType{History, Art, Sports, Any};
+		
 		bool readFromScript(const Json::Value &data);
-		bool operator==(const PlayItem rhs) { return rhs.keyname == keyname; }
+		bool operator==(const Channel rhs) { return rhs.keyname == keyname; }
 		string &getKeyName() { return keyname; }
 		shared_ptr<Stage> getStage() { return stage; }
 		void setStage(shared_ptr<Stage>p) { stage = p; }
+		bool getSkip() { return skip; }
+		void setSkip(bool b = true) { skip = b; }
+
+		ChannelType getType() { return channeltype; }
+		void setType(ChannelType typeIn) { channeltype =typeIn; }
 	private:
 		shared_ptr<Stage> stage = nullptr;
 		string keyname;
+		bool skip = false;
+		ChannelType channeltype = History;
 	};
-	class Playlist {
+	class ChannelList {
 	public:
-		shared_ptr<PlayItem> getCurrent();// since list is maintained 0 is always current
+		shared_ptr<Channel> getCurrent();
+		shared_ptr<Channel> getbyType(Channel::ChannelType, int number = 0);
+		shared_ptr<Channel> getbyName(const string&name);
+		shared_ptr<Channel> getbyNumber(int i = 0);
+
 		bool readFromScript(const Json::Value &data);
 		void removeExpiredItems() {
 			list.erase(std::remove_if(list.begin(), list.end(), objectLifeTimeManager::OKToRemove), list.end());
 		}
 		bool read(const string&path);
 		bool setStage(shared_ptr<Stage> p);
-		vector<shared_ptr<PlayItem>>& getList();
+		vector<shared_ptr<Channel>>& getList();
 	private:
-		vector<shared_ptr<PlayItem>> list;
+		vector<shared_ptr<Channel>> list;
 	};
 
 

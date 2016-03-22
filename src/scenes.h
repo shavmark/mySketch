@@ -53,9 +53,14 @@ namespace Software2552 {
 		void addAnimatable(shared_ptr<ActorBaseClass>p) { animatables.push_back(p); }
 		vector<shared_ptr<ActorBaseClass>>& getAnimatables() { return animatables; }
 
-		virtual void draw2d();
-		virtual void draw3dFixed();
-		virtual void draw3dMoving();
+		void draw2d();
+		void draw3dFixed();
+		void draw3dMoving();
+
+		virtual void myDraw2d() {};
+		virtual void myDraw3dFixed() {};
+		virtual void myDraw3dMoving() {};
+
 		virtual void pre3dDraw();
 		virtual void post3dDraw();
 		virtual void mySetup() {}
@@ -64,7 +69,8 @@ namespace Software2552 {
 		virtual void myResume() {}
 		virtual void myClear(bool force) {}
 		virtual bool myCreate(const Json::Value &data) { return true; }
-		virtual bool drawIn3d() { return false; }//derived classes make this call
+		virtual bool drawIn3dFixed() { return false; }//derived classes make this call
+		virtual bool drawIn3dMoving() { return false; }//derived classes make this call
 		virtual bool drawIn2d() { return true; }
 		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>); // derive to change where cameras are
 		string keyname;
@@ -133,11 +139,10 @@ namespace Software2552 {
 		void myUpdate();
 		bool myCreate(const Json::Value &data);
 	private:
-		bool drawIn3d() { return true; }//derived classes make this call
+		bool drawIn3dFixed() { return true; }//derived classes make this call
 		bool drawIn2d() { return false; }//derived classes make this call
-		void draw3dFixed();
+		void myDraw3dFixed();
 
-		RoleCube cube;
 		CrazyMesh mesh;
 	};
 	class SpaceScene : public Stage {
@@ -146,10 +151,11 @@ namespace Software2552 {
 		void myUpdate();
 		bool myCreate(const Json::Value &data);
 	private:
-		bool drawIn3d() { return true; }//derived classes make this call
+		bool drawIn3dMoving() { return true; }//derived classes make this call
+		bool drawIn3dFixed() { return true; }//derived classes make this call
 		void draw2d();
-		void draw3dFixed();
-		void draw3dMoving();
+		void myDraw3dFixed();
+		void myDraw3dMoving();
 		void addPlanet(const string&textureName, const ofVec3f& Start);
 		// things a scene can have (infinte list really)
 		RoleSphere	videoSphere;

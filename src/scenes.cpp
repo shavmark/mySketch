@@ -15,6 +15,9 @@ namespace Software2552 {
 		if (name == "TestBall") {
 			return std::make_shared<TestBallScene>();
 		}
+		if (name == "Space") {
+			return std::make_shared<SpaceScene>();
+		}
 		if (name == "Test") {
 			return std::make_shared<TestScene>();
 		}
@@ -73,7 +76,7 @@ namespace Software2552 {
 			draw2d();
 			ofPopStyle();
 		}
-		if (drawIn3d()) {
+		if (drawIn3dMoving() || drawIn3dFixed()) {
 			ofPushStyle();
 			draw3d();
 			ofPopStyle();
@@ -145,11 +148,13 @@ namespace Software2552 {
 	void Stage::installLightAndMaterialThenDraw(shared_ptr<Camera>cam) {
 		if (cam != nullptr) {
 			material.begin();//bugbug figure out material
-			cam->getAnimationHelper()->setPosition(cam->getAnimationHelper()->getCurrentPosition());
+			ofPoint point = cam->getAnimationHelper()->getCurrentPosition();
+			cam->setPosition(cam->getAnimationHelper()->getCurrentPosition());
 			cam->begin();
 			cam->orbit(); 
 			for (auto& light : lights) {
-				light->getAnimationHelper()->setPosition(light->getAnimationHelper()->getCurrentPosition());
+				ofPoint point = cam->getAnimationHelper()->getCurrentPosition();
+				light->player.setPosition(light->getAnimationHelper()->getCurrentPosition());
 				light->player.enable();
 			}
 			if (cam->isOrbiting()) {
@@ -180,8 +185,12 @@ namespace Software2552 {
 		// setup bugbug consider a virtual setup/cleanup function so dervied class can change this around
 		pre3dDraw();
 
-		installLightAndMaterialThenDraw(director.pickem(cameras, false));
-		installLightAndMaterialThenDraw(director.pickem(cameras, true));
+		if (drawIn3dFixed()) {
+			installLightAndMaterialThenDraw(director.pickem(cameras, false));
+		}
+		if (drawIn3dMoving()) {
+			installLightAndMaterialThenDraw(director.pickem(cameras, true));
+		}
 
 		post3dDraw();
 	}
@@ -197,6 +206,7 @@ namespace Software2552 {
 	}
 
 	void Stage::draw2d() {
+		myDraw2d();
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->drawIt(DrawingBasics::draw2d);
 		}
@@ -221,9 +231,9 @@ namespace Software2552 {
 	//great animation example
 	bool TestBallScene::myCreate(const Json::Value &data) {
 		try {
-			
-			
+		
 			shared_ptr<Ball> b = std::make_shared<Ball>();
+			// can read any of these items from json here
 			b->getPlayer()->getAnimationHelper()->setPositionY(b->getPlayer()->floorLine - 100);
 			b->getPlayer()->getAnimationHelper()->setCurve(EASE_IN);
 			b->getPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
@@ -232,7 +242,6 @@ namespace Software2552 {
 			ofPoint p;
 			p.y = b->getPlayer()->floorLine;
 			b->getPlayer()->getAnimationHelper()->animateTo(p);
-			//b->setDuration(0.001);
 
 			shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
 			c->setColor(Colors::getFirstColors(settings.getColor().getGroup())->getOfColor(Colors::foreColor));
@@ -243,9 +252,8 @@ namespace Software2552 {
 			b->getPlayer()->setColorAnimation(c);
 
 			addAnimatable(b);
-			// read needed common types
+			
 			return true;
-
 		}
 		catch (std::exception e) {
 			logErrorString(e.what());
@@ -254,17 +262,23 @@ namespace Software2552 {
 	}
 	// juse need to draw the SpaceScene, base class does the rest
 	void Stage::draw3dMoving() {
+		myDraw3dMoving();
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->drawIt(DrawingBasics::draw3dMovingCamera);
 		}
 	}
 	void Stage::draw3dFixed() {
+		myDraw3dFixed();
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->drawIt(DrawingBasics::draw3dFixedCamera);
 		}
 	}
 	// bugbug all items in test() to come from json or are this is done in Director
 	bool TestScene::myCreate(const Json::Value &data) {
+
+		shared_ptr<Cube> cube = std::make_shared<Cube>();
+		cube->readFromScript(data);
+		addAnimatable(cube);
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		add(cam1);
@@ -357,20 +371,15 @@ namespace Software2552 {
 		}
 		*/
 	}
-	void TestScene::draw3dFixed() {
+	void TestScene::myDraw3dFixed() {
 	
-
-		//ofBackground(0);
-
 		// draw a little light sphere
 		for (const auto& light : getLights()) {
 			ofSetColor(light->player.getDiffuseColor());
 			ofDrawSphere(light->player.getPosition(), 20.f);
 		}
 
-		cube.player.draw();
-
-		return; // comment out to draw by vertice
+		return; // comment out to draw by vertice, less confusing but feel free to add it back in
 
 		ofSetHexColor(0xffffff);
 		glPointSize(2);
@@ -380,8 +389,6 @@ namespace Software2552 {
 	void TestScene::mySetup() {
 		ofSetSmoothLighting(true);
 		mesh.setup();
-		cube.setWireframe(false);
-		cube.player.set(100);
 	}
 	void SpaceScene::myUpdate() {
 	}
@@ -451,7 +458,7 @@ namespace Software2552 {
 	void SpaceScene::draw2d() {
 	}
 	// juse need to draw the SpaceScene, base class does the rest
-	void SpaceScene::draw3dMoving() {
+	void SpaceScene::myDraw3dMoving() {
 		for (auto& pictureSphere : pictureSpheres) {
 			pictureSphere->texture.bind();
 			pictureSphere->player.rotate(30, 0, 2.0, 0.0);
@@ -459,7 +466,7 @@ namespace Software2552 {
 			pictureSphere->texture.unbind();
 		}
 	}
-	void SpaceScene::draw3dFixed() {
+	void SpaceScene::myDraw3dFixed() {
 		// one time setup must be called to draw videoSphere
 		if (getTextureVideos()[0]->textureReady()) {
 			videoSphere.player.mapTexCoordsFromTexture(getTextureVideos()[0]->player.getTexture());

@@ -4,23 +4,57 @@
 #include <algorithm>
 
 namespace Software2552 {
-	vector<shared_ptr<PlayItem>>& Playlist::getList() {
+	vector<shared_ptr<Channel>>& ChannelList::getList() {
 		return list;
 	}
 	// since list is maintained 0 is always current
-	shared_ptr<PlayItem> Playlist::getCurrent() {
-		if (list.size() == 0) {
-			return nullptr;
+	shared_ptr<Channel> ChannelList::getCurrent() {
+		// find first non skipped channel
+		for (const auto& channel : list) {
+			if (!channel->getSkip()){
+				return channel;
+			}
 		}
-		return list[0];
+		return nullptr;
+	}
+	shared_ptr<Channel> ChannelList::getbyNumber(int i) {
+		if (i < list.size() && i > 0) {
+			return list[i];
+		}
 	}
 
-	bool Playlist::readFromScript(const Json::Value &data) {
+	// first channel of type 
+	shared_ptr<Channel> ChannelList::getbyType(Channel::ChannelType type, int number) {
+		// find first non skipped channel
+		int count = 0;
+		for (const auto& channel : list) {
+			if (!channel->getSkip() && channel->getType() == type) {
+				if (count == number) {
+					return channel;
+				}
+				++count;
+			}
+		}
+		return nullptr;
+	}
+	shared_ptr<Channel> ChannelList::getbyName(const string&name) {
+		// find first non skipped channel
+		for (const auto& channel : list) {
+			if (!channel->getSkip() && channel->getKeyName() == name) {
+				return channel;
+			}
+		}
+		return nullptr;
+	}
+
+	bool ChannelList::readFromScript(const Json::Value &data) {
 
 		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
-			shared_ptr<PlayItem> item = std::make_shared<PlayItem>();
-			item->readFromScript(data[j]);
-			list.push_back(item);
+			shared_ptr<Channel> channel = std::make_shared<Channel>();
+			channel->readFromScript(data[j]);
+			if (!channel->getSkip()) {
+				list.push_back(channel);
+			}
 		}
 		return true;
 	}
@@ -227,11 +261,23 @@ namespace Software2552 {
 	}
 
 
-	bool PlayItem::readFromScript(const Json::Value &data) {
+	bool Channel::readFromScript(const Json::Value &data) {
 		READSTRING(keyname, data);
 		float lifetime=getObjectLifetime();
 		READFLOAT(lifetime, data);
 		setObjectLifetime(lifetime);
+		READBOOL(skip, data);
+		string type= "any";
+		readStringFromJson(type, data["channelType"]);
+		if (type == "history") {
+			setType(History);
+		}
+		else if (type == "sports") {
+			setType(Sports);
+		}
+		else  {
+			setType(Any);
+		}
 		return true;
 	}
 	bool Font::readFromScript(const Json::Value &data) {
@@ -386,7 +432,13 @@ namespace Software2552 {
 
 		return true;
 	}
-
+	bool Cube::readFromScript(const Json::Value &data) {
+		float size = 100;//default
+		READFLOAT(size, data);
+		((RoleCube*)getDefaultPlayer())->setWireframe(false);
+		getPlayer().set(size);
+		return true;
+	}
 	bool Sphere::readFromScript(const Json::Value &data) {
 		float radius = 100;//default
 		READFLOAT(radius, data);
@@ -399,7 +451,7 @@ namespace Software2552 {
 		return true;
 	}
 	// match the keynames 
-	bool Playlist::setStage(shared_ptr<Stage> p) {
+	bool ChannelList::setStage(shared_ptr<Stage> p) {
 		if (p != nullptr) {
 			for (auto& item : list) {
 				if (item->getKeyName() == p->getKeyName()) {
@@ -416,7 +468,7 @@ namespace Software2552 {
 			player = nullptr;
 		}
 	}
-	bool Playlist::read(const string&path) {
+	bool ChannelList::read(const string&path) {
 		ofxJSON json;
 
 		if (!json.open(path)) {
@@ -425,9 +477,9 @@ namespace Software2552 {
 		}
 		try {
 
-			readFromScript(json["playList"]);
+			readFromScript(json["channelList"]);
 			if (getList().size() == 0) {
-				logErrorString("missing playlist");
+				logErrorString("missing channelList");
 				return false;
 			}
 
@@ -453,7 +505,7 @@ namespace Software2552 {
 				}
 			}
 			// remove unattached stages, user forgot them in the input file
-			std::vector<shared_ptr<PlayItem>>::iterator iter = list.begin();
+			std::vector<shared_ptr<Channel>>::iterator iter = list.begin();
 			while (iter != list.end())	{
 				if ((*iter)->getStage() == nullptr) {
 					iter = list.erase(iter);
