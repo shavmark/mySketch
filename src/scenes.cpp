@@ -7,6 +7,20 @@
 //  ofSetBackgroundAuto(...).Passing in a value of false turns off the automatic background clearing.
 
 namespace Software2552 {
+
+
+	// convert name to object
+	shared_ptr<Stage> getScene(const string&name)
+	{
+		if (name == "TestBall") {
+			return std::make_shared<TestBallScene>();
+		}
+		if (name == "Test") {
+			return std::make_shared<TestScene>();
+		}
+		return std::make_shared<GenericScene>();
+	}
+
 	// return a possibly modifed version such as camera moved
 	shared_ptr<Camera> Director::pickem(vector<shared_ptr<Camera>>&cameras, bool orbiting) {
 		if (cameras.size() == 0) {

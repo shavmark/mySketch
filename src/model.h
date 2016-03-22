@@ -237,7 +237,7 @@ namespace Software2552 {
 			list.erase(std::remove_if(list.begin(), list.end(), objectLifeTimeManager::OKToRemove), list.end());
 		}
 		bool read(const string&path);
-		void setStage(shared_ptr<Stage> p);
+		bool setStage(shared_ptr<Stage> p);
 		vector<shared_ptr<PlayItem>>& getList();
 	private:
 		vector<shared_ptr<PlayItem>> list;

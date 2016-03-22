@@ -18,6 +18,9 @@ namespace Software2552 {
 		//objectLifeTimeManager
 	};
 
+	// convert name to object
+	shared_ptr<Stage> getScene(const string&name);
+
 	// contains  elements of a stage
 	class Stage {
 	public:

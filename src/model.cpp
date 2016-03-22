@@ -399,14 +399,16 @@ namespace Software2552 {
 		return true;
 	}
 	// match the keynames 
-	void Playlist::setStage(shared_ptr<Stage> p) {
+	bool Playlist::setStage(shared_ptr<Stage> p) {
 		if (p != nullptr) {
 			for (auto& item : list) {
 				if (item->getKeyName() == p->getKeyName()) {
 					item->setStage(p);
+					return true;
 				}
 			}
 		}
+		return false;
 	}
 	ActorBaseClass::~ActorBaseClass() {
 		if (player != nullptr) {
@@ -434,16 +436,7 @@ namespace Software2552 {
 				logTrace("create look upjson[scenes][" + ofToString(i) + "][keyname]");
 				string sceneType;
 				if (readStringFromJson(sceneType, json["scenes"][i]["sceneType"])) {
-					shared_ptr<Stage> p = nullptr;
-					if (sceneType == "TestBall") {
-						p = std::make_shared<TestBallScene>();
-					}
-					else if (sceneType == "Test") {
-						p = std::make_shared<TestScene>();
-					}
-					else {
-						p = std::make_shared<GenericScene>();
-					}
+					shared_ptr<Stage> p = getScene(sceneType);
 					// read common items here
 					p->settings.readFromScript(json["scenes"][i]["settings"]);
 					readStringFromJson(p->getKeyName(), json["scenes"][i]["keyname"]);
@@ -453,7 +446,9 @@ namespace Software2552 {
 					// save with right playitem
 					if (p->create(json["scenes"][i])) {
 						// find stage and set it
-						setStage(p);
+						if (!setStage(p)) {
+							logTrace("scene not in playlist (ignored) " + p->getKeyName());
+						}
 					}
 				}
 			}
@@ -462,6 +457,7 @@ namespace Software2552 {
 			while (iter != list.end())	{
 				if ((*iter)->getStage() == nullptr) {
 					iter = list.erase(iter);
+					logTrace("item in playlist not found in json (ignored) " + (*iter)->getKeyName());
 				}
 				else {
 					++iter;
