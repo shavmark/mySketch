@@ -10,18 +10,23 @@ namespace Software2552 {
 	// read one act and save it to the list of acts (ie a story)
 	bool Timeline::readScript(const string& path) {
 
-		if (playlist.read(path)) {
-
-			playlist.getCurrent()->start();
-			playlist.getCurrent()->getStage()->setup();
-
-		}
-		return false;
+		return playlist.read(path);
 	}
-	void Timeline::play() { 
-
+	void Timeline::start() {
+		if (playlist.getCurrent() != nullptr) {
+			playlist.getCurrent()->getStage()->setup();
+			playlist.getCurrent()->start();
+		}
+	}
+	void Timeline::resume() {
+		if (playlist.getCurrent() != nullptr) {
+			playlist.getCurrent()->getStage()->resume();
+		}
 	}
 	void Timeline::pause() {
+		if (playlist.getCurrent() != nullptr) {
+			playlist.getCurrent()->getStage()->pause();
+		}
 	}
 	void Timeline::setup() {
 		//ofSeedRandom(); // turn of to debug if needed

@@ -61,6 +61,8 @@ namespace Software2552 {
 		virtual void myResume() {}
 		virtual void myClear(bool force) {}
 		virtual bool myCreate(const Json::Value &data) { return true; }
+		virtual bool drawIn3d() { return false; }//derived classes make this call
+		virtual bool drawIn2d() { return true; }
 		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>); // derive to change where cameras are
 		string keyname;
 
@@ -111,6 +113,7 @@ namespace Software2552 {
 	class GenericScene :public Stage {
 	public:
 		bool myCreate(const Json::Value &data);
+
 	private:
 	};
 
@@ -127,6 +130,8 @@ namespace Software2552 {
 		void myUpdate();
 		bool myCreate(const Json::Value &data);
 	private:
+		bool drawIn3d() { return true; }//derived classes make this call
+		bool drawIn2d() { return false; }//derived classes make this call
 		void draw3dFixed();
 
 		RoleCube cube;
@@ -138,6 +143,7 @@ namespace Software2552 {
 		void myUpdate();
 		bool myCreate(const Json::Value &data);
 	private:
+		bool drawIn3d() { return true; }//derived classes make this call
 		void draw2d();
 		void draw3dFixed();
 		void draw3dMoving();

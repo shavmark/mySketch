@@ -368,12 +368,10 @@ namespace Software2552 {
 	}
 
 	void Rectangle::draw() {
-		if (okToDraw()) {
-			ofFill();
-			ofSetRectMode(OF_RECTMODE_CENTER);	// center around the position
-			ofSetColor(255, 0, 0);
-			ofRect(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
-		}
+		ofFill();
+		ofSetRectMode(OF_RECTMODE_CENTER);	// center around the position
+		ofSetColor(255, 0, 0);
+		ofRect(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
 	}
 	void RolePlane::myDraw() {
 		if (useWireframe()) {

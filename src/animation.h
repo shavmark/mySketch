@@ -92,10 +92,10 @@ namespace Software2552 {
 
 	protected:
 		drawtype getType() { return type; }
-		bool okToDraw();
 		void applyColor();
 
 	private:
+		bool okToDraw(drawtype type);
 		drawtype type = draw2d;
 		// derived classes supply these if they need them to be called
 		virtual void mySetup() {};

@@ -93,14 +93,14 @@ namespace Software2552 {
 	}
 
 	void DrawingBasics::drawIt(drawtype type) {//DrawingBasics::drawtype
-		if (type == getType() && okToDraw()) {
+		if (okToDraw(type)) {
 			applyColor();
 			myDraw();
 		}
 	};
 
-	bool DrawingBasics::okToDraw() {
-		if (getAnimationHelper()->paused() || getAnimationHelper()->isExpired()) {
+	bool DrawingBasics::okToDraw(drawtype type) {
+		if (type != getType() || getAnimationHelper()->paused() || getAnimationHelper()->isExpired()) {
 			return false;
 		}
 		// if still in wait threshold

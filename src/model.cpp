@@ -324,6 +324,7 @@ namespace Software2552 {
 
 		return true;
 	}
+	
 	bool Text::readFromScript(const Json::Value &data) {
 		readStringFromJson(((RoleText*)getPlayer())->getText(), data["text"]["str"]);
 		return true;
@@ -334,7 +335,7 @@ namespace Software2552 {
 
 		string str;
 		readStringFromJson(str, data["text"]["str"]);
-		getPlayer()->setText(str);
+		getPlayer().setText(str);
 
 		int indent;
 		int leading;
@@ -342,24 +343,24 @@ namespace Software2552 {
 		string alignment; // paragraph is a data type in this usage
 
 		if (READINT(indent, data)) {
-			getPlayer()->setIndent(indent);
+			getPlayer().setIndent(indent);
 		}
 		if (READINT(leading, data)) {
-			getPlayer()->setLeading(leading);
+			getPlayer().setLeading(leading);
 		}
 		if (READINT(spacing, data)) {
-			getPlayer()->setSpacing(leading);
+			getPlayer().setSpacing(leading);
 		}
 		READSTRING(alignment, data);
 		if (alignment == "center") { //bugbug ignore case
-			getPlayer()->setAlignment(ofxParagraph::ALIGN_CENTER);
+			getPlayer().setAlignment(ofxParagraph::ALIGN_CENTER);
 		}
 		else if (alignment == "right") { //bugbug ignore case
-			getPlayer()->setAlignment(ofxParagraph::ALIGN_RIGHT);
+			getPlayer().setAlignment(ofxParagraph::ALIGN_RIGHT);
 		}
 
-		getPlayer()->setFont(getFontPointer());
-		getPlayer()->setColor(Colors::getFontColor());
+		getPlayer().setFont(getFontPointer());
+		getPlayer().setColor(Colors::getFontColor());
 
 		return true;
 	}
@@ -389,11 +390,11 @@ namespace Software2552 {
 	bool Sphere::readFromScript(const Json::Value &data) {
 		float radius = 100;//default
 		READFLOAT(radius, data);
-		getPlayer()->setRadius(radius);
+		getPlayer().setRadius(radius);
 
 		float resolution = 100;//default
 		READFLOAT(resolution, data);
-		getPlayer()->setResolution(resolution);
+		getPlayer().setResolution(resolution);
 
 		return true;
 	}
@@ -427,10 +428,6 @@ namespace Software2552 {
 				logErrorString("missing playlist");
 				return false;
 			}
-			string s="hi";
-			RoleSound* r = new RoleSound();
-			delete r;
-			{ActorBaseClass bs = ActorBaseClass(new RoleSound()); }
 
 			// read all the scenes
 			for (Json::ArrayIndex i = 0; i < json["scenes"].size(); ++i) {
@@ -441,7 +438,7 @@ namespace Software2552 {
 					if (sceneType == "TestBall") {
 						p = std::make_shared<TestBallScene>();
 					}
-					if (sceneType == "Test") {
+					else if (sceneType == "Test") {
 						p = std::make_shared<TestScene>();
 					}
 					else {
@@ -453,7 +450,7 @@ namespace Software2552 {
 					if (p->getKeyName() == "ClydeBellecourt") {
 						int i = 1; // just for debugging
 					}
-
+					// save with right playitem
 					if (p->create(json["scenes"][i])) {
 						// find stage and set it
 						setStage(p);

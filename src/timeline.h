@@ -9,17 +9,18 @@ namespace Software2552 {
 	class Timeline {
 	public:
 		Timeline();
+		void start();
 		void setup();
 		void update();
 		void draw();
 		void pause();
-		void play();
+		void resume();
 		const int frameRate = 60;
 
 		bool readScript(const string& path);
-		Playlist playlist;
 
 	private:
+		Playlist playlist;
 
 		MoreMesh mesh; // just for now bugbug, move into class hiearchey when ready
 	};

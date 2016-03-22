@@ -160,10 +160,13 @@ namespace Software2552 {
 	class Background : public ActorBaseClass {
 	public:
 		Background() :ActorBaseClass(new RoleBackground()) {  }
-		RoleBackground* getPlayer() { return ((RoleBackground*)getDefaultPlayer()); }
+		Colors& getPlayer() { return (((RoleBackground*)getDefaultPlayer())->player); }
 	};
+
+	// wrap drawing object with references and settings data
 	class Ball : public ActorBaseClass {
 	public:
+		// data read during scene creation bugbug move all data reads to scene creation?
 		Ball() :ActorBaseClass(new Ball2d()) {  }
 		Ball2d* getPlayer() { return ((Ball2d*)getDefaultPlayer()); }
 	};
@@ -172,7 +175,7 @@ namespace Software2552 {
 	public:
 		Picture() :ActorBaseClass(new RoleRaster()) {  }
 		Picture(const string&s) :ActorBaseClass(new RoleRaster(s)) {  }
-		RoleRaster* getPlayer() { return ((RoleRaster*)getDefaultPlayer()); }
+		ofImage& getPlayer() { return (((RoleRaster*)getDefaultPlayer())->player); }
 	};
 	
 	class Text : public ActorBaseClass {

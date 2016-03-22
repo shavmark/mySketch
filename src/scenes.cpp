@@ -9,6 +9,9 @@
 namespace Software2552 {
 	// return a possibly modifed version such as camera moved
 	shared_ptr<Camera> Director::pickem(vector<shared_ptr<Camera>>&cameras, bool orbiting) {
+		if (cameras.size() == 0) {
+			return nullptr;
+		}
 		// maybe build this out using the color count techqiue (make that a base class?)
 		for (int i = 0; i < cameras.size(); ++i) {
 			if (orbiting) {
@@ -50,13 +53,16 @@ namespace Software2552 {
 			ofSetBackgroundColor(ofColor::white);
 		}
 
-		ofPushStyle();
-		draw2d();
-		ofPopStyle();
-
-		ofPushStyle();
-		draw3d();
-		ofPopStyle();
+		if (drawIn2d()) {
+			ofPushStyle();
+			draw2d();
+			ofPopStyle();
+		}
+		if (drawIn3d()) {
+			ofPushStyle();
+			draw3d();
+			ofPopStyle();
+		}
 	}
 	// pause them all
 	void Stage::pause() {
@@ -122,8 +128,8 @@ namespace Software2552 {
 	}
 	// setup light and material for drawing
 	void Stage::installLightAndMaterialThenDraw(shared_ptr<Camera>cam) {
-		material.begin();//bugbug figure out material
 		if (cam != nullptr) {
+			material.begin();//bugbug figure out material
 			cam->getAnimationHelper()->setPosition(cam->getAnimationHelper()->getCurrentPosition());
 			cam->begin();
 			cam->orbit(); 
@@ -201,14 +207,12 @@ namespace Software2552 {
 	bool TestBallScene::myCreate(const Json::Value &data) {
 		try {
 			
-			int radius=0; // read items unique to this scene
 			
 			shared_ptr<Ball> b = std::make_shared<Ball>();
 			b->getPlayer()->getAnimationHelper()->setPositionY(b->getPlayer()->floorLine - 100);
 			b->getPlayer()->getAnimationHelper()->setCurve(EASE_IN);
 			b->getPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 			b->getPlayer()->getAnimationHelper()->setDuration(0.55);
-			b->getPlayer()->radius = radius;
 			readJsonValue(b->getPlayer()->radius, data["radius"]);
 			ofPoint p;
 			p.y = b->getPlayer()->floorLine;
@@ -310,7 +314,7 @@ namespace Software2552 {
 
 		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
-		raster->getPlayer()->setType(DrawingBasics::draw3dMovingCamera);
+		raster->getDefaultPlayer()->setType(DrawingBasics::draw3dMovingCamera);
 		addAnimatable(raster);
 
 		shared_ptr<Video> video = std::make_shared<Video>("carride.mp4");

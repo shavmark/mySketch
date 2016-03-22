@@ -10,7 +10,7 @@ void ofApp::setup(){
 	ofSetLogLevel(OF_LOG_NOTICE);//OF_LOG_VERBOSE
 	timeline.setup();
 	timeline.readScript("json3.json");
-	timeline.play();
+	timeline.start();
 	//paragraphs.build(ofGetWidth());
 	
 	//ofSetFullscreen(true);
