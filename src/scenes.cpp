@@ -18,6 +18,7 @@ namespace Software2552 {
 		if (name == "Test") {
 			return std::make_shared<TestScene>();
 		}
+		logTrace("name not known (ignored) using default scene " + name);
 		return std::make_shared<GenericScene>();
 	}
 
