@@ -446,8 +446,8 @@ namespace Software2552 {
 	class Stage;
 	class Channel : public objectLifeTimeManager {
 	public:
-		Channel() :objectLifeTimeManager() { setObjectLifetime(30000); }
-		Channel(const string&keynameIn) { keyname = keynameIn; setObjectLifetime(30000); }
+		Channel() :objectLifeTimeManager() {  }
+		Channel(const string&keynameIn) { keyname = keynameIn;  }
 		enum ChannelType{History, Art, Sports, Any};
 		
 		bool readFromScript(const Json::Value &data);
@@ -479,6 +479,7 @@ namespace Software2552 {
 		}
 		bool read(const string&path);
 		bool setStage(shared_ptr<Stage> p);
+		bool skipChannel(const string&keyname);
 		vector<shared_ptr<Channel>>& getList();
 	private:
 		vector<shared_ptr<Channel>> list;

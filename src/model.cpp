@@ -265,10 +265,10 @@ namespace Software2552 {
 		// optional sizes, locations, durations for animation etc
 		readJsonValue(player->w, data["width"]);
 		readJsonValue(player->h, data["height"]);
-		float t;
+		float t=0;
 		readJsonValue(t, data["duration"]);
 		player->getAnimationHelper()->setObjectLifetime(t);
-		float w;
+		float w=0;
 		readJsonValue(w, data["wait"]);
 		player->getAnimationHelper()->setWait(w);
 		Point3D point;
@@ -284,7 +284,7 @@ namespace Software2552 {
 
 	bool Channel::readFromScript(const Json::Value &data) {
 		READSTRING(keyname, data);
-		float lifetime=getObjectLifetime();
+		float lifetime=0;
 		READFLOAT(lifetime, data);
 		setObjectLifetime(lifetime);
 		READBOOL(skip, data);
@@ -622,7 +622,14 @@ namespace Software2552 {
 		}
 
 	}
-
+	bool ChannelList::skipChannel(const string&keyname) {
+		for (auto& item : list) {
+			if (item->getKeyName() == keyname) {
+				return item->getSkip();
+			}
+		}
+		return true;
+	}
 	// match the keynames 
 	bool ChannelList::setStage(shared_ptr<Stage> p) {
 		if (p != nullptr) {
@@ -663,8 +670,11 @@ namespace Software2552 {
 				if (readStringFromJson(sceneType, json["scenes"][i]["sceneType"])) {
 					shared_ptr<Stage> p = getScene(sceneType);
 					// read common items here
-					p->settings.readFromScript(json["scenes"][i]["settings"]);
+					//p->settings.readFromScript(json["scenes"][i]["settings"]);
 					readStringFromJson(p->getKeyName(), json["scenes"][i]["keyname"]);
+					if (skipChannel(p->getKeyName())) {
+						continue;
+					}
 					if (p->getKeyName() == "ClydeBellecourt") {
 						int i = 1; // just for debugging
 					}

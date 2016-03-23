@@ -18,7 +18,7 @@ namespace Software2552 {
 		float getWait() { return waitTime; }
 		float getStart() { return startTime; }
 		bool isExpired() const { return expired; }
-		void setExpired(bool b = true) { expired = true; }
+		void setExpired(bool b = true) { expired = b; }
 		float getObjectLifetime() { return objectlifetime; }
 		void setObjectLifetime(float t) { objectlifetime=t; }
 		void operator++ () { ++usageCount; }

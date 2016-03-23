@@ -118,6 +118,7 @@ namespace Software2552 {
 			return true;
 		}
 		else {
+			float olt = getAnimationHelper()->getObjectLifetime();
 			getAnimationHelper()->setExpired(true);
 			return false;
 		}
