@@ -243,9 +243,9 @@ namespace Software2552 {
 	// camera, lights etc
 	class EquipementBaseClass : public DrawingBasics {
 	public:
-		bool readFromScript(const Json::Value &data);
+		bool readFromScript(const Json::Value &data) { return myReadFromScript(data); };
 	private:
-		virtual bool myReadFromScript(const Json::Value &data) { return true; };// for derived classes
+		virtual bool myReadFromScript(const Json::Value &data) =0;// for derived classes
 	};
 	// cameras (and others like it) are not actors
 	class Camera : public EquipementBaseClass {
@@ -260,9 +260,28 @@ namespace Software2552 {
 	};
 	class Light : public EquipementBaseClass {
 	public:
-		ofLight player;
+		ofLight &getPlayer() { return player; }
 	private:
-		bool myReadFromScript(const Json::Value &data);
+		ofLight player;
+		virtual bool myReadFromScript(const Json::Value &data);
+	};
+	class PointLight : public Light {
+	public:
+		PointLight() :Light() { getPlayer().setPointLight(); }
+	private:
+		virtual bool myReadFromScript(const Json::Value &data);
+	};
+	class DirectionalLight : public Light {
+	public:
+		DirectionalLight() :Light() { getPlayer().setDirectional(); }
+	private:
+		virtual bool myReadFromScript(const Json::Value &data);
+	};
+	class SpotLight : public Light {
+	public:
+		SpotLight() :Light() { getPlayer().setSpotlight(); }
+	private:
+		virtual bool myReadFromScript(const Json::Value &data);
 	};
 	class Grabber : public EquipementBaseClass {
 	public:

@@ -49,6 +49,8 @@ namespace Software2552 {
 		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
 		vector<shared_ptr<Grabber>>& getGrabbers() { return grabbers; }
 
+		shared_ptr<TextureVideo> getCurrentTextureVideo();
+
 		// things to draw
 		void addAnimatable(shared_ptr<ActorBasics>p) { animatables.push_back(p); }
 		vector<shared_ptr<ActorBasics>>& getAnimatables() { return animatables; }

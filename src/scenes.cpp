@@ -154,8 +154,8 @@ namespace Software2552 {
 			cam->orbit(); 
 			for (auto& light : lights) {
 				ofPoint point = cam->getAnimationHelper()->getCurrentPosition();
-				light->player.setPosition(light->getAnimationHelper()->getCurrentPosition());
-				light->player.enable();
+				light->getPlayer().setPosition(light->getAnimationHelper()->getCurrentPosition());
+				light->getPlayer().enable();
 			}
 			if (cam->isOrbiting()) {
 				draw3dMoving();
@@ -177,7 +177,7 @@ namespace Software2552 {
 		material.end();
 		ofDisableDepthTest();
 		for (auto& light : lights) {
-			light->player.disable();
+			light->getPlayer().disable();
 		}
 		ofDisableLighting();
 	}
@@ -261,6 +261,14 @@ namespace Software2552 {
 			a->getDefaultPlayer()->drawIt(DrawingBasics::draw3dFixedCamera);
 		}
 	}
+	// not sure exactly what this will do, that is if there will be many of these videos at once
+	shared_ptr<TextureVideo> Stage::getCurrentTextureVideo() {
+		if (getTextureVideos().size() > 0) {
+			return getTextureVideos()[0];
+		}
+		return nullptr;
+	}
+
 	// bugbug all items in test() to come from json or are this is done in Director
 	bool TestScene::myCreate(const Json::Value &data) {
 
@@ -269,62 +277,59 @@ namespace Software2552 {
 		addAnimatable(cube);
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
+		cam1->readFromScript(data["cam1"]);
 		// get camera stuff from json next step like color and type not sure about pos and movement yet, maybe let that alone as its too muhc
 		add(cam1);
 
-		shared_ptr<Light> pointLight = std::make_shared<Light>();
-		pointLight->player.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
+		shared_ptr<PointLight> pointLight = std::make_shared<PointLight>();
+		pointLight->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 255.f)); // set defaults
 		// specular color, the highlight/shininess color //
-		pointLight->player.setSpecularColor(ofColor(255.f, 0, 0));
+		pointLight->getPlayer().setSpecularColor(ofColor(255.f, 0, 255.f));
 		pointLight->getAnimationHelper()->setPositionX(ofGetWidth()*.2);
 		pointLight->getAnimationHelper()->setPositionY(ofGetHeight()*.2);
-		pointLight->player.setPointLight();
+		pointLight->readFromScript(data["pointLight1"]);
 		add(pointLight);
 
-		shared_ptr<Light> pointLight2 = std::make_shared<Light>();
-		pointLight2->player.setDiffuseColor(ofColor(0.f, 0, 255.f));
+		shared_ptr<PointLight> pointLight2 = std::make_shared<PointLight>();
+		pointLight2->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 0.f));// set defaults
 		// specular color, the highlight/shininess color //
-		pointLight2->player.setSpecularColor(ofColor(255.f, 0, 0));
+		pointLight2->getPlayer().setSpecularColor(ofColor(255.f, 0, 0));
 		pointLight2->getAnimationHelper()->setPositionX(-ofGetWidth()*.2);
 		pointLight2->getAnimationHelper()->setPositionY(ofGetHeight()*.2);
-		pointLight2->player.setPointLight();
+		pointLight2->readFromScript(data["pointLight2"]);
 		add(pointLight2);
 
 		shared_ptr<Light> directionalLight = std::make_shared<Light>();
 		// Directional Lights emit light based on their orientation, regardless of their position //
-		directionalLight->player.setDiffuseColor(ofColor(0.f, 0.f, 255.f));
-		directionalLight->player.setSpecularColor(ofColor(255.f, 255.f, 255.f));
-		directionalLight->player.setDirectional();
-
-		// set the direction of the light
-		// set it pointing from left to right -> //
-		directionalLight->player.setOrientation(ofVec3f(0, 90, 0));
+		directionalLight->getPlayer().setDiffuseColor(ofColor(0.f, 0.f, 255.f));
+		directionalLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
+		directionalLight->getPlayer().setOrientation(ofVec3f(0, 90, 0));
+		directionalLight->readFromScript(data["directionalLight"]);
 		add(directionalLight);
 
 		shared_ptr<Light> basic = std::make_shared<Light>();
 		basic->getAnimationHelper()->setPositionX(-100.0f);
 		basic->getAnimationHelper()->setPositionZ(400.0f);
+		basic->readFromScript(data["basicLight"]);
 		add(basic);
 
-		shared_ptr<Light> spotLight = std::make_shared<Light>();
-		spotLight->player.setDiffuseColor(ofColor(255.f, 0.f, 0.f));
-		spotLight->player.setSpecularColor(ofColor(255.f, 255.f, 255.f));
-
-		// turn the light into spotLight, emit a cone of light //
-		spotLight->player.setSpotlight();
-
+		shared_ptr<SpotLight> spotLight = std::make_shared<SpotLight>();
+		spotLight->getPlayer().setDiffuseColor(ofColor(255.f, 0.f, 0.f));
+		spotLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
 		// size of the cone of emitted light, angle between light axis and side of cone //
 		// angle range between 0 - 90 in degrees //
-		spotLight->player.setSpotlightCutOff(50);
+		spotLight->getPlayer().setSpotlightCutOff(50);
 
 		// rate of falloff, illumitation decreases as the angle from the cone axis increases //
 		// range 0 - 128, zero is even illumination, 128 is max falloff //
-		spotLight->player.setSpotConcentration(2);
+		spotLight->getPlayer().setSpotConcentration(2);
 		ofPoint pos(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		spotLight->getAnimationHelper()->setPosition(pos);
+		basic->readFromScript(data["spotLight"]);
 		add(spotLight);
 
 		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
+		grabber->readFromScript(data["grabber"]);
 		//grabber.w = ofGetWidth() / 3;
 		//grabber.x = video.x + video.w;
 		add(grabber);
@@ -333,12 +338,14 @@ namespace Software2552 {
 		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
 		raster->getDefaultPlayer()->setType(DrawingBasics::draw3dMovingCamera);
+		raster->readFromScript(data["picture"]);
 		addAnimatable(raster);
 
 		shared_ptr<Video> video = std::make_shared<Video>("carride.mp4");
 		video->getDefaultPlayer()->setType(DrawingBasics::draw3dFixedCamera);
 		//video.w = ofGetWidth() / 3;
 		//video.x = raster.w;
+		video->readFromScript(data["video"]);
 		addAnimatable(video);
 		return true;
 
@@ -364,8 +371,8 @@ namespace Software2552 {
 	
 		// draw a little light sphere
 		for (const auto& light : getLights()) {
-			ofSetColor(light->player.getDiffuseColor());
-			ofDrawSphere(light->player.getPosition(), 20.f);
+			ofSetColor(light->getPlayer().getDiffuseColor());
+			ofDrawSphere(light->getPlayer().getPosition(), 20.f);
 		}
 
 		return; // comment out to draw by vertice, less confusing but feel free to add it back in
@@ -390,20 +397,20 @@ namespace Software2552 {
 		shared_ptr<Light> light1 = std::make_shared<Light>();
 		ofPoint point(0,0, videoSphere.getPlayer().getRadius() * 2);
 		light1->getAnimationHelper()->setPosition(point);
+		light1->readFromScript(data["light1"]);
 		add(light1);
 
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
-		cam1->player.setScale(-1, -1, 1); // showing video
 		cam1->setOrbit(true); // rotating
 		cam1->getAnimationHelper()->setPositionZ(videoSphere.getPlayer().getRadius() * 2 + 300);
+		cam1->readFromScript(data["cam1"]);
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
-		cam2->player.setScale(-1, -1, 1); // showing video
 		cam2->getAnimationHelper()->setPositionZ(videoSphere.getPlayer().getRadius()*2 + 100);
-		cam2->player.setFov(60);
+		cam2->readFromScript(data["cam2"]);
 		add(cam2);
 
 		shared_ptr<TextureVideo> tv = std::make_shared<TextureVideo>();
@@ -457,11 +464,11 @@ namespace Software2552 {
 	}
 	void SpaceScene::myDraw3dFixed() {
 		// one time setup must be called to draw videoSphere
-		if (getTextureVideos()[0]->getPlayerRole()->textureReady()) {
-			videoSphere.getPlayer().mapTexCoordsFromTexture(getTextureVideos()[0]->getPlayer().getTexture());
+		if (getCurrentTextureVideo()->getPlayerRole()->textureReady()) {
+			videoSphere.getPlayer().mapTexCoordsFromTexture(getCurrentTextureVideo()->getPlayer().getTexture());
 		}
-		getTextureVideos()[0]->getPlayerRole()->mybind();
+		getCurrentTextureVideo()->getPlayerRole()->mybind();
 		videoSphere.getPlayer().draw();
-		getTextureVideos()[0]->getPlayerRole()->myunbind();
+		getCurrentTextureVideo()->getPlayerRole()->myunbind();
 	}
 }

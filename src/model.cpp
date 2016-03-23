@@ -465,10 +465,49 @@ namespace Software2552 {
 	
 	bool Camera::myReadFromScript(const Json::Value &data) {
 		//bugbug fill in
+		player.setScale(-1, -1, 1); // showing video
+		//getAnimationHelper()->setPositionZ(videoSphere.getPlayer().getRadius() * 2 + 100);
+		player.setFov(60);
 		return true;
 	}
 	bool Light::myReadFromScript(const Json::Value &data) {
-		//bugbug fill in
+		//bugbug fill in as an option, use Settings for color, or the defaults
+		//get from json player.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
+		// specular color, the highlight/shininess color //
+		//get from json player.setSpecularColor(ofColor(255.f, 0, 0));
+		//could get from json? not sure yet getAnimationHelper()->setPositionX(ofGetWidth()*.2);
+		//could get from json? not sure yet getAnimationHelper()->setPositionY(ofGetHeight()*.2);
+		return true;
+	}
+	bool PointLight::myReadFromScript(const Json::Value &data) {
+		//bugbug fill in as an option, use Settings for color, or the defaults
+		//get from json player.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
+		// specular color, the highlight/shininess color //
+		//get from json player.setSpecularColor(ofColor(255.f, 0, 0));
+		//could get from json? not sure yet getAnimationHelper()->setPositionX(ofGetWidth()*.2);
+		//could get from json? not sure yet getAnimationHelper()->setPositionY(ofGetHeight()*.2);
+		return true;
+	}
+	bool DirectionalLight::myReadFromScript(const Json::Value &data) {
+		//bugbug fill in as an option, use Settings for color, or the defaults
+		//get from json player.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
+		// specular color, the highlight/shininess color //
+		//get from json player.setSpecularColor(ofColor(255.f, 0, 0));
+		//could get from json? not sure yet getAnimationHelper()->setPositionX(ofGetWidth()*.2);
+		//could get from json? not sure yet getAnimationHelper()->setPositionY(ofGetHeight()*.2);
+		//directionalLight->player.setOrientation(ofVec3f(0, 90, 0));
+		return true;
+	}
+	bool SpotLight::myReadFromScript(const Json::Value &data) {
+		//bugbug fill in as an option, use Settings for color, or the defaults
+		//get from json player.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
+		// specular color, the highlight/shininess color //
+		//get from json player.setSpecularColor(ofColor(255.f, 0, 0));
+		//could get from json? not sure yet getAnimationHelper()->setPositionX(ofGetWidth()*.2);
+		//could get from json? not sure yet getAnimationHelper()->setPositionY(ofGetHeight()*.2);
+		//directionalLight->player.setOrientation(ofVec3f(0, 90, 0));
+		//spotLight->getPlayer().setSpotlightCutOff(50);
+		//		spotLight->player.setSpotConcentration(2);
 		return true;
 	}
 	void Ball::Role::myDraw() {
