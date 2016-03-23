@@ -136,8 +136,10 @@ namespace Software2552 {
 		bool myCreate(const Json::Value &data);
 	private:
 		bool drawIn3dFixed() { return true; }//derived classes make this call
+		bool drawIn3dMoving() { return true; }//derived classes make this call
 		bool drawIn2d() { return false; }//derived classes make this call
 		void myDraw3dFixed();
+		void myDraw3dMoving();
 
 		CrazyMesh mesh;
 	};

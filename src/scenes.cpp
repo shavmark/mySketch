@@ -182,7 +182,7 @@ namespace Software2552 {
 		ofDisableLighting();
 	}
 	void Stage::draw3d() {
-		// setup bugbug consider a virtual setup/cleanup function so dervied class can change this around
+
 		pre3dDraw();
 
 		if (drawIn3dFixed()) {
@@ -281,6 +281,11 @@ namespace Software2552 {
 		// get camera stuff from json next step like color and type not sure about pos and movement yet, maybe let that alone as its too muhc
 		add(cam1);
 
+		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
+		cam2->setOrbit();
+		cam2->readFromScript(data["cam2"]);
+		add(cam2);
+
 		shared_ptr<PointLight> pointLight = std::make_shared<PointLight>();
 		pointLight->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 255.f)); // set defaults
 		// specular color, the highlight/shininess color //
@@ -299,7 +304,7 @@ namespace Software2552 {
 		pointLight2->readFromScript(data["pointLight2"]);
 		add(pointLight2);
 
-		shared_ptr<Light> directionalLight = std::make_shared<Light>();
+		shared_ptr<DirectionalLight> directionalLight = std::make_shared<DirectionalLight>();
 		// Directional Lights emit light based on their orientation, regardless of their position //
 		directionalLight->getPlayer().setDiffuseColor(ofColor(0.f, 0.f, 255.f));
 		directionalLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
@@ -325,7 +330,7 @@ namespace Software2552 {
 		spotLight->getPlayer().setSpotConcentration(2);
 		ofPoint pos(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		spotLight->getAnimationHelper()->setPosition(pos);
-		basic->readFromScript(data["spotLight"]);
+		spotLight->readFromScript(data["spotLight"]);
 		add(spotLight);
 
 		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
@@ -366,6 +371,9 @@ namespace Software2552 {
 			grabber.x = (ofGetWidth() / 3) * 2;
 		}
 		*/
+	}
+	void TestScene::myDraw3dMoving() {
+		int i = 0; //test
 	}
 	void TestScene::myDraw3dFixed() {
 	
