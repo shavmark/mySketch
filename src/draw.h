@@ -28,17 +28,7 @@ namespace Software2552 {
 		ofPoint b;
 	};
 
-	// bouncy ball with nice colors is pretty nice, does not take too much really
-	class Ball2d : public DrawingBasics {
-	public:
-		void myDraw();
 
-		int floorLine = 630;
-		int xMargin = 0;
-		int widthCol = 60;
-		float radius=100;
-	};
-	//bugbug many more moving shapes, or do all things move?
 
 	// https://github.com/openframeworks/ofBook/blob/master/chapters/lines/chapter.md
 	class ComplexLines {
@@ -173,64 +163,6 @@ namespace Software2552 {
 	public:
 	};
 
-	class Grabber : public DrawingBasics {
-	public:
-		Grabber(const string&nameIn) : DrawingBasics(){ name = nameIn;  }
-		void myUpdate() { if (player.isInitialized()) player.update(); }
-		void myDraw();
-		bool myObjectLoad() { return loadGrabber(w, h); }
-		bool loadGrabber(int wIn, int hIn);
-		ofVideoGrabber player;
-	private:
-		int find();
-		string name;
-		int id=0;
-	};
-	class RolePlane :  public DrawingPrimitive {
-	public:
-		void myDraw();
-		ofPlanePrimitive player;
-	};
-	class RoleSphere : public DrawingPrimitive {
-	public:
-		void myDraw();
-		ofSpherePrimitive player;
-	private:
-	};
-
-	// sound gets drawing basics for path and possibly other items in the future
-	class RoleSound :  public DrawingBasics {
-	public:
-		//bugbug tie into the main sound code we added
-
-		void mySetup();
-		ofSoundPlayer player;
-	};
-	class RoleRaster :  public DrawingBasics {
-	public:
-		RoleRaster() : DrawingBasics() {  }
-		RoleRaster(const string& path) : DrawingBasics(path) { }
-
-		void myUpdate() { player.update(); }
-		bool myObjectLoad() {		return ofLoadImage(player, getLocationPath());	}
-		void myDraw();
-		ofImage player;
-	};
-
-	class TextureVideo :  public DrawingBasics {
-	public:
-		void create(const string& name, float w, float h) {
-			player.load(name);
-			player.play();
-		}
-		void myUpdate() { player.update(); }
-
-		bool textureReady() {	return  player.isInitialized();		}
-		bool bind();
-		bool unbind();
-		ofVideoPlayer player;
-	private:
-	};
 	class TextureFromImage : public ofTexture {
 	public:
 		void create(const string& name, float w, float h);
@@ -243,45 +175,8 @@ namespace Software2552 {
 		Fbo	fbo;
 
 	};
-	class Light : public DrawingBasics {
-	public:
-		ofLight player;
-	};
 	class Material : public ofMaterial {
 	public:
-	};
-	class RoleBackground : public DrawingBasics {
-	public:
-		RoleBackground(){ mode = OF_GRADIENT_LINEAR; }
-		void mySetup();
-		void myDraw();
-		void myUpdate();
-		Colors player;
-	private:
-		ofGradientMode mode;
-
-		//ofBackgroundHex this is an option too bugbug enable background type
-	};
-	// put advanced drawing in these objects
-	class RoleParagraph : public DrawingBasics {
-	public:
-		RoleParagraph() : DrawingBasics() {}
-		void myDraw();
-		ofxParagraph player;
-	private:
-	};
-	// put advanced drawing in these objects
-	class RoleVideo :public DrawingBasics {
-	public:
-		RoleVideo() : DrawingBasics() {  }
-		RoleVideo(const string& path) : DrawingBasics(path) { }
-		void myUpdate() { player.update(); }
-		void myDraw();
-		void mySetup();
-		bool myObjectLoad();
-		float getTimeBeforeStart(float t);
-		ofVideoPlayer player;
-	private:
 	};
 
 }

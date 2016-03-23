@@ -40,8 +40,8 @@ namespace Software2552 {
 		float   waitTime = 0;
 		float	refreshRate = 0;
 	};
-	// animates colors
-	class ColorAnimation : public ofxAnimatableOfColor, public objectLifeTimeManager {
+	// animates colors (this classs just gets around some protected items)
+	class ColorAnimation : public ofxAnimatableOfColor {
 	public:
 		void draw();
 		bool paused() { return paused_; }
@@ -54,6 +54,7 @@ namespace Software2552 {
 		bool paused() {	return paused_;	}
 	};
 	// basic drawing info, bugbug maybe color set goes here too, not sure yet
+	class AnimiatedColor;
 	class DrawingBasics  {
 	public:
 		enum drawtype { draw2d, draw3dFixedCamera, draw3dMovingCamera };
@@ -70,8 +71,8 @@ namespace Software2552 {
 		void drawIt(drawtype type);
 		bool loadForDrawing() { return myObjectLoad(); };
 
-		void setColorAnimation(shared_ptr<ColorAnimation>p) { colorAnimation = p;		}
-		shared_ptr<ColorAnimation> getColorAnimation() {return colorAnimation;}
+		void setColorAnimation(shared_ptr<AnimiatedColor>p) { colorAnimation = p;		}
+		shared_ptr<AnimiatedColor> getColorAnimation() {return colorAnimation;}
 
 		int w = 0;
 		int h = 0;
@@ -103,7 +104,7 @@ namespace Software2552 {
 		virtual void myDraw() {};
 		virtual bool myObjectLoad() { return true; };
 		string   locationPath;   // location of item to draw
-		shared_ptr<ColorAnimation> colorAnimation = nullptr; // optional color
+		shared_ptr<AnimiatedColor> colorAnimation = nullptr; // optional color
 		shared_ptr<PointAnimation> ani = nullptr; // call all the other items via here
 	};
 

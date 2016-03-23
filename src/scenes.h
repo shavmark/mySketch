@@ -50,8 +50,8 @@ namespace Software2552 {
 		vector<shared_ptr<Grabber>>& getGrabbers() { return grabbers; }
 
 		// things to draw
-		void addAnimatable(shared_ptr<ActorBaseClass>p) { animatables.push_back(p); }
-		vector<shared_ptr<ActorBaseClass>>& getAnimatables() { return animatables; }
+		void addAnimatable(shared_ptr<ActorBasics>p) { animatables.push_back(p); }
+		vector<shared_ptr<ActorBasics>>& getAnimatables() { return animatables; }
 
 		void draw2d();
 		void draw3dFixed();
@@ -76,10 +76,10 @@ namespace Software2552 {
 		string keyname;
 
 	private:
-		static bool OKToRemove(shared_ptr<ActorBaseClass> me) {
+		static bool OKToRemove(shared_ptr<ActorBasics> me) {
 			return me->getDefaultPlayer()->OKToRemoveNormalPointer(me->getDefaultPlayer());
 		}
-		void removeExpiredItems(vector<shared_ptr<ActorBaseClass>>&v) {
+		void removeExpiredItems(vector<shared_ptr<ActorBasics>>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
 		}
 		void removeExpiredItems(vector<shared_ptr<Camera>>&v) {
@@ -89,13 +89,13 @@ namespace Software2552 {
 			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
 		}
 		void removeExpiredItems(vector<shared_ptr<TextureVideo>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
+			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
 		}
 		void removeExpiredItems(vector<shared_ptr<Grabber>>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
 		}
 		//bugbug maybe just animatables is needed, a a typeof or such can be used
-		vector<shared_ptr<ActorBaseClass>> animatables;
+		vector<shared_ptr<ActorBasics>> animatables;
 		vector<shared_ptr<Camera>> cameras;
 		vector<shared_ptr<Light>> lights;
 		vector<shared_ptr<TextureVideo>> texturevideos;
@@ -110,12 +110,6 @@ namespace Software2552 {
 		ofImage imageForBackground;//bugbug change this to use the background object that includes just a color background
 		string backgroundImageName;
 
-	};
-
-	class Planet : public RoleSphere {
-	public:
-		RoleSphere sphere;
-		ofTexture texture;
 	};
 
 	// over time this just does whats in the data
@@ -158,7 +152,7 @@ namespace Software2552 {
 		void myDraw3dMoving();
 		void addPlanet(const string&textureName, const ofVec3f& Start);
 		// things a scene can have (infinte list really)
-		RoleSphere	videoSphere;
+		Sphere	videoSphere;
 		vector<shared_ptr<Planet>> pictureSpheres;//bugbug move up to baseclass with a pointer vector to drawing items
 	};
 

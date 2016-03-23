@@ -233,22 +233,10 @@ namespace Software2552 {
 		try {
 		
 			shared_ptr<Ball> b = std::make_shared<Ball>();
-			// can read any of these items from json here
-			b->getPlayer()->getAnimationHelper()->setPositionY(b->getPlayer()->floorLine - 100);
-			b->getPlayer()->getAnimationHelper()->setCurve(EASE_IN);
-			b->getPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
-			b->getPlayer()->getAnimationHelper()->setDuration(0.55);
-			readJsonValue(b->getPlayer()->radius, data["radius"]);
-			ofPoint p;
-			p.y = b->getPlayer()->floorLine;
-			b->getPlayer()->getAnimationHelper()->animateTo(p);
+			b->readFromScript(data);
 
-			shared_ptr<ColorAnimation> c = std::make_shared<ColorAnimation>();
-			c->setColor(Colors::getFirstColors(settings.getColor().getGroup())->getOfColor(Colors::foreColor));
-			c->setDuration(0.5f);
-			c->setRepeatType(LOOP_BACK_AND_FORTH);
-			c->setCurve(LINEAR);
-			c->animateTo(Colors::getLastColors(settings.getColor().getGroup())->getOfColor(Colors::foreColor));
+			shared_ptr<AnimiatedColor> c = std::make_shared<AnimiatedColor>();
+			c->readFromScript(data);
 			b->getPlayer()->setColorAnimation(c);
 
 			addAnimatable(b);
@@ -397,10 +385,10 @@ namespace Software2552 {
 		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
 		//bugbug get from json
-		videoSphere.player.set(250, 180);
+		videoSphere.getPlayer().set(250, 180);
 
 		shared_ptr<Light> light1 = std::make_shared<Light>();
-		ofPoint point(0,0, videoSphere.player.getRadius() * 2);
+		ofPoint point(0,0, videoSphere.getPlayer().getRadius() * 2);
 		light1->getAnimationHelper()->setPosition(point);
 		add(light1);
 
@@ -408,23 +396,23 @@ namespace Software2552 {
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->player.setScale(-1, -1, 1); // showing video
 		cam1->setOrbit(true); // rotating
-		cam1->getAnimationHelper()->setPositionZ(videoSphere.player.getRadius() * 2 + 300);
+		cam1->getAnimationHelper()->setPositionZ(videoSphere.getPlayer().getRadius() * 2 + 300);
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
 		cam2->player.setScale(-1, -1, 1); // showing video
-		cam2->getAnimationHelper()->setPositionZ(videoSphere.player.getRadius()*2 + 100);
+		cam2->getAnimationHelper()->setPositionZ(videoSphere.getPlayer().getRadius()*2 + 100);
 		cam2->player.setFov(60);
 		add(cam2);
 
 		shared_ptr<TextureVideo> tv = std::make_shared<TextureVideo>();
-		tv->create("Clyde.mp4", 0, 0);
+		tv->getPlayerRole()->create("Clyde.mp4", 0, 0);
 		add(tv);
 
 		setBackgroundImageName("hubble1.jpg");
 
-		float xStart = (ofGetWidth() - tv->player.getWidth()) / 2;
+		float xStart = (ofGetWidth() - tv->getPlayer().getWidth()) / 2;
 		float offset = abs(xStart);
 		addPlanet("earth_day.jpg", ofVec3f(xStart, 0, offset + 100));
 
@@ -444,13 +432,13 @@ namespace Software2552 {
 		shared_ptr<Planet> p = std::make_shared<Planet>();
 
 		float r = ofRandom(5, 100);
-		p->player.set(r, 40);
+		p->sphere.getPlayer().set(r, 40);
 		TextureFromImage texture;
 		texture.create(textureName, r * 2, r * 2);
-		p->player.mapTexCoordsFromTexture(texture);
+		p->sphere.getPlayer().mapTexCoordsFromTexture(texture);
 		p->texture = texture;
-		p->setWireframe(false);
-		p->player.move(start);
+		p->sphere.getPrimative()->setWireframe(false);
+		p->sphere.getPlayer().move(start);
 		pictureSpheres.push_back(p);
 	}
 	void SpaceScene::mySetup() {
@@ -462,18 +450,18 @@ namespace Software2552 {
 	void SpaceScene::myDraw3dMoving() {
 		for (auto& pictureSphere : pictureSpheres) {
 			pictureSphere->texture.bind();
-			pictureSphere->player.rotate(30, 0, 2.0, 0.0);
-			pictureSphere->player.draw();
+			pictureSphere->sphere.getPlayer().rotate(30, 0, 2.0, 0.0);
+			pictureSphere->sphere.getPlayer().draw();
 			pictureSphere->texture.unbind();
 		}
 	}
 	void SpaceScene::myDraw3dFixed() {
 		// one time setup must be called to draw videoSphere
-		if (getTextureVideos()[0]->textureReady()) {
-			videoSphere.player.mapTexCoordsFromTexture(getTextureVideos()[0]->player.getTexture());
+		if (getTextureVideos()[0]->getPlayerRole()->textureReady()) {
+			videoSphere.getPlayer().mapTexCoordsFromTexture(getTextureVideos()[0]->getPlayer().getTexture());
 		}
-		getTextureVideos()[0]->bind();
-		videoSphere.player.draw();
-		getTextureVideos()[0]->unbind();
+		getTextureVideos()[0]->getPlayerRole()->mybind();
+		videoSphere.getPlayer().draw();
+		getTextureVideos()[0]->getPlayerRole()->myunbind();
 	}
 }

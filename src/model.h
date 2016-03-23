@@ -125,13 +125,13 @@ namespace Software2552 {
 	};
 
 	// an actor is a drawable that contains the drawing object for that graphic
-	class ActorBaseClass : public Settings {
+	class ActorBasics : public Settings {
 	public:
-		ActorBaseClass(DrawingBasics *p=nullptr) :Settings() {
+		ActorBasics(DrawingBasics *p=nullptr) :Settings() {
 			references = nullptr;
 			player = p;
 		}
-		~ActorBaseClass();
+		~ActorBasics();
 
 		template<typename T> T* getRole() { return (T*)getDefaultPlayer(); }
 		DrawingBasics* getDefaultPlayer() { return player; }
@@ -140,18 +140,14 @@ namespace Software2552 {
 
 		shared_ptr<vector<shared_ptr<Reference>>>  getReferences() { return references; }
 
-	protected:
+
 	private:
+		virtual bool myReadFromScript(const Json::Value &data) { return true; };// for derived classes
 		DrawingBasics* player=nullptr; // need a down cast
 		shared_ptr<vector<shared_ptr<Reference>>> references=nullptr;
 	};
 
-	// camera, lights etc
-	class EquipementBaseClass : public DrawingBasics {
-	public:
-	};
-
-	template<typename T> void createTimeLineItems(const Settings& settings, vector<shared_ptr<ActorBaseClass>>& vec, const Json::Value &data, const string& key) {
+	template<typename T> void createTimeLineItems(const Settings& settings, vector<shared_ptr<ActorBasics>>& vec, const Json::Value &data, const string& key) {
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			shared_ptr<T> v = std::make_shared<T>();
 			v->setSettings(settings); // inherit settings
@@ -163,25 +159,93 @@ namespace Software2552 {
 	}
 
 
-	class Background : public ActorBaseClass {
+	class Background : public ActorBasics {
 	public:
-		Background() :ActorBaseClass(new RoleBackground()) {  }
-		Colors& getPlayer() { return (((RoleBackground*)getDefaultPlayer())->player); }
+		class Role : public DrawingBasics {
+		public:
+			Role() { mode = OF_GRADIENT_LINEAR; }
+			void mySetup();
+			void myDraw();
+			void myUpdate();
+			Colors player;
+		private:
+			ofGradientMode mode;
+			//ofBackgroundHex this is an option too bugbug enable background type
+		};
+
+		Background() :ActorBasics(new Role()) {  }
+		Colors& getPlayer() { return getRole<Role>()->player; }
+	private:
+		bool myReadFromScript(const Json::Value &data);
+
 	};
 
+	class AnimiatedColor : public ActorBasics {
+	public:
+		// animates colors
+		class Role : public DrawingBasics {
+		public:
+			void myDraw() {player.draw();};
+			bool paused() { return player.paused(); }
+			ColorAnimation player;
+
+		private:
+		};
+		AnimiatedColor() :ActorBasics(new Role()) {  }
+		ColorAnimation& getPlayer() { return getRole<Role>()->player; }
+	private:
+		bool myReadFromScript(const Json::Value &data);
+	};
+
+	class TextureVideo : public ActorBasics {
+	public:
+		class Role : public DrawingBasics {
+		public:
+			void create(const string& name, float w, float h) {
+				player.load(name);
+				player.play();
+			}
+			void myUpdate() { player.update(); }
+
+			bool textureReady() { return  player.isInitialized(); }
+			bool mybind();
+			bool myunbind();
+			ofVideoPlayer player;
+		};
+		TextureVideo() :ActorBasics(new Role()) {  }
+		ofVideoPlayer& getPlayer() { return getPlayerRole()->player; }
+		Role* getPlayerRole() { return getRole<Role>(); }
+	private:
+		bool myReadFromScript(const Json::Value &data);
+
+	};
 	// wrap drawing object with references and settings data
-	class Ball : public ActorBaseClass {
+	class Ball : public ActorBasics {
 	public:
+		// bouncy ball with nice colors is pretty nice, does not take too much really
+		class Role : public DrawingBasics {
+		public:
+			void myDraw();
+
+			int floorLine = 630;
+			int xMargin = 0;
+			int widthCol = 60;
+			float radius = 100;
+		};
+
 		// data read during scene creation bugbug move all data reads to scene creation?
-		Ball() :ActorBaseClass(new Ball2d()) {  }
-		Ball2d* getPlayer() { return ((Ball2d*)getDefaultPlayer()); }
+		Ball() :ActorBasics(new Role()) {  }
+		Role* getPlayer() { return getRole<Role>(); }
+	private:
+		bool myReadFromScript(const Json::Value &data);
 	};
 
-	class Picture : public ActorBaseClass {
+	// camera, lights etc
+	class EquipementBaseClass : public DrawingBasics {
 	public:
-		Picture() :ActorBaseClass(new RoleRaster()) {  }
-		Picture(const string&s) :ActorBaseClass(new RoleRaster(s)) {  }
-		ofImage& getPlayer() { return (((RoleRaster*)getDefaultPlayer())->player); }
+		bool readFromScript(const Json::Value &data);
+	private:
+		virtual bool myReadFromScript(const Json::Value &data) { return true; };// for derived classes
 	};
 	// cameras (and others like it) are not actors
 	class Camera : public EquipementBaseClass {
@@ -190,66 +254,174 @@ namespace Software2552 {
 		void setOrbit(bool b = true) { useOrbit = b; }
 		bool isOrbiting() const { return useOrbit; }
 		ofEasyCam player;
-		bool readFromScript(const Json::Value &data);
 	private:
+		bool myReadFromScript(const Json::Value &data);
 		bool useOrbit = false;
 	};
+	class Light : public EquipementBaseClass {
+	public:
+		ofLight player;
+	private:
+		bool myReadFromScript(const Json::Value &data);
+	};
+	class Grabber : public EquipementBaseClass {
+	public:
+		Grabber(const string&nameIn) : EquipementBaseClass() { name = nameIn; }
+		void myUpdate() { if (player.isInitialized()) player.update(); }
+		void myDraw();
+		bool myObjectLoad() { return loadGrabber(w, h); }
+		bool loadGrabber(int wIn, int hIn);
+		ofVideoGrabber player;
+	private:
+		int find();
+		string name;
+		int id = 0;
+		bool myReadFromScript(const Json::Value &data);
+	};
 
-	class Cube : public ActorBaseClass	{
+
+	class ActorWithPrimativeBaseClass : public ActorBasics {
+	public:
+		ActorWithPrimativeBaseClass(DrawingPrimitive *p = nullptr) :ActorBasics(p){}
+		DrawingPrimitive *getPrimative() { return (DrawingPrimitive*)getDefaultPlayer();  }
+
+	};
+	class Cube : public ActorWithPrimativeBaseClass {
 	public:
 		class Role : public DrawingPrimitive {
 		public:
+			void myDraw();
 			ofBoxPrimitive player;
 		};
-		Cube() : ActorBaseClass(new Role()) {  }
-		void myDraw();
+		Cube() : ActorWithPrimativeBaseClass(new Role()) {  }
 		ofBoxPrimitive& getPlayer() { return getRole<Role>()->player; }
-		bool readFromScript(const Json::Value &data);
+	private:
+		bool myReadFromScript(const Json::Value &data);
 	};
 
-	class Text : public ActorBaseClass {
+	class Plane : public ActorWithPrimativeBaseClass {
+	public:
+		class Role : public DrawingPrimitive {
+		public:
+			void myDraw();
+			ofPlanePrimitive player;
+		};
+		Plane() :ActorWithPrimativeBaseClass(new Role()) {  }
+		ofPlanePrimitive& getPlayer() { return getRole<Role>()->player; }
+	private:
+		bool myReadFromScript(const Json::Value &data);
+	};
+	class Sphere : public ActorWithPrimativeBaseClass {
+	public:
+		class Role : public DrawingPrimitive {
+		public:
+			void myDraw();
+			ofSpherePrimitive player;
+		private:
+		};
+
+		Sphere() :ActorWithPrimativeBaseClass(new Role()) {  }
+		ofSpherePrimitive& getPlayer() { return getRole<Role>()->player; }
+	private:
+		bool myReadFromScript(const Json::Value &data);
+	};
+
+	class Text : public ActorBasics {
 	public:
 		class Role : public DrawingBasics {
 		public:
+			void myDraw();
+			void drawText(const string &s, int x, int y);
+			void setText(const string&t) { text = t; }
+			string& getText() { return text; }
+			string text;
 		};
-		Text() : ActorBaseClass(new Role) {  }
-		void myDraw();
-		void drawText(const string &s, int x, int y);
-		void setText(const string&t) { text = t; }
-		string& getText() { return text; }
-		bool readFromScript(const Json::Value &data);
+		Text() : ActorBasics(new Role) {  }
+		void drawText(const string &s, int x, int y) { getRole<Role>()->drawText(s, x, y); };
+		void setText(const string&t) { getRole<Role>()->setText(t); }
 	private:
-		string text;
+		bool myReadFromScript(const Json::Value &data);
 	};
 
-	class Paragraph : public ActorBaseClass {
+	class Paragraph : public ActorBasics {
 	public:
-		Paragraph() :ActorBaseClass(new RoleParagraph()) {  }
-		ofxParagraph& getPlayer() { return (((RoleParagraph*)getDefaultPlayer())->player); }
-		bool readFromScript(const Json::Value &data);
+		// put advanced drawing in these objects
+		class Role : public DrawingBasics {
+		public:
+			Role() : DrawingBasics() {}
+			void myDraw();
+			ofxParagraph player;
+		private:
+		};
+
+		Paragraph() :ActorBasics(new Role()) {  }
+		ofxParagraph& getPlayer() { return getRole<Role>()->player; }
+
+	private:
+		bool myReadFromScript(const Json::Value &data);
 	};
 
 	
-	class Sphere : public ActorBaseClass {
+	class Audio : public ActorBasics {
 	public:
-		Sphere() :ActorBaseClass(new RoleSphere()) {  }
-		ofSpherePrimitive& getPlayer() { return (((RoleSphere*)getDefaultPlayer())->player); }
-		bool readFromScript(const Json::Value &data);
-	};
-	class Audio : public ActorBaseClass {
-	public:
-		Audio() :ActorBaseClass(new RoleSound()) {  }
-		ofSoundPlayer& getPlayer() { return (((RoleSound*)getDefaultPlayer())->player); }
-		bool readFromScript(const Json::Value &data);
+		// sound gets drawing basics for path and possibly other items in the future
+		class Role : public DrawingBasics {
+		public:
+			//bugbug tie into the main sound code we added
+			void mySetup();
+			ofSoundPlayer player;
+		};
+
+		Audio() :ActorBasics(new Role()) {  }
+		ofSoundPlayer& getPlayer() { return getRole<Role>()->player; }
+	private:
+		bool myReadFromScript(const Json::Value &data);
 	};
 
-	class Video : public ActorBaseClass {
+
+	class Video : public ActorBasics {
 	public:
-		Video(const string&s) :ActorBaseClass(new RoleVideo(s)) {  }
-		Video() :ActorBaseClass(new RoleVideo()) {  }
-		ofVideoPlayer& getPlayer() { return (((RoleVideo*)getDefaultPlayer())->player);}
-		bool readFromScript(const Json::Value &data);
+		// put advanced drawing in these objects
+		class Role :public DrawingBasics {
+		public:
+			Role() : DrawingBasics() {  }
+			Role(const string& path) : DrawingBasics(path) { }
+			void myUpdate() { player.update(); }
+			void myDraw();
+			void mySetup();
+			bool myObjectLoad();
+			float getTimeBeforeStart(float t);
+			ofVideoPlayer player;
+		};
+		Video(const string&s) :ActorBasics(new Role(s)) {  }
+		Video() :ActorBasics(new Role()) {  }
+		ofVideoPlayer& getPlayer() { return getRole<Role>()->player; }
+
+	private:
+		bool myReadFromScript(const Json::Value &data);
 	};
+
+	class Picture : public ActorBasics {
+	public:
+		class Role : public DrawingBasics {
+		public:
+			Role() : DrawingBasics() {  }
+			Role(const string& path) : DrawingBasics(path) { }
+
+			void myUpdate() { player.update(); }
+			bool myObjectLoad() { return ofLoadImage(player, getLocationPath()); }
+			void myDraw();
+			ofImage player;
+		};
+
+		Picture() :ActorBasics(new Role()) {  }
+		Picture(const string&s) :ActorBasics(new Role(s)) {  }
+		ofImage& getPlayer() { return getRole<Role>()->player; }
+
+	private:
+		bool myReadFromScript(const Json::Value &data) { return true; }
+	};
+
 	// item in a play list
 
 	class Stage;
@@ -293,5 +465,11 @@ namespace Software2552 {
 		vector<shared_ptr<Channel>> list;
 	};
 
+	//bugbug many more moving shapes, or do all things move?
+	class Planet {
+	public:
+		Sphere sphere;
+		ofTexture texture;
+	};
 
 }

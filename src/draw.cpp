@@ -167,23 +167,6 @@ namespace Software2552 {
 			soundDataIn.volHistory.erase(soundDataIn.volHistory.begin(), soundDataIn.volHistory.begin() + 1);
 		}
 	}
-	void ColorAnimation::draw() {
-		applyCurrentColor();
-	}
-	void Animatable::set(shared_ptr<ColorAnimation>p)	{
-		colorAnimation = p;
-	}
-	void Animatable::update(float dt) {
-		if (colorAnimation != nullptr) {
-			colorAnimation->update(dt);
-		}
-		ofxAnimatableFloat::update(dt);
-	}
-	void Animatable::draw() {
-		if (colorAnimation != nullptr) {
-			colorAnimation->draw();
-		}
-	}
 	void RandomDots::draw() {
 		for (int i = 0; i < ofGetMouseX() * 5; i++) {
 			ofSetColor(ofRandom(96));
@@ -276,27 +259,6 @@ namespace Software2552 {
 		ofTriangle(0, 0, -50, 100, 50, 100);
 	}
 
-	void Ball2d::myDraw() {
-		ofFill();
-		ofCircle((2 * ofGetFrameNum()) % ofGetWidth(), getAnimationHelper()->getCurrentPosition().y, radius);
-		//glColor4ub(255, 255, 255, 255);
-		ofRect(0, floorLine + radius, ofGetWidth(), 1);
-
-		//vertical lines
-		ofRect(xMargin, 0, 1, floorLine + radius);
-		ofRect(xMargin + widthCol + radius, 0, 1, floorLine + radius);
-
-	}
-	int Grabber::find() {
-		//bugbug does Kintect show up?
-		ofVideoGrabber grabber;
-		vector<ofVideoDevice> devices = grabber.listDevices();
-		for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
-			if (it->deviceName == name) {
-				return it->id;
-			}
-		}
-	}
 	void TextureFromImage::create(const string& name, float w, float h) {
 		// create texture
 		ofLoadImage(*this, name);
@@ -306,38 +268,7 @@ namespace Software2552 {
 		draw(0, 0, w, h);
 		fbo.end();// normal drawing resumes
 	}
-	float RoleVideo::getTimeBeforeStart(float t) {
 
-		// if json sets a wait use it
-		if (getAnimationHelper()->getWait() > 0) {
-			setIfGreater(t, getAnimationHelper()->getWait());
-		}
-		else {
-			// will need to load it now to get the true lenght
-			if (!player.isLoaded()) {
-				player.load(getLocationPath());
-			}
-			float duration = getAnimationHelper()->getObjectLifetime();
-			setIfGreater(t, duration);
-		}
-		return t;
-	}
-
-
-	bool TextureVideo::bind() {
-		if (player.isInitialized() && player.isUsingTexture()) {
-			player.getTexture().bind();
-			return true;
-		}
-		return false;
-	}
-	bool TextureVideo::unbind() {
-		if (player.isInitialized() && player.isUsingTexture()) {
-			player.getTexture().unbind();
-			return true;
-		}
-		return false;
-	}
 
 
 	void Line3D::setup() {
@@ -373,33 +304,7 @@ namespace Software2552 {
 		ofSetColor(255, 0, 0);
 		ofRect(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
 	}
-	void RolePlane::myDraw() {
-		if (useWireframe()) {
-			player.drawWireframe();
-		}
-		else {
-			player.draw();
-		}
-	}
 
-	void RoleSphere::myDraw() {
-		if (useWireframe()) {
-			player.drawWireframe();
-		}
-		else {
-			player.draw();
-		}
-		//drawFaces();
-		//drawVertices();
-	}
-
-	void RoleSound::mySetup() {
-		if (!player.load(getLocationPath())) {
-			logErrorString("setup audio Player");
-		}
-		// some of this data could come from data in the future
-		player.play();
-	}
 
 	void CrazyMesh::setup() {
 		for (int i = 0;  i < w; ++i) {
@@ -427,76 +332,7 @@ namespace Software2552 {
 		drawVertices();
 		ofPopStyle();
 	}
-	void RoleRaster::myDraw() {
-		player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
-	}
-	void RoleParagraph::myDraw() {
-		player.setPosition(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
-		player.draw();
-	}
 
-	// add this one http://clab.concordia.ca/?page_id=944
-	void RoleVideo::myDraw() {
-		player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
-	}
-	void RoleVideo::mySetup() {
-		if (!player.isLoaded()) {
-			if (!player.load(getLocationPath())) {
-				logErrorString("setup video Player");
-			}
-		}
-		player.play();
-
-	}
-	bool RoleVideo::myObjectLoad() { 
-		setupForDrawing(); 
-		return true; 
-	}
-
-	void RoleBackground::mySetup() {
-		mode = OF_GRADIENT_LINEAR; 
-		getAnimationHelper()->setRefreshRate(60000);// just set something different while in dev
-	}
-	// colors and background change over time but not at the same time
-	void RoleBackground::myUpdate() {
-		//bugbug can add other back grounds like a video loop, sound
-		// picture, any graphic etc
-		if (getAnimationHelper()->refreshAnimation()) {
-			switch ((int)ofRandom(0, 3)) {
-			case 0:
-				mode = OF_GRADIENT_LINEAR;
-				break;
-			case 1:
-				mode = OF_GRADIENT_CIRCULAR;
-				break;
-			case 2:
-				mode = OF_GRADIENT_BAR;
-				break;
-			}
-		}
-
-	}
-
-	bool Grabber::loadGrabber(int wIn, int hIn) {
-		id = find();
-		player.setDeviceID(id);
-		player.setDesiredFrameRate(30);
-		return player.setup(wIn, hIn);
-	}
-
-	void Grabber::myDraw() {
-		if (player.isInitialized()) {
-			player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
-		}
-	}
-	void RoleBackground::myDraw(){
-		//ofBackgroundHex this is an option too bugbug enable background type
-
-		ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
-			ofColor::fromHex(Colors::getBackground()), mode);
-		Text text;
-		text.drawText("print", 100, 200);
-	}
 	void MeshEngine::setup() {
 		//setMode(OF_PRIMITIVE_POINTS);
 		setMode(OF_PRIMITIVE_LINES);

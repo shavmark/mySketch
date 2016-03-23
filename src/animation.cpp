@@ -1,5 +1,6 @@
 #include "2552software.h"
 #include "animation.h"
+#include "model.h"
 
 namespace Software2552 {
 
@@ -81,14 +82,14 @@ namespace Software2552 {
 	void DrawingBasics::updateForDrawing() {
 		float dt = 1.0f / 60.0f;//bugbug does this time to frame count? I think so
 		if (colorAnimation != nullptr) {
-			colorAnimation->update(dt);
+			colorAnimation->getPlayer().update(dt);
 		}
 		getAnimationHelper()->update(dt);
 		myUpdate(); // call derived classes
 	};
 	void DrawingBasics::applyColor() {
 		if (getColorAnimation()) {
-			getColorAnimation()->applyCurrentColor();
+			getColorAnimation()->getPlayer().applyCurrentColor();
 		}
 	}
 
@@ -122,5 +123,22 @@ namespace Software2552 {
 		}
 	}
 
+	void ColorAnimation::draw() {
+		applyCurrentColor();
+	}
+	void Animatable::set(shared_ptr<ColorAnimation>p) {
+		colorAnimation = p;
+	}
+	void Animatable::update(float dt) {
+		if (colorAnimation != nullptr) {
+			colorAnimation->update(dt);
+		}
+		ofxAnimatableFloat::update(dt);
+	}
+	void Animatable::draw() {
+		if (colorAnimation != nullptr) {
+			colorAnimation->draw();
+		}
+	}
 
 }
