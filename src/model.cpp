@@ -228,7 +228,7 @@ namespace Software2552 {
 	}
 
 
-	 bool ActorBaseClass::read(const Json::Value &data) {
+	 bool ActorBaseClass::readFromScript(const Json::Value &data) {
 		// any actor can have settings set, or defaults used
 		Settings::readFromScript(data["settings"]);
 
@@ -372,7 +372,7 @@ namespace Software2552 {
 	}
 	
 	bool Text::readFromScript(const Json::Value &data) {
-		readStringFromJson(((RoleText*)getPlayer())->getText(), data["text"]["str"]);
+		readStringFromJson(getText(), data["text"]["str"]);
 		return true;
 	}
 
@@ -432,10 +432,44 @@ namespace Software2552 {
 
 		return true;
 	}
+	void Camera::orbit() {
+		if (useOrbit) {
+			float time = ofGetElapsedTimef();
+			float longitude = 10 * time;
+			float latitude = 10 * sin(time*0.8);
+			float radius = 600 + 50 * sin(time*0.4);
+			player.orbit(longitude, latitude, radius, ofPoint(0, 0, 0));
+		}
+	}
+	
+	bool Camera::readFromScript(const Json::Value &data) {
+		return true;
+	}
+	void Text::myDraw() {
+		//bugbug add in some animation
+		drawText(text, getDefaultPlayer()->getAnimationHelper()->getCurrentPosition().x, getDefaultPlayer()->getAnimationHelper()->getCurrentPosition().y);
+	}
+
+	void Text::drawText(const string &s, int x, int y) {
+		ofPushStyle();
+		Colors::setFontColor();
+		Font font;
+		font.get().drawString(s, x, y);
+		ofPopStyle();
+	}
+
+	void Cube::myDraw() {
+		if (getRole<Role>()->useWireframe()) {
+			getPlayer().drawWireframe();
+		}
+		else {
+			getPlayer().draw();
+		}
+	}
 	bool Cube::readFromScript(const Json::Value &data) {
 		float size = 100;//default
 		READFLOAT(size, data);
-		((RoleCube*)getDefaultPlayer())->setWireframe(false);
+		getRole<Role>()->setWireframe(false);
 		getPlayer().set(size);
 		return true;
 	}

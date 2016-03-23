@@ -127,24 +127,30 @@ namespace Software2552 {
 	// an actor is a drawable that contains the drawing object for that graphic
 	class ActorBaseClass : public Settings {
 	public:
-		ActorBaseClass(DrawingBasics *p) :Settings() {
+		ActorBaseClass(DrawingBasics *p=nullptr) :Settings() {
 			references = nullptr;
 			player = p;
 		}
 		~ActorBaseClass();
 
-		bool read(const Json::Value &data);
+		template<typename T> T* getRole() { return (T*)getDefaultPlayer(); }
+		DrawingBasics* getDefaultPlayer() { return player; }
+
+		bool readFromScript(const Json::Value &data);
 
 		shared_ptr<vector<shared_ptr<Reference>>>  getReferences() { return references; }
 
-		virtual bool readFromScript(const Json::Value &data) { return true; };
-
-		DrawingBasics* getDefaultPlayer() { return player; }
 	protected:
 	private:
 		DrawingBasics* player=nullptr; // need a down cast
 		shared_ptr<vector<shared_ptr<Reference>>> references=nullptr;
 	};
+
+	// camera, lights etc
+	class EquipementBaseClass : public DrawingBasics {
+	public:
+	};
+
 	template<typename T> void createTimeLineItems(const Settings& settings, vector<shared_ptr<ActorBaseClass>>& vec, const Json::Value &data, const string& key) {
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			shared_ptr<T> v = std::make_shared<T>();
@@ -177,18 +183,43 @@ namespace Software2552 {
 		Picture(const string&s) :ActorBaseClass(new RoleRaster(s)) {  }
 		ofImage& getPlayer() { return (((RoleRaster*)getDefaultPlayer())->player); }
 	};
-	
+	// cameras (and others like it) are not actors
+	class Camera : public EquipementBaseClass {
+	public:
+		void orbit();
+		void setOrbit(bool b = true) { useOrbit = b; }
+		bool isOrbiting() const { return useOrbit; }
+		ofEasyCam player;
+		bool readFromScript(const Json::Value &data);
+	private:
+		bool useOrbit = false;
+	};
+
 	class Cube : public ActorBaseClass	{
 	public:
-		Cube() :ActorBaseClass(new RoleCube()) {  }
-		ofBoxPrimitive& getPlayer() { return (((RoleCube*)getDefaultPlayer())->player); }
+		class Role : public DrawingPrimitive {
+		public:
+			ofBoxPrimitive player;
+		};
+		Cube() : ActorBaseClass(new Role()) {  }
+		void myDraw();
+		ofBoxPrimitive& getPlayer() { return getRole<Role>()->player; }
 		bool readFromScript(const Json::Value &data);
 	};
+
 	class Text : public ActorBaseClass {
 	public:
-		Text() :ActorBaseClass(new RoleText()) {  }
-		RoleText* getPlayer() { return ((RoleText*)getDefaultPlayer()); }
+		class Role : public DrawingBasics {
+		public:
+		};
+		Text() : ActorBaseClass(new Role) {  }
+		void myDraw();
+		void drawText(const string &s, int x, int y);
+		void setText(const string&t) { text = t; }
+		string& getText() { return text; }
 		bool readFromScript(const Json::Value &data);
+	private:
+		string text;
 	};
 
 	class Paragraph : public ActorBaseClass {

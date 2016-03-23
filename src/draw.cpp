@@ -382,14 +382,6 @@ namespace Software2552 {
 		}
 	}
 
-	void RoleCube::myDraw() {
-		if (useWireframe()) {
-			player.drawWireframe();
-		}
-		else {
-			player.draw();
-		}
-	}
 	void RoleSphere::myDraw() {
 		if (useWireframe()) {
 			player.drawWireframe();
@@ -485,25 +477,16 @@ namespace Software2552 {
 
 	}
 
-	void Camera::orbit() {
-		if (useOrbit) {
-			float time = ofGetElapsedTimef();
-			float longitude = 10 * time;
-			float latitude = 10 * sin(time*0.8);
-			float radius = 600 + 50 * sin(time*0.4);
-			ofEasyCam::orbit(longitude, latitude, radius, ofPoint(0, 0, 0));
-		}
-	}
 	bool Grabber::loadGrabber(int wIn, int hIn) {
 		id = find();
-		setDeviceID(id);
-		setDesiredFrameRate(30);
-		return ofVideoGrabber::setup(wIn, hIn);
+		player.setDeviceID(id);
+		player.setDesiredFrameRate(30);
+		return player.setup(wIn, hIn);
 	}
 
 	void Grabber::myDraw() {
-		if (isInitialized()) {
-			draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
+		if (player.isInitialized()) {
+			player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
 		}
 	}
 	void RoleBackground::myDraw(){
@@ -511,19 +494,8 @@ namespace Software2552 {
 
 		ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
 			ofColor::fromHex(Colors::getBackground()), mode);
-		RoleText text;
+		Text text;
 		text.drawText("print", 100, 200);
-	}
-	void RoleText::myDraw() {
-		drawText(text, getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y); //bugbug add in some animation
-	}
-
-	void RoleText::drawText(const string &s, int x, int y) {
-		ofPushStyle();
-		Colors::setFontColor();
-		Font font;
-		font.get().drawString(s, x, y);
-		ofPopStyle();
 	}
 	void MeshEngine::setup() {
 		//setMode(OF_PRIMITIVE_POINTS);

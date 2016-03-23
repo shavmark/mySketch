@@ -153,11 +153,7 @@ namespace Software2552 {
 
 	};
 
-	// bugbug things that come from openframeworks do not get the anmation base class, too many collisions
-	//bugbug figure out how to animate such things, like moving a camera, is such 
-	// animation done in the Director?
-
-	class Primitive : public DrawingBasics {
+	class DrawingPrimitive : public DrawingBasics {
 	public:
 		void setWireframe(bool b = true) { wireFrame = b; }
 		bool useWireframe() { return wireFrame; }
@@ -165,6 +161,7 @@ namespace Software2552 {
 		bool wireFrame = true;
 
 	};
+
 	class VectorPattern : public DrawingBasics {
 	public:
 		void matrix(int twistx, int shifty);
@@ -172,42 +169,29 @@ namespace Software2552 {
 		void triangle(bool rotate = false);
 		void shape(int twistx, int shifty, bool rect, bool fill, int rotate, int alpha = 100);
 	};
-	class Camera : public ofEasyCam, public DrawingBasics {
-	public:
-
-		void orbit();
-		void setOrbit(bool b = true) { useOrbit = b; }
-		bool isOrbiting() const { return useOrbit; }
-	private:
-		bool useOrbit = false;
-	};
 	class Fbo : public ofFbo {
 	public:
 	};
 
-	class Grabber : public ofVideoGrabber, public DrawingBasics {
+	class Grabber : public DrawingBasics {
 	public:
-		Grabber(const string&nameIn) :ofVideoGrabber(), DrawingBasics(){ name = nameIn;  }
-		void myUpdate() { if (isInitialized()) ofVideoGrabber::update(); }
+		Grabber(const string&nameIn) : DrawingBasics(){ name = nameIn;  }
+		void myUpdate() { if (player.isInitialized()) player.update(); }
 		void myDraw();
 		bool myObjectLoad() { return loadGrabber(w, h); }
 		bool loadGrabber(int wIn, int hIn);
+		ofVideoGrabber player;
 	private:
 		int find();
 		string name;
 		int id=0;
 	};
-	class RolePlane :  public Primitive {
+	class RolePlane :  public DrawingPrimitive {
 	public:
 		void myDraw();
 		ofPlanePrimitive player;
 	};
-	class RoleCube : public Primitive {
-	public:
-		void myDraw();
-		ofBoxPrimitive player;
-	};
-	class RoleSphere : public Primitive {
+	class RoleSphere : public DrawingPrimitive {
 	public:
 		void myDraw();
 		ofSpherePrimitive player;
@@ -298,15 +282,6 @@ namespace Software2552 {
 		float getTimeBeforeStart(float t);
 		ofVideoPlayer player;
 	private:
-	};
-	class RoleText :  public DrawingBasics {
-	public:
-		void myDraw();
-		void drawText(const string &s, int x, int y);
-		void setText(const string&t) { text = t; }
-		string& getText() { return text; }
-	private:
-		string text;
 	};
 
 }

@@ -149,8 +149,8 @@ namespace Software2552 {
 		if (cam != nullptr) {
 			material.begin();//bugbug figure out material
 			ofPoint point = cam->getAnimationHelper()->getCurrentPosition();
-			cam->setPosition(cam->getAnimationHelper()->getCurrentPosition());
-			cam->begin();
+			cam->player.setPosition(cam->getAnimationHelper()->getCurrentPosition());
+			cam->player.begin();
 			cam->orbit(); 
 			for (auto& light : lights) {
 				ofPoint point = cam->getAnimationHelper()->getCurrentPosition();
@@ -163,7 +163,7 @@ namespace Software2552 {
 			else {
 				draw3dFixed();
 			}
-			cam->end();
+			cam->player.end();
 		}
 	}
 	void Stage::pre3dDraw() {
@@ -281,6 +281,7 @@ namespace Software2552 {
 		addAnimatable(cube);
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
+		// get camera stuff from json next step like color and type not sure about pos and movement yet, maybe let that alone as its too muhc
 		add(cam1);
 
 		shared_ptr<Light> pointLight = std::make_shared<Light>();
@@ -405,16 +406,16 @@ namespace Software2552 {
 
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
-		cam1->setScale(-1, -1, 1); // showing video
+		cam1->player.setScale(-1, -1, 1); // showing video
 		cam1->setOrbit(true); // rotating
 		cam1->getAnimationHelper()->setPositionZ(videoSphere.player.getRadius() * 2 + 300);
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
-		cam2->setScale(-1, -1, 1); // showing video
+		cam2->player.setScale(-1, -1, 1); // showing video
 		cam2->getAnimationHelper()->setPositionZ(videoSphere.player.getRadius()*2 + 100);
-		cam2->setFov(60);
+		cam2->player.setFov(60);
 		add(cam2);
 
 		shared_ptr<TextureVideo> tv = std::make_shared<TextureVideo>();
