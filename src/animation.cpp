@@ -84,7 +84,9 @@ namespace Software2552 {
 		if (getColorAnimation() != nullptr) {
 			getColorAnimation()->update(dt);
 		}
-		getAnimationHelper()->update(dt);
+		if (getAnimationHelper()->isAnimationEnabled()) {
+			getAnimationHelper()->update(dt);
+		}
 		myUpdate(); // call derived classes
 	};
 	void DrawingBasics::applyColor() {

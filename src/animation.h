@@ -44,6 +44,10 @@ namespace Software2552 {
 	public:
 		void startAnimationAfterDelay(float delay) { ofxAnimatableOfPoint::startAnimationAfterDelay(delay); }
 		bool paused() {	return paused_;	}
+		bool isAnimationEnabled() { return animationEnabled; }
+		void setAnimationEnabled(bool b= true) { animationEnabled=b; }
+	private:
+		bool animationEnabled = true;
 	};
 	// basic drawing info, bugbug maybe color set goes here too, not sure yet
 	class AnimiatedColor;
@@ -61,7 +65,6 @@ namespace Software2552 {
 		void setupForDrawing() { mySetup(); };
 		void updateForDrawing();
 		void drawIt(drawtype type);
-		bool loadForDrawing() { return myObjectLoad(); };
 
 		void setColorAnimation(shared_ptr<AnimiatedColor>p) { colorAnimation = p;		}
 		shared_ptr<AnimiatedColor> getColorAnimation() {return colorAnimation;}
@@ -94,7 +97,6 @@ namespace Software2552 {
 		virtual void mySetup() {};
 		virtual void myUpdate() {};
 		virtual void myDraw() {};
-		virtual bool myObjectLoad() { return true; };
 		string   locationPath;   // location of item to draw
 		shared_ptr<AnimiatedColor> colorAnimation = nullptr; // optional color
 		shared_ptr<PointAnimation> ani = nullptr; // call all the other items via here

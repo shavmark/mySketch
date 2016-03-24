@@ -104,14 +104,12 @@ namespace Software2552 {
 			cameras.clear();
 			lights.clear();
 			texturevideos.clear();
-			grabbers.clear();
 		}
 		else {
 			removeExpiredItems(animatables);
 			removeExpiredItems(cameras);
 			removeExpiredItems(lights);
 			removeExpiredItems(texturevideos);
-			removeExpiredItems(grabbers);
 		}
 		myClear(force);
 	}
@@ -122,10 +120,7 @@ namespace Software2552 {
 			imageForBackground.load(backgroundImageName);
 		}
 		for (auto& a : animatables) {
-			a->getDefaultPlayer()->loadForDrawing();
-		}
-		for (auto& a : grabbers) {
-			a->setup();
+			a->getDefaultPlayer()->setupForDrawing();
 		}
 
 		material.setShininess(90);
@@ -139,9 +134,6 @@ namespace Software2552 {
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->updateForDrawing();
 		}
-		for (auto& a : grabbers) {
-			a->update();
-		}
 
 		if (backgroundImageName.size() > 0) {
 			imageForBackground.resize(ofGetWidth(), ofGetHeight());
@@ -151,7 +143,7 @@ namespace Software2552 {
 
 	}
 	// setup light and material for drawing
-	void Stage::installLightAndMaterialThenDraw(shared_ptr<Camera>cam) {
+	void Stage::installLightAndMaterialThenDraw(shared_ptr<Camera>cam, bool drawFixed) {
 		if (cam != nullptr) {
 			material.begin();//bugbug figure out material
 			cam->getPlayer().begin();
@@ -160,12 +152,12 @@ namespace Software2552 {
 				light->getPlayer().enable();
 			}
 			if (cam->isOrbiting()) {
-				if (drawIn3dMoving()) {
+				if (drawIn3dMoving()&& !drawFixed) {
 					draw3dMoving();
 				}
 			}
 			else {
-				if (drawIn3dFixed()) {
+				if (drawIn3dFixed() && drawFixed) {
 					draw3dFixed();
 				}
 			}
@@ -177,10 +169,10 @@ namespace Software2552 {
 			for (auto& light : lights) {
 				light->getPlayer().enable();
 			}
-			if (drawIn3dMoving()) {
+			if (drawIn3dMoving() && !drawFixed) {
 				draw3dMoving();
 			}
-			if (drawIn3dFixed()) {
+			if (drawIn3dFixed() && drawFixed) {
 				draw3dFixed();
 			}
 		}
@@ -205,14 +197,10 @@ namespace Software2552 {
 		pre3dDraw();
 
 		if (drawIn3dFixed()) {
-			installLightAndMaterialThenDraw(director.pickem(cameras, false));
+			installLightAndMaterialThenDraw(director.pickem(cameras, false), true);
 		}
 		if (drawIn3dMoving()) {
-			installLightAndMaterialThenDraw(director.pickem(cameras, true));
-		}
-		// not sure where to draw, do grabbers use light?
-		for (auto& a : grabbers) {
-			a->draw();
+			installLightAndMaterialThenDraw(director.pickem(cameras, true), false);
 		}
 
 		post3dDraw();
@@ -294,6 +282,13 @@ namespace Software2552 {
 		shared_ptr<Cube> cube = std::make_shared<Cube>();
 		cube->readFromScript(data);
 		addAnimatable(cube);
+
+		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
+		grabber->readFromScript(data["grabber"]);
+		grabber->getPlayerRole()->getAnimationHelper()->setAnimationEnabled(false);
+		addAnimatable(grabber);
+		return true;
+
 		
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
@@ -351,12 +346,6 @@ namespace Software2552 {
 		spotLight->readFromScript(data["spotLight"]);
 		add(spotLight);
 		
-		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
-		grabber->readFromScript(data["grabber"]);
-		//grabber.w = ofGetWidth() / 3;
-		//grabber.x = video.x + video.w;
-		add(grabber);
-		return true;
 		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
 		raster->getDefaultPlayer()->setType(DrawingBasics::draw3dMovingCamera);

@@ -273,11 +273,6 @@ namespace Software2552 {
 		 
 		// all actors can have a location
 		readStringFromJson(player->getLocationPath(), data["location"]);
-		if (player->getLocationPath().size() > 0) {
-			getDefaultPlayer()->loadForDrawing();//bugbug if things get too slow etc do not load here
-		}
-
-		getDefaultPlayer()->loadForDrawing();//bugbug if things get too slow etc do not load here
 
 		// optional sizes, locations, durations for animation etc
 		readJsonValue(player->w, data["width"]);
@@ -717,10 +712,17 @@ namespace Software2552 {
 		player.play();
 
 	}
-	bool Video::Role::myObjectLoad() {
-		setupForDrawing();
-		return true;
+	void Picture::Role::mySetup() { 
+		if (!isLoaded) {
+			if (!ofLoadImage(player, getLocationPath())) {
+				logErrorString("setup Picture Player");
+			}
+			else {
+				isLoaded = true;
+			}
+		}
 	}
+
 	float Video::Role::getTimeBeforeStart(float t) {
 
 		// if json sets a wait use it
@@ -747,24 +749,31 @@ namespace Software2552 {
 		// some of this data could come from data in the future
 		player.play();
 	}
-	int Grabber::find() {
+	int Grabber::Role::find() {
 		//bugbug does Kintect show up?
-		ofVideoGrabber grabber;
-		vector<ofVideoDevice> devices = grabber.listDevices();
+		vector<ofVideoDevice> devices = player.listDevices();
 		for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
-			if (it->deviceName == name) {
+			if (it->deviceName == getLocationPath()) {
 				return it->id;
 			}
 		}
+		return 0;// try first found as a default
 	}
-	bool Grabber::loadGrabber(int wIn, int hIn) {
+	void Grabber::Role::myUpdate() { 
+		if (player.isInitialized()) {
+			player.update();
+		}
+	}
+
+	bool Grabber::Role::loadGrabber(int wIn, int hIn) {
 		id = find();
 		player.setDeviceID(id);
 		player.setDesiredFrameRate(30);
-		return player.initGrabber(wIn, hIn);
+		bool b =  player.initGrabber(wIn, hIn);
+		return b;
 	}
 
-	void Grabber::draw() {
+	void Grabber::Role::myDraw() {
 		if (player.isInitialized()) {
 			player.draw(x, y);
 		}

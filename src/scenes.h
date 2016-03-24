@@ -42,12 +42,10 @@ namespace Software2552 {
 		void add(shared_ptr<Camera> camera) { cameras.push_back(camera); };
 		void add(shared_ptr<Light> light) { lights.push_back(light); };
 		void add(shared_ptr<TextureVideo>tv) { texturevideos.push_back(tv); };
-		void add(shared_ptr<Grabber>g) { grabbers.push_back(g); };
 
 		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
 		vector<shared_ptr<Light>>& getLights() { return lights; }
 		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
-		vector<shared_ptr<Grabber>>& getGrabbers() { return grabbers; }
 
 		shared_ptr<TextureVideo> getCurrentTextureVideo();
 
@@ -74,7 +72,7 @@ namespace Software2552 {
 		virtual bool drawIn3dFixed() { return false; }//derived classes make this call
 		virtual bool drawIn3dMoving() { return false; }//derived classes make this call
 		virtual bool drawIn2d() { return true; }
-		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>); // derive to change where cameras are
+		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>, bool drawfixed); // derive to change where cameras are
 		string keyname;
 
 	private:
@@ -93,15 +91,11 @@ namespace Software2552 {
 		void removeExpiredItems(vector<shared_ptr<TextureVideo>>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
 		}
-		void removeExpiredItems(vector<shared_ptr<Grabber>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
-		}
 		//bugbug maybe just animatables is needed, a a typeof or such can be used
 		vector<shared_ptr<ActorBasics>> animatables;
 		vector<shared_ptr<Camera>> cameras;
 		vector<shared_ptr<Light>> lights;
 		vector<shared_ptr<TextureVideo>> texturevideos;
-		vector<shared_ptr<Grabber>>	grabbers;
 		//bugbug can put more things like spheres here once spheres work and if it makes sense
 
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
@@ -137,9 +131,9 @@ namespace Software2552 {
 	private:
 		bool drawIn3dFixed() { return true; }// if no camera then use this only
 
-		bool drawIn3dMoving() { return false; }//if set to true there must be a camera or things will draw 2x
+		bool drawIn3dMoving() { return true; }//if set to true there must be a camera or things will draw 2x
 
-		bool drawIn2d() { return false; }//derived classes make this call
+		bool drawIn2d() { return true; }//derived classes make this call
 		void myDraw3dFixed();
 		void myDraw3dMoving();
 

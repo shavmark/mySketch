@@ -127,7 +127,7 @@ namespace Software2552 {
 	// an actor is a drawable that contains the drawing object for that graphic
 	class ActorBasics : public Settings {
 	public:
-		ActorBasics(DrawingBasics *p=nullptr) :Settings() {
+		ActorBasics(DrawingBasics *p) :Settings() {
 			references = nullptr;
 			player = p;
 		}
@@ -279,23 +279,27 @@ namespace Software2552 {
 	private:
 		virtual bool myReadFromScript(const Json::Value &data);
 	};
-	class Grabber : public EquipementBaseClass {
+	class Grabber : public ActorBasics {
 	public:
-		Grabber(const string&nameIn) : EquipementBaseClass() { name = nameIn; }
-		void update() { if (player.isInitialized()) player.update(); }
-		void draw();
-		bool setup() { return loadGrabber(w, h); }
-		int w = 320;
-		int h = 240;
-		int x = 0;
-		int y = 0;
-		ofVideoGrabber& getPlayer() { return player; }
+		class Role : public DrawingBasics {
+		public:
+			void myUpdate();
+			void myDraw();
+			void mySetup() { loadGrabber(w, h); }
+			int w = 320;
+			int h = 240;
+			int x = 0;
+			int y = 0;
+			ofVideoGrabber player;
+		private:
+			bool loadGrabber(int wIn, int hIn);
+			int find();
+			int id = 0;
+		};
+		Grabber(const string&name) :ActorBasics(new Role()) { getPlayerRole()->setLocationPath(name); }
+		ofVideoGrabber& getPlayer() { return getPlayerRole()->player; }
+		Role* getPlayerRole() { return getRole<Role>(); }
 	private:
-		ofVideoGrabber player;
-		bool loadGrabber(int wIn, int hIn);
-		int find();
-		string name;
-		int id = 0;
 		bool myReadFromScript(const Json::Value &data);
 	};
 	class ActorWithPrimativeBaseClass;
@@ -425,7 +429,6 @@ namespace Software2552 {
 			void myUpdate() { player.update(); }
 			void myDraw();
 			void mySetup();
-			bool myObjectLoad();
 			float getTimeBeforeStart(float t);
 			ofVideoPlayer player;
 		};
@@ -445,8 +448,9 @@ namespace Software2552 {
 			Role(const string& path) : DrawingBasics(path) { }
 
 			void myUpdate() { player.update(); }
-			bool myObjectLoad() { return ofLoadImage(player, getLocationPath()); }
+			void mySetup();
 			void myDraw();
+			bool isLoaded = false;
 			ofImage player;
 		};
 
