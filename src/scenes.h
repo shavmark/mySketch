@@ -135,8 +135,10 @@ namespace Software2552 {
 		void myUpdate();
 		bool myCreate(const Json::Value &data);
 	private:
-		bool drawIn3dFixed() { return true; }//derived classes make this call
-		bool drawIn3dMoving() { return true; }//derived classes make this call
+		bool drawIn3dFixed() { return true; }// if no camera then use this only
+
+		bool drawIn3dMoving() { return false; }//if set to true there must be a camera or things will draw 2x
+
 		bool drawIn2d() { return false; }//derived classes make this call
 		void myDraw3dFixed();
 		void myDraw3dMoving();
