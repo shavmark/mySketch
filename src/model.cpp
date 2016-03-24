@@ -785,6 +785,7 @@ namespace Software2552 {
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
 		ofPoint p;
+		p.x = ofGetWidth()/2;
 		getDefaultPlayer()->getAnimationHelper()->animateTo(p);
 
 		return true;

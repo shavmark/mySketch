@@ -145,12 +145,12 @@ namespace Software2552 {
 	// setup light and material for drawing
 	void Stage::installLightAndMaterialThenDraw(shared_ptr<Camera>cam, bool drawFixed) {
 		if (cam != nullptr) {
-			material.begin();//bugbug figure out material
 			cam->getPlayer().begin();
 			cam->orbit(); 
 			for (auto& light : lights) {
 				light->getPlayer().enable();
 			}
+			material.begin();//bugbug figure out material
 			if (cam->isOrbiting()) {
 				if (drawIn3dMoving()&& !drawFixed) {
 					draw3dMoving();
@@ -185,8 +185,8 @@ namespace Software2552 {
 	}
 	void Stage::post3dDraw() {
 		// clean up
-		material.end();
 		ofDisableDepthTest();
+		material.end();
 		for (auto& light : lights) {
 			light->getPlayer().disable();
 		}
@@ -287,26 +287,24 @@ namespace Software2552 {
 		grabber->readFromScript(data["grabber"]);
 		grabber->getPlayerRole()->getAnimationHelper()->setAnimationEnabled(true);
 		addAnimatable(grabber);
-		return true;
-
-		
+	
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
-		cam1->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
+		//cam1->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		cam1->readFromScript(data["cam1"]);
 		// get camera stuff from json next step like color and type not sure about pos and movement yet, maybe let that alone as its too muhc
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
-		cam1->getPlayer().setPosition(0, 0, 100);
+		//cam1->getPlayer().setPosition(0, 0, 100);
 		cam2->setOrbit();
 		cam2->readFromScript(data["cam2"]);
 		add(cam2);
-		
+
 		shared_ptr<PointLight> pointLight = std::make_shared<PointLight>();
 		pointLight->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 255.f)); // set defaults
 		// specular color, the highlight/shininess color //
 		pointLight->getPlayer().setSpecularColor(ofColor(255.f, 0, 255.f));
-		pointLight->getPlayer().setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 0);
+		pointLight->getPlayer().setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 150);
 		pointLight->readFromScript(data["pointLight1"]);
 		add(pointLight);
 
@@ -314,7 +312,7 @@ namespace Software2552 {
 		pointLight2->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 0.f));// set defaults
 		// specular color, the highlight/shininess color //
 		pointLight2->getPlayer().setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight2->getPlayer().setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 0);
+		pointLight2->getPlayer().setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 200);
 		pointLight2->readFromScript(data["pointLight2"]);
 		add(pointLight2);
 
@@ -324,17 +322,19 @@ namespace Software2552 {
 		directionalLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
 		directionalLight->getPlayer().setOrientation(ofVec3f(0, 90, 0));
 		directionalLight->readFromScript(data["directionalLight"]);
+		directionalLight->getPlayer().setPosition(ofGetWidth()/2, ofGetHeight() / 2, 260);
+
 		add(directionalLight);
 
 		shared_ptr<Light> basic = std::make_shared<Light>();
-		basic->getPlayer().setPosition(-100.0f, 400.0f, 0);
+		basic->getPlayer().setPosition(-100.0f, 400.0f, 190);
 		basic->readFromScript(data["basicLight"]);
 		add(basic);
 
 		shared_ptr<SpotLight> spotLight = std::make_shared<SpotLight>();
 		spotLight->getPlayer().setDiffuseColor(ofColor(255.f, 0.f, 0.f));
 		spotLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
-		spotLight->getPlayer().setPosition(ofGetWidth()*.1, ofGetHeight()*.1, 0);
+		spotLight->getPlayer().setPosition(ofGetWidth()*.1, ofGetHeight()*.1, 220);
 		// size of the cone of emitted light, angle between light axis and side of cone //
 		// angle range between 0 - 90 in degrees //
 		spotLight->getPlayer().setSpotlightCutOff(50);
@@ -342,16 +342,18 @@ namespace Software2552 {
 		// rate of falloff, illumitation decreases as the angle from the cone axis increases //
 		// range 0 - 128, zero is even illumination, 128 is max falloff //
 		spotLight->getPlayer().setSpotConcentration(2);
-		basic->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
+		spotLight->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		spotLight->readFromScript(data["spotLight"]);
 		add(spotLight);
-		
+
+		return true;
+
 		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
 		raster->getDefaultPlayer()->setType(DrawingBasics::draw3dMovingCamera);
 		raster->readFromScript(data["picture"]);
 		addAnimatable(raster);
-
+		return true;
 		shared_ptr<Video> video = std::make_shared<Video>("carride.mp4");
 		video->getDefaultPlayer()->setType(DrawingBasics::draw3dFixedCamera);
 		//video.w = ofGetWidth() / 3;
@@ -387,6 +389,7 @@ namespace Software2552 {
 		// draw a little light sphere
 		for (const auto& light : getLights()) {
 			ofSetColor(light->getPlayer().getDiffuseColor());
+			ofPoint pos = light->getPlayer().getPosition();
 			ofDrawSphere(light->getPlayer().getPosition(), 20.f);
 		}
 
@@ -411,20 +414,20 @@ namespace Software2552 {
 
 		shared_ptr<Light> light1 = std::make_shared<Light>();
 		ofPoint point(0,0, videoSphere.getPlayer()->getRadius() * 2);
-		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() * 2);
+		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius());
 		light1->readFromScript(data["light1"]);
 		add(light1);
 
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->setOrbit(true); // rotating
-		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() * 2 + 300);
+		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() * 2);
 		cam1->readFromScript(data["cam1"]);
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
-		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() * 2 + 100);
+		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() /2);
 		cam2->readFromScript(data["cam2"]);
 		add(cam2);
 
