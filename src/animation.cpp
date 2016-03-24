@@ -81,15 +81,15 @@ namespace Software2552 {
 
 	void DrawingBasics::updateForDrawing() {
 		float dt = 1.0f / 60.0f;//bugbug does this time to frame count? I think so
-		if (colorAnimation != nullptr) {
-			colorAnimation->getPlayer().update(dt);
+		if (getColorAnimation() != nullptr) {
+			getColorAnimation()->update(dt);
 		}
 		getAnimationHelper()->update(dt);
 		myUpdate(); // call derived classes
 	};
 	void DrawingBasics::applyColor() {
 		if (getColorAnimation()) {
-			getColorAnimation()->getPlayer().applyCurrentColor();
+			getColorAnimation()->applyCurrentColor();
 		}
 	}
 
@@ -101,6 +101,7 @@ namespace Software2552 {
 	};
 
 	bool DrawingBasics::okToDraw(drawtype type) {
+		drawtype dt = getType();
 		if (type != getType() || getAnimationHelper()->paused() || getAnimationHelper()->isExpired()) {
 			return false;
 		}
@@ -121,24 +122,6 @@ namespace Software2552 {
 			float olt = getAnimationHelper()->getObjectLifetime();
 			getAnimationHelper()->setExpired(true);
 			return false;
-		}
-	}
-
-	void ColorAnimation::draw() {
-		applyCurrentColor();
-	}
-	void Animatable::set(shared_ptr<ColorAnimation>p) {
-		colorAnimation = p;
-	}
-	void Animatable::update(float dt) {
-		if (colorAnimation != nullptr) {
-			colorAnimation->update(dt);
-		}
-		ofxAnimatableFloat::update(dt);
-	}
-	void Animatable::draw() {
-		if (colorAnimation != nullptr) {
-			colorAnimation->draw();
 		}
 	}
 

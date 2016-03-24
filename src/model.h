@@ -180,21 +180,16 @@ namespace Software2552 {
 
 	};
 
-	class AnimiatedColor : public ActorBasics {
+	class AnimiatedColor : public ofxAnimatableOfColor {
 	public:
+		AnimiatedColor() :ofxAnimatableOfColor() {}
+		AnimiatedColor(ColorChoice&color);
 		// animates colors
-		class Role : public DrawingBasics {
-		public:
-			void myDraw() {player.draw();};
-			bool paused() { return player.paused(); }
-			ColorAnimation player;
-
-		private:
-		};
-		AnimiatedColor() :ActorBasics(new Role()) {  }
-		ColorAnimation& getPlayer() { return getRole<Role>()->player; }
+		void draw();
+		bool paused() { return paused_; }
+		bool readFromScript(const Json::Value &data);
 	private:
-		bool myReadFromScript(const Json::Value &data);
+		ColorChoice color;
 	};
 
 	class TextureVideo : public ActorBasics {
@@ -298,49 +293,50 @@ namespace Software2552 {
 		bool myReadFromScript(const Json::Value &data);
 	};
 
+	class DrawingPrimitive : public DrawingBasics {
+	public:
+		void setWireframe(bool b = true) { wireFrame = b; }
+		bool useWireframe() { return wireFrame; }
 
+	private:
+		bool wireFrame = true;
+
+	};
 	class ActorWithPrimativeBaseClass : public ActorBasics {
 	public:
 		ActorWithPrimativeBaseClass(DrawingPrimitive *p = nullptr) :ActorBasics(p){}
 		DrawingPrimitive *getPrimative() { return (DrawingPrimitive*)getDefaultPlayer();  }
 
 	};
+	class DrawingPrimitive3d : public DrawingPrimitive {
+	public:
+		~DrawingPrimitive3d() { if (base != nullptr) delete base; }
+		DrawingPrimitive3d(of3dPrimitive* primative) : DrawingPrimitive() { setType(draw3dFixedCamera); base = primative; }
+		void myDraw() { basedraw(); };
+		template<typename T> T* getPtr() { return (T*)base; }
+	private:
+		void basedraw();
+		of3dPrimitive*base = nullptr;// cannot down cast a shared pointer as far as i know
+	};
+
 	class Cube : public ActorWithPrimativeBaseClass {
 	public:
-		class Role : public DrawingPrimitive {
-		public:
-			void myDraw();
-			ofBoxPrimitive player;
-		};
-		Cube() : ActorWithPrimativeBaseClass(new Role()) {  }
-		ofBoxPrimitive& getPlayer() { return getRole<Role>()->player; }
+		Cube() : ActorWithPrimativeBaseClass(new DrawingPrimitive3d(new ofBoxPrimitive())) {		}
+		ofBoxPrimitive* getPlayer() { return getRole<DrawingPrimitive3d>()->getPtr<ofBoxPrimitive>(); }
 	private:
 		bool myReadFromScript(const Json::Value &data);
 	};
-
 	class Plane : public ActorWithPrimativeBaseClass {
 	public:
-		class Role : public DrawingPrimitive {
-		public:
-			void myDraw();
-			ofPlanePrimitive player;
-		};
-		Plane() :ActorWithPrimativeBaseClass(new Role()) {  }
-		ofPlanePrimitive& getPlayer() { return getRole<Role>()->player; }
+		Plane() : ActorWithPrimativeBaseClass(new DrawingPrimitive3d(new ofPlanePrimitive())) {		}
+		ofPlanePrimitive* getPlayer() { return getRole<DrawingPrimitive3d>()->getPtr<ofPlanePrimitive>(); }
 	private:
 		bool myReadFromScript(const Json::Value &data);
 	};
 	class Sphere : public ActorWithPrimativeBaseClass {
 	public:
-		class Role : public DrawingPrimitive {
-		public:
-			void myDraw();
-			ofSpherePrimitive player;
-		private:
-		};
-
-		Sphere() :ActorWithPrimativeBaseClass(new Role()) {  }
-		ofSpherePrimitive& getPlayer() { return getRole<Role>()->player; }
+		Sphere() : ActorWithPrimativeBaseClass(new DrawingPrimitive3d(new ofSpherePrimitive())) {		}
+		ofSpherePrimitive* getPlayer() { return getRole<DrawingPrimitive3d>()->getPtr<ofSpherePrimitive>(); }
 	private:
 		bool myReadFromScript(const Json::Value &data);
 	};

@@ -228,13 +228,19 @@ namespace Software2552 {
 			setSettings(*rhs);
 		}
 	}
-
-	bool AnimiatedColor::myReadFromScript(const Json::Value &data) {
-		getPlayer().setColor(Colors::getFirstColors(getColor().getGroup())->getOfColor(Colors::foreColor));
-		getPlayer().setDuration(0.5f);
-		getPlayer().setRepeatType(LOOP_BACK_AND_FORTH);
-		getPlayer().setCurve(LINEAR);
-		getPlayer().animateTo(Colors::getLastColors(getColor().getGroup())->getOfColor(Colors::foreColor));
+	AnimiatedColor::AnimiatedColor(ColorChoice&colorIn) :ofxAnimatableOfColor() {
+		color = colorIn;
+	}
+	void AnimiatedColor::draw() {
+		applyCurrentColor();
+	}
+	bool AnimiatedColor::readFromScript(const Json::Value &data) {
+		// set defaults or read from data
+		setColor(Colors::getFirstColors(color.getGroup())->getOfColor(Colors::foreColor));
+		animateTo(Colors::getLastColors(color.getGroup())->getOfColor(Colors::foreColor));
+		setDuration(0.5f);
+		setRepeatType(LOOP_BACK_AND_FORTH);
+		setCurve(LINEAR);
 		return true;
 	}
 	bool Ball::myReadFromScript(const Json::Value &data) {
@@ -250,8 +256,17 @@ namespace Software2552 {
 		return true;
 	}
 	 bool ActorBasics::readFromScript(const Json::Value &data) {
+		 if (player == nullptr) {
+			 logErrorString("missing player");
+			 return false;
+		 }
+
 		// any actor can have settings set, or defaults used
 		Settings::readFromScript(data["settings"]);
+
+		shared_ptr<AnimiatedColor> ac = std::make_shared<AnimiatedColor>(getColor());
+		ac->readFromScript(data["coloranimation"]);
+		player->setColorAnimation(ac);
 
 		// any actor can have a reference
 		references = parse<Reference>(data["references"]);
@@ -535,54 +550,40 @@ namespace Software2552 {
 		ofPopStyle();
 	}
 
-	void Plane::Role::myDraw() {
-		if (useWireframe()) {
-			player.drawWireframe();
-		}
-		else {
-			player.draw();
-		}
-	}
-
-	void Sphere::Role::myDraw() {
-		if (useWireframe()) {
-			player.drawWireframe();
-		}
-		else {
-			player.draw();
-		}
-		//drawFaces();
-		//drawVertices();
-	}
-
 	bool Plane::myReadFromScript(const Json::Value &data) {
 		//bugbug get this data when ready
-		getRole<Role>()->setWireframe(false);
+		getRole<DrawingPrimitive3d>()->setWireframe(false);
 		return true;
 	}
-	void Cube::Role::myDraw() {
+	void DrawingPrimitive3d::basedraw() {
+		if (base == nullptr) {
+			logErrorString("missing drawing primative");
+			return;
+		}
 		if (useWireframe()) {
-			player.drawWireframe();
+			base->drawWireframe();
 		}
 		else {
-			player.draw();
+			base->draw();
 		}
 	}
+	
 	bool Cube::myReadFromScript(const Json::Value &data) {
 		float size = 100;//default
 		READFLOAT(size, data);
-		getRole<Role>()->setWireframe(false);
-		getPlayer().set(size);
+		getRole<DrawingPrimitive3d>()->setWireframe(false);
+		getPlayer()->set(size);
+		getPlayer()->roll(20.0f);// just as an example
 		return true;
 	}
 	bool Sphere::myReadFromScript(const Json::Value &data) {
 		float radius = 100;//default
 		READFLOAT(radius, data);
-		getPlayer().setRadius(radius);
+		getPlayer()->setRadius(radius);
 
 		float resolution = 100;//default
 		READFLOAT(resolution, data);
-		getPlayer().setResolution(resolution);
+		getPlayer()->setResolution(resolution);
 
 		return true;
 	}

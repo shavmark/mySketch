@@ -40,14 +40,6 @@ namespace Software2552 {
 		float   waitTime = 0;
 		float	refreshRate = 0;
 	};
-	// animates colors (this classs just gets around some protected items)
-	class ColorAnimation : public ofxAnimatableOfColor {
-	public:
-		void draw();
-		bool paused() { return paused_; }
-
-	private:
-	};
 	class PointAnimation : public ofxAnimatableOfPoint, public objectLifeTimeManager {
 	public:
 		void startAnimationAfterDelay(float delay) { ofxAnimatableOfPoint::startAnimationAfterDelay(delay); }
@@ -106,18 +98,6 @@ namespace Software2552 {
 		string   locationPath;   // location of item to draw
 		shared_ptr<AnimiatedColor> colorAnimation = nullptr; // optional color
 		shared_ptr<PointAnimation> ani = nullptr; // call all the other items via here
-	};
-
-
-	// base class used to draw, drawing done by derived classes
-	class Animatable : public ofxAnimatableFloat, public DrawingBasics {
-	public:
-		virtual void draw();
-		virtual void update(float dt);
-		void set(shared_ptr<ColorAnimation>p);
-
-	private:
-		shared_ptr<ColorAnimation> colorAnimation = nullptr; // optional color
 	};
 
 

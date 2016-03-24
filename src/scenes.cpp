@@ -158,12 +158,31 @@ namespace Software2552 {
 				light->getPlayer().enable();
 			}
 			if (cam->isOrbiting()) {
-				draw3dMoving();
+				if (drawIn3dMoving()) {
+					draw3dMoving();
+				}
 			}
 			else {
-				draw3dFixed();
+				if (drawIn3dFixed()) {
+					draw3dFixed();
+				}
 			}
 			cam->player.end();
+		}
+		else {
+			// draw w/o a camera
+			ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // center when not using a camera
+			for (auto& light : lights) {
+				ofPoint point = cam->getAnimationHelper()->getCurrentPosition();
+				light->getPlayer().setPosition(light->getAnimationHelper()->getCurrentPosition());
+				light->getPlayer().enable();
+			}
+			if (drawIn3dMoving()) {
+				draw3dMoving();
+			}
+			if (drawIn3dFixed()) {
+				draw3dFixed();
+			}
 		}
 	}
 	void Stage::pre3dDraw() {
@@ -235,10 +254,6 @@ namespace Software2552 {
 			shared_ptr<Ball> b = std::make_shared<Ball>();
 			b->readFromScript(data);
 
-			shared_ptr<AnimiatedColor> c = std::make_shared<AnimiatedColor>();
-			c->readFromScript(data);
-			b->getPlayer()->setColorAnimation(c);
-
 			addAnimatable(b);
 			
 			return true;
@@ -275,11 +290,12 @@ namespace Software2552 {
 		shared_ptr<Cube> cube = std::make_shared<Cube>();
 		cube->readFromScript(data);
 		addAnimatable(cube);
-
+		return true;
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->readFromScript(data["cam1"]);
 		// get camera stuff from json next step like color and type not sure about pos and movement yet, maybe let that alone as its too muhc
 		add(cam1);
+		
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit();
@@ -377,6 +393,7 @@ namespace Software2552 {
 	}
 	void TestScene::myDraw3dFixed() {
 	
+
 		// draw a little light sphere
 		for (const auto& light : getLights()) {
 			ofSetColor(light->getPlayer().getDiffuseColor());
@@ -397,13 +414,13 @@ namespace Software2552 {
 	void SpaceScene::myUpdate() {
 	}
 	bool SpaceScene::myCreate(const Json::Value &data) {
-		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+		//ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
 		//bugbug get from json
-		videoSphere.getPlayer().set(250, 180);
+		videoSphere.getPlayer()->set(250, 180);
 
 		shared_ptr<Light> light1 = std::make_shared<Light>();
-		ofPoint point(0,0, videoSphere.getPlayer().getRadius() * 2);
+		ofPoint point(0,0, videoSphere.getPlayer()->getRadius() * 2);
 		light1->getAnimationHelper()->setPosition(point);
 		light1->readFromScript(data["light1"]);
 		add(light1);
@@ -411,13 +428,13 @@ namespace Software2552 {
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->setOrbit(true); // rotating
-		cam1->getAnimationHelper()->setPositionZ(videoSphere.getPlayer().getRadius() * 2 + 300);
+		cam1->getAnimationHelper()->setPositionZ(videoSphere.getPlayer()->getRadius() * 2 + 300);
 		cam1->readFromScript(data["cam1"]);
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
-		cam2->getAnimationHelper()->setPositionZ(videoSphere.getPlayer().getRadius()*2 + 100);
+		cam2->getAnimationHelper()->setPositionZ(videoSphere.getPlayer()->getRadius()*2 + 100);
 		cam2->readFromScript(data["cam2"]);
 		add(cam2);
 
@@ -447,13 +464,13 @@ namespace Software2552 {
 		shared_ptr<Planet> p = std::make_shared<Planet>();
 
 		float r = ofRandom(5, 100);
-		p->sphere.getPlayer().set(r, 40);
+		p->sphere.getPlayer()->set(r, 40);
 		TextureFromImage texture;
 		texture.create(textureName, r * 2, r * 2);
-		p->sphere.getPlayer().mapTexCoordsFromTexture(texture);
+		p->sphere.getPlayer()->mapTexCoordsFromTexture(texture);
 		p->texture = texture;
 		p->sphere.getPrimative()->setWireframe(false);
-		p->sphere.getPlayer().move(start);
+		p->sphere.getPlayer()->move(start);
 		pictureSpheres.push_back(p);
 	}
 	void SpaceScene::mySetup() {
@@ -465,18 +482,18 @@ namespace Software2552 {
 	void SpaceScene::myDraw3dMoving() {
 		for (auto& pictureSphere : pictureSpheres) {
 			pictureSphere->texture.bind();
-			pictureSphere->sphere.getPlayer().rotate(30, 0, 2.0, 0.0);
-			pictureSphere->sphere.getPlayer().draw();
+			pictureSphere->sphere.getPlayer()->rotate(30, 0, 2.0, 0.0);
+			pictureSphere->sphere.getPlayer()->draw();
 			pictureSphere->texture.unbind();
 		}
 	}
 	void SpaceScene::myDraw3dFixed() {
 		// one time setup must be called to draw videoSphere
 		if (getCurrentTextureVideo()->getPlayerRole()->textureReady()) {
-			videoSphere.getPlayer().mapTexCoordsFromTexture(getCurrentTextureVideo()->getPlayer().getTexture());
+			videoSphere.getPlayer()->mapTexCoordsFromTexture(getCurrentTextureVideo()->getPlayer().getTexture());
 		}
 		getCurrentTextureVideo()->getPlayerRole()->mybind();
-		videoSphere.getPlayer().draw();
+		videoSphere.getPlayer()->draw();
 		getCurrentTextureVideo()->getPlayerRole()->myunbind();
 	}
 }

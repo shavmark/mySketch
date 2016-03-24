@@ -143,14 +143,7 @@ namespace Software2552 {
 
 	};
 
-	class DrawingPrimitive : public DrawingBasics {
-	public:
-		void setWireframe(bool b = true) { wireFrame = b; }
-		bool useWireframe() { return wireFrame; }
-	private:
-		bool wireFrame = true;
 
-	};
 
 	class VectorPattern : public DrawingBasics {
 	public:
