@@ -556,15 +556,11 @@ namespace Software2552 {
 		return true;
 	}
 	void DrawingPrimitive3d::basedraw() {
-		if (base == nullptr) {
-			logErrorString("missing drawing primative");
-			return;
-		}
 		if (useWireframe()) {
-			base->drawWireframe();
+			basicdrawWire();
 		}
 		else {
-			base->draw();
+			basicdraw();
 		}
 	}
 	
