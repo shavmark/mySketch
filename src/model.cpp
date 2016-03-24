@@ -740,7 +740,12 @@ namespace Software2552 {
 		return t;
 	}
 	void Picture::Role::myDraw() {
-		player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
+		if (w == 0 || h == 0) {
+			player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
+		}
+		else {
+			player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
+		}
 	}
 	void Audio::Role::mySetup() {
 		if (!player.load(getLocationPath())) {

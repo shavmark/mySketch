@@ -279,6 +279,12 @@ namespace Software2552 {
 	// bugbug all items in test() to come from json or are this is done in Director
 	bool TestScene::myCreate(const Json::Value &data) {
 
+		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
+		//raster.w = ofGetWidth() / 3;
+		raster->getDefaultPlayer()->setType(DrawingBasics::draw2d);
+		raster->readFromScript(data["picture"]);
+		addAnimatable(raster);
+		return true;
 		shared_ptr<Cube> cube = std::make_shared<Cube>();
 		cube->readFromScript(data);
 		addAnimatable(cube);
@@ -346,13 +352,6 @@ namespace Software2552 {
 		spotLight->readFromScript(data["spotLight"]);
 		add(spotLight);
 
-		return true;
-
-		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
-		//raster.w = ofGetWidth() / 3;
-		raster->getDefaultPlayer()->setType(DrawingBasics::draw3dMovingCamera);
-		raster->readFromScript(data["picture"]);
-		addAnimatable(raster);
 		return true;
 		shared_ptr<Video> video = std::make_shared<Video>("carride.mp4");
 		video->getDefaultPlayer()->setType(DrawingBasics::draw3dFixedCamera);
