@@ -85,16 +85,16 @@ namespace Software2552 {
 			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
 		}
 		void removeExpiredItems(vector<shared_ptr<Camera>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
+			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
 		}
 		void removeExpiredItems(vector<shared_ptr<Light>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
+			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
 		}
 		void removeExpiredItems(vector<shared_ptr<TextureVideo>>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
 		}
 		void removeExpiredItems(vector<shared_ptr<Grabber>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), DrawingBasics::OKToRemove), v.end());
+			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
 		}
 		//bugbug maybe just animatables is needed, a a typeof or such can be used
 		vector<shared_ptr<ActorBasics>> animatables;

@@ -277,6 +277,8 @@ namespace Software2552 {
 			getDefaultPlayer()->loadForDrawing();//bugbug if things get too slow etc do not load here
 		}
 
+		getDefaultPlayer()->loadForDrawing();//bugbug if things get too slow etc do not load here
+
 		// optional sizes, locations, durations for animation etc
 		readJsonValue(player->w, data["width"]);
 		readJsonValue(player->h, data["height"]);
@@ -759,12 +761,12 @@ namespace Software2552 {
 		id = find();
 		player.setDeviceID(id);
 		player.setDesiredFrameRate(30);
-		return player.setup(wIn, hIn);
+		return player.initGrabber(wIn, hIn);
 	}
 
-	void Grabber::myDraw() {
+	void Grabber::draw() {
 		if (player.isInitialized()) {
-			player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
+			player.draw(x, y);
 		}
 	}
 	bool Grabber::myReadFromScript(const Json::Value &data) {

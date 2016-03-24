@@ -69,7 +69,7 @@ namespace Software2552 {
 		int w = 0;
 		int h = 0;
 
-		string &getLocationPath() { return locationPath; }
+		string &getLocationPath();
 		void setLocationPath(const string&s) { locationPath = s; }
 
 		static bool OKToRemove(shared_ptr<DrawingBasics> me) {

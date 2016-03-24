@@ -236,9 +236,9 @@ namespace Software2552 {
 	};
 
 	// camera, lights etc
-	class EquipementBaseClass : public DrawingBasics {
+	class EquipementBaseClass : public objectLifeTimeManager {
 	public:
-		bool readFromScript(const Json::Value &data) { return myReadFromScript(data); };
+		bool readFromScript(const Json::Value &data) { return myReadFromScript(data); }
 	private:
 		virtual bool myReadFromScript(const Json::Value &data) =0;// for derived classes
 	};
@@ -248,8 +248,9 @@ namespace Software2552 {
 		void orbit();
 		void setOrbit(bool b = true) { useOrbit = b; }
 		bool isOrbiting() const { return useOrbit; }
-		ofEasyCam player;
+		ofEasyCam& getPlayer() { return player; }
 	private:
+		ofEasyCam player;
 		bool myReadFromScript(const Json::Value &data);
 		bool useOrbit = false;
 	};
@@ -281,12 +282,17 @@ namespace Software2552 {
 	class Grabber : public EquipementBaseClass {
 	public:
 		Grabber(const string&nameIn) : EquipementBaseClass() { name = nameIn; }
-		void myUpdate() { if (player.isInitialized()) player.update(); }
-		void myDraw();
-		bool myObjectLoad() { return loadGrabber(w, h); }
-		bool loadGrabber(int wIn, int hIn);
-		ofVideoGrabber player;
+		void update() { if (player.isInitialized()) player.update(); }
+		void draw();
+		bool setup() { return loadGrabber(w, h); }
+		int w = 320;
+		int h = 240;
+		int x = 0;
+		int y = 0;
+		ofVideoGrabber& getPlayer() { return player; }
 	private:
+		ofVideoGrabber player;
+		bool loadGrabber(int wIn, int hIn);
 		int find();
 		string name;
 		int id = 0;

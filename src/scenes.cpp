@@ -87,14 +87,14 @@ namespace Software2552 {
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->getAnimationHelper()->pause();
 		}
-		//bugbug pause moving camera
+		//bugbug pause moving camera, grabber etc
 		myPause();
 	}
 	void Stage::resume() {
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->getAnimationHelper()->resume();
 		}
-		//bugbug pause moving camera
+		//bugbug pause moving camera, grabber etc
 		myResume();
 	}
 	// clear objects
@@ -124,6 +124,9 @@ namespace Software2552 {
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->loadForDrawing();
 		}
+		for (auto& a : grabbers) {
+			a->setup();
+		}
 
 		material.setShininess(90);
 		material.setSpecularColor(ofColor::olive);
@@ -135,6 +138,9 @@ namespace Software2552 {
 
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->updateForDrawing();
+		}
+		for (auto& a : grabbers) {
+			a->update();
 		}
 
 		if (backgroundImageName.size() > 0) {
@@ -148,13 +154,9 @@ namespace Software2552 {
 	void Stage::installLightAndMaterialThenDraw(shared_ptr<Camera>cam) {
 		if (cam != nullptr) {
 			material.begin();//bugbug figure out material
-			ofPoint point = cam->getAnimationHelper()->getCurrentPosition();
-			cam->player.setPosition(cam->getAnimationHelper()->getCurrentPosition());
-			cam->player.begin();
+			cam->getPlayer().begin();
 			cam->orbit(); 
 			for (auto& light : lights) {
-				ofPoint point = cam->getAnimationHelper()->getCurrentPosition();
-				light->getPlayer().setPosition(light->getAnimationHelper()->getCurrentPosition());
 				light->getPlayer().enable();
 			}
 			if (cam->isOrbiting()) {
@@ -167,14 +169,12 @@ namespace Software2552 {
 					draw3dFixed();
 				}
 			}
-			cam->player.end();
+			cam->getPlayer().end();
 		}
 		else {
 			// draw w/o a camera
 			ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // center when not using a camera
 			for (auto& light : lights) {
-				ofPoint point = cam->getAnimationHelper()->getCurrentPosition();
-				light->getPlayer().setPosition(light->getAnimationHelper()->getCurrentPosition());
 				light->getPlayer().enable();
 			}
 			if (drawIn3dMoving()) {
@@ -209,6 +209,10 @@ namespace Software2552 {
 		}
 		if (drawIn3dMoving()) {
 			installLightAndMaterialThenDraw(director.pickem(cameras, true));
+		}
+		// not sure where to draw, do grabbers use light?
+		for (auto& a : grabbers) {
+			a->draw();
 		}
 
 		post3dDraw();
@@ -290,24 +294,24 @@ namespace Software2552 {
 		shared_ptr<Cube> cube = std::make_shared<Cube>();
 		cube->readFromScript(data);
 		addAnimatable(cube);
-		return true;
+		
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
+		cam1->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		cam1->readFromScript(data["cam1"]);
 		// get camera stuff from json next step like color and type not sure about pos and movement yet, maybe let that alone as its too muhc
 		add(cam1);
-		
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
+		cam1->getPlayer().setPosition(0, 0, 100);
 		cam2->setOrbit();
 		cam2->readFromScript(data["cam2"]);
 		add(cam2);
-
+		
 		shared_ptr<PointLight> pointLight = std::make_shared<PointLight>();
 		pointLight->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 255.f)); // set defaults
 		// specular color, the highlight/shininess color //
 		pointLight->getPlayer().setSpecularColor(ofColor(255.f, 0, 255.f));
-		pointLight->getAnimationHelper()->setPositionX(ofGetWidth()*.2);
-		pointLight->getAnimationHelper()->setPositionY(ofGetHeight()*.2);
+		pointLight->getPlayer().setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 0);
 		pointLight->readFromScript(data["pointLight1"]);
 		add(pointLight);
 
@@ -315,8 +319,7 @@ namespace Software2552 {
 		pointLight2->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 0.f));// set defaults
 		// specular color, the highlight/shininess color //
 		pointLight2->getPlayer().setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight2->getAnimationHelper()->setPositionX(-ofGetWidth()*.2);
-		pointLight2->getAnimationHelper()->setPositionY(ofGetHeight()*.2);
+		pointLight2->getPlayer().setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 0);
 		pointLight2->readFromScript(data["pointLight2"]);
 		add(pointLight2);
 
@@ -329,14 +332,14 @@ namespace Software2552 {
 		add(directionalLight);
 
 		shared_ptr<Light> basic = std::make_shared<Light>();
-		basic->getAnimationHelper()->setPositionX(-100.0f);
-		basic->getAnimationHelper()->setPositionZ(400.0f);
+		basic->getPlayer().setPosition(-100.0f, 400.0f, 0);
 		basic->readFromScript(data["basicLight"]);
 		add(basic);
 
 		shared_ptr<SpotLight> spotLight = std::make_shared<SpotLight>();
 		spotLight->getPlayer().setDiffuseColor(ofColor(255.f, 0.f, 0.f));
 		spotLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
+		spotLight->getPlayer().setPosition(ofGetWidth()*.1, ofGetHeight()*.1, 0);
 		// size of the cone of emitted light, angle between light axis and side of cone //
 		// angle range between 0 - 90 in degrees //
 		spotLight->getPlayer().setSpotlightCutOff(50);
@@ -344,18 +347,16 @@ namespace Software2552 {
 		// rate of falloff, illumitation decreases as the angle from the cone axis increases //
 		// range 0 - 128, zero is even illumination, 128 is max falloff //
 		spotLight->getPlayer().setSpotConcentration(2);
-		ofPoint pos(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
-		spotLight->getAnimationHelper()->setPosition(pos);
+		basic->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		spotLight->readFromScript(data["spotLight"]);
 		add(spotLight);
-
+		
 		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
 		grabber->readFromScript(data["grabber"]);
 		//grabber.w = ofGetWidth() / 3;
 		//grabber.x = video.x + video.w;
 		add(grabber);
-
-
+		return true;
 		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
 		//raster.w = ofGetWidth() / 3;
 		raster->getDefaultPlayer()->setType(DrawingBasics::draw3dMovingCamera);
@@ -421,20 +422,20 @@ namespace Software2552 {
 
 		shared_ptr<Light> light1 = std::make_shared<Light>();
 		ofPoint point(0,0, videoSphere.getPlayer()->getRadius() * 2);
-		light1->getAnimationHelper()->setPosition(point);
+		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() * 2);
 		light1->readFromScript(data["light1"]);
 		add(light1);
 
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->setOrbit(true); // rotating
-		cam1->getAnimationHelper()->setPositionZ(videoSphere.getPlayer()->getRadius() * 2 + 300);
+		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() * 2 + 300);
 		cam1->readFromScript(data["cam1"]);
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
-		cam2->getAnimationHelper()->setPositionZ(videoSphere.getPlayer()->getRadius()*2 + 100);
+		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() * 2 + 100);
 		cam2->readFromScript(data["cam2"]);
 		add(cam2);
 

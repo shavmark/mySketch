@@ -1,4 +1,5 @@
 // store notes here
+//get cams from all over https://github.com/bakercp/ofxIpVideoGrabber
 // 3d on the web https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API
 // https://github.com/processing, another platform
 // for javascript https://github.com/processing/p5.js (make my json go here too) http://p5js.org/

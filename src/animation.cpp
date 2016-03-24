@@ -92,6 +92,10 @@ namespace Software2552 {
 			getColorAnimation()->applyCurrentColor();
 		}
 	}
+	string &DrawingBasics::getLocationPath() { 
+		logErrorString("no path");
+		return locationPath; 
+	}
 
 	void DrawingBasics::drawIt(drawtype type) {//DrawingBasics::drawtype
 		if (okToDraw(type)) {
