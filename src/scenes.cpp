@@ -285,7 +285,7 @@ namespace Software2552 {
 
 		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
 		grabber->readFromScript(data["grabber"]);
-		grabber->getPlayerRole()->getAnimationHelper()->setAnimationEnabled(false);
+		grabber->getPlayerRole()->getAnimationHelper()->setAnimationEnabled(true);
 		addAnimatable(grabber);
 		return true;
 

@@ -775,11 +775,18 @@ namespace Software2552 {
 
 	void Grabber::Role::myDraw() {
 		if (player.isInitialized()) {
-			player.draw(x, y);
+			player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
 		}
 	}
 	bool Grabber::myReadFromScript(const Json::Value &data) {
 		//bugbug fill this in
+		getDefaultPlayer()->getAnimationHelper()->setPositionY(100);
+		getDefaultPlayer()->getAnimationHelper()->setCurve(SQUARE);
+		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
+		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
+		ofPoint p;
+		getDefaultPlayer()->getAnimationHelper()->animateTo(p);
+
 		return true;
 	}
 	bool TextureVideo::Role::mybind() {
