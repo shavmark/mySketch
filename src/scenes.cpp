@@ -279,29 +279,32 @@ namespace Software2552 {
 	// bugbug all items in test() to come from json or are this is done in Director
 	bool TestScene::myCreate(const Json::Value &data) {
 
+		shared_ptr<Video> video = std::make_shared<Video>("carride.mp4");
+		video->setType(DrawingBasics::draw2d);
+		video->setAnimation(true);
+		video->readFromScript(data["video"]);
+		addAnimatable(video);
+
 		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
-		//raster.w = ofGetWidth() / 3;
-		raster->getDefaultPlayer()->setType(DrawingBasics::draw2d);
+		raster->setType(DrawingBasics::draw2d);
 		raster->readFromScript(data["picture"]);
 		addAnimatable(raster);
-		return true;
+
 		shared_ptr<Cube> cube = std::make_shared<Cube>();
 		cube->readFromScript(data);
 		addAnimatable(cube);
 
 		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
+		video->setAnimation(true);
 		grabber->readFromScript(data["grabber"]);
-		grabber->getPlayerRole()->getAnimationHelper()->setAnimationEnabled(true);
 		addAnimatable(grabber);
 	
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		//cam1->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		cam1->readFromScript(data["cam1"]);
-		// get camera stuff from json next step like color and type not sure about pos and movement yet, maybe let that alone as its too muhc
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
-		//cam1->getPlayer().setPosition(0, 0, 100);
 		cam2->setOrbit();
 		cam2->readFromScript(data["cam2"]);
 		add(cam2);
@@ -327,9 +330,8 @@ namespace Software2552 {
 		directionalLight->getPlayer().setDiffuseColor(ofColor(0.f, 0.f, 255.f));
 		directionalLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
 		directionalLight->getPlayer().setOrientation(ofVec3f(0, 90, 0));
+		directionalLight->getPlayer().setPosition(ofGetWidth() / 2, ofGetHeight() / 2, 260);
 		directionalLight->readFromScript(data["directionalLight"]);
-		directionalLight->getPlayer().setPosition(ofGetWidth()/2, ofGetHeight() / 2, 260);
-
 		add(directionalLight);
 
 		shared_ptr<Light> basic = std::make_shared<Light>();
@@ -352,13 +354,6 @@ namespace Software2552 {
 		spotLight->readFromScript(data["spotLight"]);
 		add(spotLight);
 
-		return true;
-		shared_ptr<Video> video = std::make_shared<Video>("carride.mp4");
-		video->getDefaultPlayer()->setType(DrawingBasics::draw3dFixedCamera);
-		//video.w = ofGetWidth() / 3;
-		//video.x = raster.w;
-		video->readFromScript(data["video"]);
-		addAnimatable(video);
 		return true;
 
 	}

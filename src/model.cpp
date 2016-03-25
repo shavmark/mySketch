@@ -454,6 +454,15 @@ namespace Software2552 {
 		float volume=1;//default
 		READFLOAT(volume, data);
 		getPlayer().setVolume(volume);
+		getDefaultPlayer()->getAnimationHelper()->setPositionY(50);
+		getDefaultPlayer()->getAnimationHelper()->setCurve(OBJECT_DROP);
+		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
+		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
+		ofPoint p;
+		p.x = ofGetWidth() / 2;
+		getDefaultPlayer()->getAnimationHelper()->animateTo(p);
+		return true;
+
 		return true;
 	}
 	bool Audio::myReadFromScript(const Json::Value &data) {
@@ -701,7 +710,12 @@ namespace Software2552 {
 
 	// add this one http://clab.concordia.ca/?page_id=944
 	void Video::Role::myDraw() {
-		player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
+		if (w == 0 || h == 0) {
+			player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
+		}
+		else {
+			player.draw(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y, w, h);
+		}
 	}
 	void Video::Role::mySetup() {
 		if (!player.isLoaded()) {
@@ -795,6 +809,17 @@ namespace Software2552 {
 
 		return true;
 	}
+	bool Picture::myReadFromScript(const Json::Value &data) { 
+		getDefaultPlayer()->getAnimationHelper()->setPositionY(50);
+		getDefaultPlayer()->getAnimationHelper()->setCurve(OBJECT_DROP);
+		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
+		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
+		ofPoint p;
+		p.x = ofGetWidth() / 2;
+		getDefaultPlayer()->getAnimationHelper()->animateTo(p);
+		return true;
+	}
+
 	bool TextureVideo::Role::mybind() {
 		if (player.isInitialized() && player.isUsingTexture()) {
 			player.getTexture().bind();

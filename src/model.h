@@ -140,6 +140,9 @@ namespace Software2552 {
 
 		shared_ptr<vector<shared_ptr<Reference>>>  getReferences() { return references; }
 
+		void setAnimation(bool f = true) { getDefaultPlayer()->getAnimationHelper()->setAnimationEnabled(f); }
+		void setType(DrawingBasics::drawtype type) { getDefaultPlayer()->setType(type); }
+
 
 	private:
 		virtual bool myReadFromScript(const Json::Value &data) { return true; };// for derived classes
@@ -296,9 +299,8 @@ namespace Software2552 {
 			int find();
 			int id = 0;
 		};
-		Grabber(const string&name) :ActorBasics(new Role()) { getPlayerRole()->setLocationPath(name); }
-		ofVideoGrabber& getPlayer() { return getPlayerRole()->player; }
-		Role* getPlayerRole() { return getRole<Role>(); }
+		Grabber(const string&name) :ActorBasics(new Role()) { getRole<Role>()->setLocationPath(name); }
+		ofVideoGrabber& getPlayer() { return getRole<Role>()->player; }
 	private:
 		bool myReadFromScript(const Json::Value &data);
 	};
@@ -435,7 +437,6 @@ namespace Software2552 {
 		Video(const string&s) :ActorBasics(new Role(s)) {  }
 		Video() :ActorBasics(new Role()) {  }
 		ofVideoPlayer& getPlayer() { return getRole<Role>()->player; }
-
 	private:
 		bool myReadFromScript(const Json::Value &data);
 	};
@@ -457,9 +458,8 @@ namespace Software2552 {
 		Picture() :ActorBasics(new Role()) {  }
 		Picture(const string&s) :ActorBasics(new Role(s)) {  }
 		ofImage& getPlayer() { return getRole<Role>()->player; }
-
 	private:
-		bool myReadFromScript(const Json::Value &data) { return true; }
+		bool myReadFromScript(const Json::Value &data);
 	};
 
 	// item in a play list

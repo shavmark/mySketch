@@ -95,7 +95,6 @@ namespace Software2552 {
 		}
 	}
 	string &DrawingBasics::getLocationPath() { 
-		logErrorString("no path");
 		return locationPath; 
 	}
 
