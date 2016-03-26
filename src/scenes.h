@@ -41,13 +41,9 @@ namespace Software2552 {
 
 		void add(shared_ptr<Camera> camera) { cameras.push_back(camera); };
 		void add(shared_ptr<Light> light) { lights.push_back(light); };
-		void add(shared_ptr<TextureVideo>tv) { texturevideos.push_back(tv); };
 
 		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
 		vector<shared_ptr<Light>>& getLights() { return lights; }
-		vector<shared_ptr<TextureVideo>>& getTextureVideos() { return texturevideos; }
-
-		shared_ptr<TextureVideo> getCurrentTextureVideo();
 
 		// things to draw
 		void addAnimatable(shared_ptr<ActorBasics>p) { animatables.push_back(p); }
@@ -88,14 +84,10 @@ namespace Software2552 {
 		void removeExpiredItems(vector<shared_ptr<Light>>&v) {
 			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
 		}
-		void removeExpiredItems(vector<shared_ptr<TextureVideo>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
-		}
 		//bugbug maybe just animatables is needed, a a typeof or such can be used
 		vector<shared_ptr<ActorBasics>> animatables;
 		vector<shared_ptr<Camera>> cameras;
 		vector<shared_ptr<Light>> lights;
-		vector<shared_ptr<TextureVideo>> texturevideos;
 		//bugbug can put more things like spheres here once spheres work and if it makes sense
 
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
@@ -150,10 +142,7 @@ namespace Software2552 {
 		void draw2d();
 		void myDraw3dFixed();
 		void myDraw3dMoving();
-		void addPlanet(const string&textureName, const ofVec3f& Start);
-		// things a scene can have (infinte list really)
-		Sphere	videoSphere;
-		vector<shared_ptr<Planet>> pictureSpheres;//bugbug move up to baseclass with a pointer vector to drawing items
+		void addPlanet(const string&textureName, const ofVec3f& start, const Json::Value &data, const string&name);
 	};
 
 

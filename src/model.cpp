@@ -245,14 +245,14 @@ namespace Software2552 {
 	}
 	bool Ball::myReadFromScript(const Json::Value &data) {
 		// can read any of these items from json here
-		getDefaultPlayer()->getAnimationHelper()->setPositionY(getPlayer()->floorLine - 100);
+		setPositionY(getRole<Role>()->floorLine - 100);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(EASE_IN);
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
-		readJsonValue(getPlayer()->radius, data["radius"]);
+		readJsonValue(getRole<Role>()->radius, data["radius"]);
 		ofPoint p;
-		p.y = getPlayer()->floorLine;
-		getPlayer()->getAnimationHelper()->animateTo(p);
+		p.y = getRole<Role>()->floorLine;
+		animateTo(p);
 		return true;
 	}
 	 bool ActorBasics::readFromScript(const Json::Value &data) {
@@ -454,13 +454,13 @@ namespace Software2552 {
 		float volume=1;//default
 		READFLOAT(volume, data);
 		getPlayer().setVolume(volume);
-		getDefaultPlayer()->getAnimationHelper()->setPositionY(50);
+		setPositionY(50);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(OBJECT_DROP);
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
 		ofPoint p;
 		p.x = ofGetWidth() / 2;
-		getDefaultPlayer()->getAnimationHelper()->animateTo(p);
+		animateTo(p);
 		return true;
 
 		return true;
@@ -722,6 +722,8 @@ namespace Software2552 {
 			if (!player.load(getLocationPath())) {
 				logErrorString("setup video Player");
 			}
+			player.setPixelFormat(OF_PIXELS_NATIVE);
+
 		}
 		player.play();
 
@@ -799,27 +801,35 @@ namespace Software2552 {
 	}
 	bool Grabber::myReadFromScript(const Json::Value &data) {
 		//bugbug fill this in
-		getDefaultPlayer()->getAnimationHelper()->setPositionY(100);
+		setPositionY(100);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(SQUARE);
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
 		ofPoint p;
 		p.x = ofGetWidth()/2;
-		getDefaultPlayer()->getAnimationHelper()->animateTo(p);
+		animateTo(p);
 
 		return true;
 	}
 	bool Picture::myReadFromScript(const Json::Value &data) { 
-		getDefaultPlayer()->getAnimationHelper()->setPositionY(50);
+		setPositionY(50);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(OBJECT_DROP);
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
 		ofPoint p;
 		p.x = ofGetWidth() / 2;
-		getDefaultPlayer()->getAnimationHelper()->animateTo(p);
+		animateTo(p);
 		return true;
 	}
+	void TextureVideo::Role::mySetup() {
+		if (!player.isLoaded()) {
+			if (!player.load(getLocationPath())) {
+				logErrorString("setup TextureVideo Player");
+			}
+		}
+		player.play();
 
+	}
 	bool TextureVideo::Role::mybind() {
 		if (player.isInitialized() && player.isUsingTexture()) {
 			player.getTexture().bind();
@@ -838,6 +848,46 @@ namespace Software2552 {
 		//bugbug fill this in
 		return true;
 	}
-
-
+	void VideoSphere::Role::myDraw() {
+		if (getTexture()->getRole<TextureVideo::Role>()->textureReady()) {
+			sphere.mapTexCoordsFromTexture(getTexture()->getPlayer().getTexture());
+		}
+		sphere.rotate(30, 0, 2.0, 0.0);
+		getTexture()->getRole<TextureVideo::Role>()->mybind();
+		sphere.draw();
+		getTexture()->getRole<TextureVideo::Role>()->myunbind();
+	}
+	void VideoSphere::Role::mySetup() {
+		//bugbug stopped coding here
+		setTexture(std::make_shared<TextureVideo>("Clyde.mp4"));
+		getTexture()->getDefaultPlayer()->setupForDrawing();
+	}
+	bool VideoSphere::myReadFromScript(const Json::Value &data) {
+		setType(DrawingBasics::draw3dFixedCamera);
+		getRole<DrawingPrimitive3d>()->setWireframe(true);
+		getRole<Role>()->getTexture()->readFromScript(data);
+		getPlayer().set(250, 180);// set default
+		return true;
+	}
+	bool Planet::myReadFromScript(const Json::Value &data) {
+		setType(DrawingBasics::draw3dMovingCamera);
+		getRole<DrawingPrimitive3d>()->setWireframe(false);
+		float r = ofRandom(5, 100);
+		getPlayer().set(r, 40);
+		shared_ptr<TextureFromImage>texture = std::make_shared<TextureFromImage>();
+		texture->create(getRole<Role>()->getLocationPath(), r * 2, r * 2);
+		getPlayer().mapTexCoordsFromTexture(*texture);
+		getRole<Role>()->setTexture(texture);
+		//getSphere().getPlayer()->move(start);
+		return true;
+	}
+	void Planet::Role::setTexture(shared_ptr<ofTexture>p) {
+		texture = p;
+	}
+	void Planet::Role::myDraw() {
+		getTexture()->bind();
+		sphere.rotate(30, 0, 2.0, 0.0);
+		sphere.draw();
+		getTexture()->unbind();
+	}
 }

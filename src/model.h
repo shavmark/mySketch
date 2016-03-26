@@ -142,7 +142,11 @@ namespace Software2552 {
 
 		void setAnimation(bool f = true) { getDefaultPlayer()->getAnimationHelper()->setAnimationEnabled(f); }
 		void setType(DrawingBasics::drawtype type) { getDefaultPlayer()->setType(type); }
-
+		void animateTo(const ofPoint& p) { getDefaultPlayer()->getAnimationHelper()->animateTo(p); }
+		void setPosition(const ofPoint& p) { getDefaultPlayer()->getAnimationHelper()->setPosition(p); }
+		void setPositionX(float x) { getDefaultPlayer()->getAnimationHelper()->setPositionX(x); }
+		void setPositionY(float y) { getDefaultPlayer()->getAnimationHelper()->setPositionX(y); }
+		void setPositionZ(float z) { getDefaultPlayer()->getAnimationHelper()->setPositionX(z); }
 
 	private:
 		virtual bool myReadFromScript(const Json::Value &data) { return true; };// for derived classes
@@ -195,28 +199,6 @@ namespace Software2552 {
 		ColorChoice color;
 	};
 
-	class TextureVideo : public ActorBasics {
-	public:
-		class Role : public DrawingBasics {
-		public:
-			void create(const string& name, float w, float h) {
-				player.load(name);
-				player.play();
-			}
-			void myUpdate() { player.update(); }
-
-			bool textureReady() { return  player.isInitialized(); }
-			bool mybind();
-			bool myunbind();
-			ofVideoPlayer player;
-		};
-		TextureVideo() :ActorBasics(new Role()) {  }
-		ofVideoPlayer& getPlayer() { return getPlayerRole()->player; }
-		Role* getPlayerRole() { return getRole<Role>(); }
-	private:
-		bool myReadFromScript(const Json::Value &data);
-
-	};
 	// wrap drawing object with references and settings data
 	class Ball : public ActorBasics {
 	public:
@@ -233,7 +215,6 @@ namespace Software2552 {
 
 		// data read during scene creation bugbug move all data reads to scene creation?
 		Ball() :ActorBasics(new Role()) {  }
-		Role* getPlayer() { return getRole<Role>(); }
 	private:
 		bool myReadFromScript(const Json::Value &data);
 	};
@@ -441,6 +422,70 @@ namespace Software2552 {
 		bool myReadFromScript(const Json::Value &data);
 	};
 
+	class TextureVideo : public ActorBasics {
+	public:
+		class Role : public DrawingBasics {
+		public:
+			Role() : DrawingBasics() {  }
+			Role(const string& path) : DrawingBasics(path) { }
+			void myUpdate() { player.update(); }
+			void mySetup();
+			bool textureReady() { return  player.isInitialized(); }
+			bool mybind();
+			bool myunbind();
+			ofVideoPlayer player;
+		};
+		TextureVideo(const string&s) :ActorBasics(new Role(s)) {  }
+		TextureVideo() :ActorBasics(new Role()) {  }
+		ofVideoPlayer& getPlayer() { return getRole<Role>()->player; }
+	private:
+		bool myReadFromScript(const Json::Value &data);
+
+	};
+
+	class Planet : public ActorBasics {
+	public:
+		class Role : public DrawingBasics {
+		public:
+			Role() : DrawingBasics() { }
+			Role(const string& path) : DrawingBasics(path) { }
+			void myDraw();
+			ofSpherePrimitive sphere;
+			shared_ptr<ofTexture> getTexture() {	return texture;		}
+			void setTexture(shared_ptr<ofTexture>);
+		private:
+			shared_ptr<ofTexture> texture=nullptr;
+		};
+		Planet(const string&s) :ActorBasics(new Role(s)) {		}
+		Planet() :ActorBasics(new Role()) {  }
+		ofSpherePrimitive& getPlayer() { return getRole<Role>()->sphere; }
+		void setStart(const ofPoint& start) { getPlayer().move(start); }
+	private:
+		bool myReadFromScript(const Json::Value &data);
+	};
+
+	class VideoSphere : public ActorBasics {
+	public:
+		class Role : public DrawingBasics {
+		public:
+			Role() : DrawingBasics() { }
+			Role(const string& path) : DrawingBasics(path) { }
+			void mySetup();
+			void myDraw();
+			ofSpherePrimitive sphere;
+			shared_ptr<TextureVideo> getTexture() { return texture; }
+			void setTexture(shared_ptr<TextureVideo>t) { texture = t; };
+		private:
+			shared_ptr<TextureVideo> texture = nullptr;
+		};
+		VideoSphere(const string&s) :ActorBasics(new Role(s)) {		}
+		VideoSphere() :ActorBasics(new Role()) {  }
+		ofSpherePrimitive& getPlayer() { return getRole<Role>()->sphere; }
+		void setStart(const ofPoint& start) { getPlayer().move(start); }
+	private:
+		bool myReadFromScript(const Json::Value &data);
+	};
+
 	class Picture : public ActorBasics {
 	public:
 		class Role : public DrawingBasics {
@@ -451,6 +496,7 @@ namespace Software2552 {
 			void myUpdate() { player.update(); }
 			void mySetup();
 			void myDraw();
+		
 			bool isLoaded = false;
 			ofImage player;
 		};
@@ -504,13 +550,6 @@ namespace Software2552 {
 		vector<shared_ptr<Channel>>& getList();
 	private:
 		vector<shared_ptr<Channel>> list;
-	};
-
-	//bugbug many more moving shapes, or do all things move?
-	class Planet {
-	public:
-		Sphere sphere;
-		ofTexture texture;
 	};
 
 }

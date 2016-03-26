@@ -103,13 +103,11 @@ namespace Software2552 {
 			animatables.clear();
 			cameras.clear();
 			lights.clear();
-			texturevideos.clear();
 		}
 		else {
 			removeExpiredItems(animatables);
 			removeExpiredItems(cameras);
 			removeExpiredItems(lights);
-			removeExpiredItems(texturevideos);
 		}
 		myClear(force);
 	}
@@ -130,7 +128,6 @@ namespace Software2552 {
 		//material.setColors(ofFloatColor::pink, ofFloatColor::green, ofFloatColor::orange, ofFloatColor::aliceBlue);
 	}
 	void Stage::update() {
-
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->updateForDrawing();
 		}
@@ -268,13 +265,6 @@ namespace Software2552 {
 			a->getDefaultPlayer()->drawIt(DrawingBasics::draw3dFixedCamera);
 		}
 	}
-	// not sure exactly what this will do, that is if there will be many of these videos at once
-	shared_ptr<TextureVideo> Stage::getCurrentTextureVideo() {
-		if (getTextureVideos().size() > 0) {
-			return getTextureVideos()[0];
-		}
-		return nullptr;
-	}
 
 	// bugbug all items in test() to come from json or are this is done in Director
 	bool TestScene::myCreate(const Json::Value &data) {
@@ -398,89 +388,66 @@ namespace Software2552 {
 		ofSetSmoothLighting(true);
 		mesh.setup();
 	}
+
 	void SpaceScene::myUpdate() {
 	}
 	bool SpaceScene::myCreate(const Json::Value &data) {
-		//ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
-		//bugbug get from json
-		videoSphere.getPlayer()->set(250, 180);
+		shared_ptr<VideoSphere> vs = std::make_shared<VideoSphere>();
+		vs->readFromScript(data["videosphere"]);
+		vs->getRole<VideoSphere::Role>()->setupForDrawing(); // read for size
+		addAnimatable(vs);
 
-		shared_ptr<Light> light1 = std::make_shared<Light>();
-		ofPoint point(0,0, videoSphere.getPlayer()->getRadius() * 2);
-		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius());
+		shared_ptr<DirectionalLight> light1 = std::make_shared<DirectionalLight>();
+		light1->getPlayer().setPosition(0, 0, 600);
 		light1->readFromScript(data["light1"]);
 		add(light1);
 
-
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->setOrbit(true); // rotating
-		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() * 2);
+		cam1->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius() * 2);
 		cam1->readFromScript(data["cam1"]);
 		add(cam1);
 
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
-		light1->getPlayer().setPosition(0, 0, videoSphere.getPlayer()->getRadius() /2);
+		cam2->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius() /2);
 		cam2->readFromScript(data["cam2"]);
 		add(cam2);
 
-		shared_ptr<TextureVideo> tv = std::make_shared<TextureVideo>();
-		tv->getPlayerRole()->create("Clyde.mp4", 0, 0);
-		add(tv);
-
 		setBackgroundImageName("hubble1.jpg");
 
-		float xStart = (ofGetWidth() - tv->getPlayer().getWidth()) / 2;
+		float xStart = vs->getRole<VideoSphere::Role>()->getTexture()->getPlayer().getWidth() / 3;
 		float offset = abs(xStart);
-		addPlanet("earth_day.jpg", ofVec3f(xStart, 0, offset + 100));
+		addPlanet("earth_day.jpg", ofPoint(xStart, 0, offset + 100), data, "p1");
 
-		xStart += ofRandom(xStart, xStart * 2); // need to keep sign
-		addPlanet("g04_s65_34658.gif", ofVec3f(xStart, ofRandom(0, 100), offset + 100));
+		xStart += ofRandom(xStart, xStart * 1.2); // need to keep sign
+		addPlanet("g04_s65_34658.gif", ofPoint(xStart, ofRandom(0, 100), offset + 100), data, "p2");
 		
-		xStart += ofRandom(xStart, xStart * 2); // need to keep sign
-		addPlanet("hubble1.jpg", ofVec3f(xStart, ofRandom(0, 100), offset + 100));
+		xStart += ofRandom(xStart, vs->getRole<VideoSphere::Role>()->getTexture()->getPlayer().getWidth() / 2); // need to keep sign
+		addPlanet("hubble1.jpg", ofPoint(xStart, ofRandom(0, 100), offset + 100), data, "p3");
 		
-		xStart += ofRandom(xStart, xStart * 2); // need to keep sign
-		addPlanet("Floodwaters_of_Mars_highlight_std.jpg", ofVec3f(xStart, ofRandom(0, 100), offset + 100));
+		xStart = ofRandom(xStart, xStart * .2); // need to keep sign
+		addPlanet("Floodwaters_of_Mars_highlight_std.jpg", ofPoint(xStart, ofRandom(0, 100), offset + 100), data, "p4");
+
+
 		return true;
 
 	}
 
-	void SpaceScene::addPlanet(const string&textureName, const ofVec3f& start) {
-		shared_ptr<Planet> p = std::make_shared<Planet>();
-
-		float r = ofRandom(5, 100);
-		p->sphere.getPlayer()->set(r, 40);
-		TextureFromImage texture;
-		texture.create(textureName, r * 2, r * 2);
-		p->sphere.getPlayer()->mapTexCoordsFromTexture(texture);
-		p->texture = texture;
-		p->sphere.getPrimative()->setWireframe(false);
-		p->sphere.getPlayer()->move(start);
-		pictureSpheres.push_back(p);
+	void SpaceScene::addPlanet(const string&textureName, const ofVec3f& start, const Json::Value &data, const string&name) {
+		shared_ptr<Planet> p = std::make_shared<Planet>(textureName);
+		p->getPlayer().move(start);
+		p->readFromScript(data[name]);
+		addAnimatable(p);
 	}
 	void SpaceScene::mySetup() {
 
 	}
 	void SpaceScene::draw2d() {
 	}
-	// juse need to draw the SpaceScene, base class does the rest
 	void SpaceScene::myDraw3dMoving() {
-		for (auto& pictureSphere : pictureSpheres) {
-			pictureSphere->texture.bind();
-			pictureSphere->sphere.getPlayer()->rotate(30, 0, 2.0, 0.0);
-			pictureSphere->sphere.getPlayer()->draw();
-			pictureSphere->texture.unbind();
-		}
 	}
 	void SpaceScene::myDraw3dFixed() {
-		// one time setup must be called to draw videoSphere
-		if (getCurrentTextureVideo()->getPlayerRole()->textureReady()) {
-			videoSphere.getPlayer()->mapTexCoordsFromTexture(getCurrentTextureVideo()->getPlayer().getTexture());
-		}
-		getCurrentTextureVideo()->getPlayerRole()->mybind();
-		videoSphere.getPlayer()->draw();
-		getCurrentTextureVideo()->getPlayerRole()->myunbind();
 	}
 }
