@@ -245,7 +245,7 @@ namespace Software2552 {
 	}
 	bool Ball::myReadFromScript(const Json::Value &data) {
 		// can read any of these items from json here
-		setPositionY(getRole<Role>()->floorLine - 100);
+		setAnimationPositionY(getRole<Role>()->floorLine - 100);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(EASE_IN);
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
@@ -454,7 +454,7 @@ namespace Software2552 {
 		float volume=1;//default
 		READFLOAT(volume, data);
 		getPlayer().setVolume(volume);
-		setPositionY(50);
+		setAnimationPositionY(50);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(OBJECT_DROP);
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
@@ -801,7 +801,7 @@ namespace Software2552 {
 	}
 	bool Grabber::myReadFromScript(const Json::Value &data) {
 		//bugbug fill this in
-		setPositionY(100);
+		setAnimationPositionY(100);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(SQUARE);
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
@@ -812,7 +812,7 @@ namespace Software2552 {
 		return true;
 	}
 	bool Picture::myReadFromScript(const Json::Value &data) { 
-		setPositionY(50);
+		setAnimationPositionY(50);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(OBJECT_DROP);
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
 		getDefaultPlayer()->getAnimationHelper()->setDuration(0.55);
@@ -888,7 +888,7 @@ namespace Software2552 {
 			set = true;
 		}
 		video->getRole<TextureVideo::Role>()->mybind();
-		sphere.getPlayer().draw();
+		sphere.getRole<Role>()->myDraw();
 		video->getRole<TextureVideo::Role>()->myunbind();
 	}
 	void VideoSphere::Role::mySetup() {
@@ -901,25 +901,25 @@ namespace Software2552 {
 		getTexture()->readFromScript(data);
 		return true;
 	}
+	void Planet::Role::setTexture(shared_ptr<ofTexture>p) {
+		texture = p;
+	}
 	bool Planet::myReadFromScript(const Json::Value &data) {
 		setType(DrawingBasics::draw3dMovingCamera);
-		getRole<Sphere::Role>()->setWireframe(false);
+		getPlayer().getRole<Sphere::Role>()->setWireframe(false);
 		float r = ofRandom(5, 100);
-		getPlayer().set(r, 40);
+		getPlayer().getPlayer().set(r, 40);
 		shared_ptr<TextureFromImage>texture = std::make_shared<TextureFromImage>();
 		texture->create(getRole<Role>()->getLocationPath(), r * 2, r * 2);
-		getPlayer().mapTexCoordsFromTexture(*texture);
+		getPlayer().getPlayer().mapTexCoordsFromTexture(*texture);
 		getRole<Role>()->setTexture(texture);
 		//getSphere().getPlayer()->move(start);
 		return true;
 	}
-	void Planet::Role::setTexture(shared_ptr<ofTexture>p) {
-		texture = p;
-	}
 	void Planet::Role::myDraw() {
 		getTexture()->bind();
-		sphere.rotate(30, 0, 2.0, 0.0);
-		sphere.draw();
+		sphere.getPlayer().rotate(30, 0, 2.0, 0.0);
+		sphere.getRole<Role>()->myDraw();
 		getTexture()->unbind();
 	}
 }

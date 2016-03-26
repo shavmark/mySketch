@@ -128,22 +128,16 @@ namespace Software2552 {
 
 		bool drawIn2d() { return true; }//derived classes make this call
 		void myDraw3dFixed();
-		void myDraw3dMoving();
 
 		CrazyMesh mesh;
 	};
 	class SpaceScene : public Stage {
 	public:
-		void mySetup();
-		void myUpdate();
 		bool myCreate(const Json::Value &data);
 	private:
-		bool drawIn3dMoving() { return false; }//derived classes make this call
+		bool drawIn3dMoving() { return true; }//derived classes make this call
 		bool drawIn3dFixed() { return true; }//derived classes make this call
-		void draw2d();
-		void myDraw3dFixed();
-		void myDraw3dMoving();
-		void addPlanet(const string&textureName, const ofVec3f& start, const Json::Value &data, const string&name);
+		void addPlanet(const string&textureName, const ofPoint& start, const Json::Value &data, const string&name);
 	};
 
 

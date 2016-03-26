@@ -143,10 +143,10 @@ namespace Software2552 {
 		void setAnimation(bool f = true) { getDefaultPlayer()->getAnimationHelper()->setAnimationEnabled(f); }
 		void setType(DrawingBasics::drawtype type) { getDefaultPlayer()->setType(type); }
 		void animateTo(const ofPoint& p) { getDefaultPlayer()->getAnimationHelper()->animateTo(p); }
-		void setPosition(const ofPoint& p) { getDefaultPlayer()->getAnimationHelper()->setPosition(p); }
-		void setPositionX(float x) { getDefaultPlayer()->getAnimationHelper()->setPositionX(x); }
-		void setPositionY(float y) { getDefaultPlayer()->getAnimationHelper()->setPositionX(y); }
-		void setPositionZ(float z) { getDefaultPlayer()->getAnimationHelper()->setPositionX(z); }
+		void setAnimationPosition(const ofPoint& p) { getDefaultPlayer()->getAnimationHelper()->setPosition(p); }
+		void setAnimationPositionX(float x) { getDefaultPlayer()->getAnimationHelper()->setPositionX(x); }
+		void setAnimationPositionY(float y) { getDefaultPlayer()->getAnimationHelper()->setPositionX(y); }
+		void setAnimationPositionZ(float z) { getDefaultPlayer()->getAnimationHelper()->setPositionX(z); }
 
 	private:
 		virtual bool myReadFromScript(const Json::Value &data) { return true; };// for derived classes
@@ -463,7 +463,7 @@ namespace Software2552 {
 			Role(const string& path) : DrawingBasics(path) { }
 			void mySetup();
 			void myDraw();
-			Sphere sphere;//bugbug make this a base pointer to share this object with any 3d shape
+			Sphere sphere;
 		private:
 			bool set = false;
 			shared_ptr<TextureVideo> video;//bugbug make this a base pointer to share this object with any 3d shape
@@ -484,7 +484,7 @@ namespace Software2552 {
 			Role() : DrawingBasics() { }
 			Role(const string& path) : DrawingBasics(path) { }
 			void myDraw();
-			ofSpherePrimitive sphere;
+			Sphere sphere;
 			shared_ptr<ofTexture> getTexture() {	return texture;		}
 			void setTexture(shared_ptr<ofTexture>);
 		private:
@@ -492,8 +492,7 @@ namespace Software2552 {
 		};
 		Planet(const string&s) :ActorBasics(new Role(s)) {		}
 		Planet() :ActorBasics(new Role()) {  }
-		ofSpherePrimitive& getPlayer() { return getRole<Role>()->sphere; }
-		void setStart(const ofPoint& start) { getPlayer().move(start); }
+		Sphere& getPlayer() { return getRole<Role>()->sphere; }
 	private:
 		bool myReadFromScript(const Json::Value &data);
 	};

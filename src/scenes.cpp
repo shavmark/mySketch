@@ -383,9 +383,6 @@ namespace Software2552 {
 		}
 		*/
 	}
-	void TestScene::myDraw3dMoving() {
-		int i = 0; //test
-	}
 	void TestScene::myDraw3dFixed() {
 	
 		//drawlights();
@@ -402,8 +399,6 @@ namespace Software2552 {
 		mesh.setup();
 	}
 
-	void SpaceScene::myUpdate() {
-	}
 	bool SpaceScene::myCreate(const Json::Value &data) {
 
 		shared_ptr<VideoSphere> vs = std::make_shared<VideoSphere>();
@@ -414,8 +409,8 @@ namespace Software2552 {
 
 		shared_ptr<PointLight> light1 = std::make_shared<PointLight>();
 		light1->setLoc(-200, 0, 600);
-		light1->getPlayer().setDiffuseColor(ofColor(255.f, 0.f, 0.f));
-		light1->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
+		light1->getPlayer().setDiffuseColor(ofColor(255.f, 255.f, 255.f));
+		light1->getPlayer().setSpecularColor(ofColor(0.f, 0.f, 255.f));
 		light1->readFromScript(data["light1"]);
 		add(light1);
 
@@ -428,14 +423,11 @@ namespace Software2552 {
 		cam2->readFromScript(data["cam2"]);
 		add(cam2);
 
-		return true;
-
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->setOrbit(true); // rotating
 		cam1->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius());
 		cam1->readFromScript(data["cam1"]);
 		add(cam1);
-
 
 		setBackgroundImageName("hubble1.jpg");
 
@@ -452,24 +444,13 @@ namespace Software2552 {
 		xStart = ofRandom(xStart, xStart * .2); // need to keep sign
 		addPlanet("Floodwaters_of_Mars_highlight_std.jpg", ofPoint(xStart, ofRandom(0, 100), offset + 100), data, "p4");
 
-
 		return true;
-
 	}
 
-	void SpaceScene::addPlanet(const string&textureName, const ofVec3f& start, const Json::Value &data, const string&name) {
+	void SpaceScene::addPlanet(const string&textureName, const ofPoint& start, const Json::Value &data, const string&name) {
 		shared_ptr<Planet> p = std::make_shared<Planet>(textureName);
-		p->getPlayer().move(start);
+		p->getPlayer().getPlayer().setPosition(start);
 		p->readFromScript(data[name]);
 		addAnimatable(p);
-	}
-	void SpaceScene::mySetup() {
-
-	}
-	void SpaceScene::draw2d() {
-	}
-	void SpaceScene::myDraw3dMoving() {
-	}
-	void SpaceScene::myDraw3dFixed() {
 	}
 }
