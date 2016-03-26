@@ -580,8 +580,6 @@ namespace Software2552 {
 	}
 
 	bool Plane::myReadFromScript(const Json::Value &data) {
-		//bugbug get this data when ready
-		getRole<DrawingPrimitive3d>()->setWireframe(false);
 		return true;
 	}
 	void DrawingPrimitive3d::basedraw() {
@@ -596,7 +594,7 @@ namespace Software2552 {
 	bool Cube::myReadFromScript(const Json::Value &data) {
 		float size = 100;//default
 		READFLOAT(size, data);
-		getRole<DrawingPrimitive3d>()->setWireframe(false);
+		getRole<Cube::Role>()->setWireframe(true);
 		getPlayer()->set(size);
 		getPlayer()->roll(20.0f);// just as an example
 		return true;
@@ -932,12 +930,12 @@ namespace Software2552 {
 	}
 	bool Planet::myReadFromScript(const Json::Value &data) {
 		setType(DrawingBasics::draw3dMovingCamera);
-		getPlayer().getRole<Sphere::Role>()->setWireframe(false);
+		getSphere().getRole<Sphere::Role>()->setWireframe(false);
 		float r = ofRandom(5, 100);
-		getPlayer().getPlayer().set(r, 40);
+		getSphere().getPlayer().set(r, 40);
 		shared_ptr<TextureFromImage>texture = std::make_shared<TextureFromImage>();
 		texture->create(getRole<Role>()->getLocationPath(), r * 2, r * 2);
-		getPlayer().getPlayer().mapTexCoordsFromTexture(*texture);
+		getSphere().getPlayer().mapTexCoordsFromTexture(*texture);
 		getRole<Role>()->setTexture(texture);
 		//getSphere().getPlayer()->move(start);
 		return true;

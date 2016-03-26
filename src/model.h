@@ -491,7 +491,7 @@ namespace Software2552 {
 		};
 		Planet(const string&s) :ActorBasics(new Role(s)) {		}
 		Planet() :ActorBasics(new Role()) {  }
-		Sphere& getPlayer() { return getRole<Role>()->sphere; }
+		Sphere& getSphere() { return getRole<Role>()->sphere; }
 	private:
 		bool myReadFromScript(const Json::Value &data);
 	};

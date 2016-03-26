@@ -53,7 +53,7 @@ namespace Software2552 {
 		shared_ptr<Camera> CreateReadAndaddCamera(const Json::Value &data, bool rotate=false);
 		shared_ptr<VideoSphere> CreateReadAndaddVideoSphere(const Json::Value &data, const string&location);
 		template<typename T>shared_ptr<T> CreateReadAndaddLight(const Json::Value &data);
-
+		shared_ptr<Planet> Stage::addPlanet(const string&textureName, const ofPoint& start, const Json::Value &data, const string&name);
 		vector<shared_ptr<ActorBasics>>& getAnimatables() { return animatables; }
 
 		void draw2d();
@@ -143,7 +143,6 @@ namespace Software2552 {
 	private:
 		bool drawIn3dMoving() { return true; }//derived classes make this call
 		bool drawIn3dFixed() { return true; }//derived classes make this call
-		void addPlanet(const string&textureName, const ofPoint& start, const Json::Value &data, const string&name);
 	};
 
 

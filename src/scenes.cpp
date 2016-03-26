@@ -291,6 +291,16 @@ namespace Software2552 {
 		}
 		return p;
 	}
+	shared_ptr<Planet> Stage::addPlanet(const string&textureName, const ofPoint& start, const Json::Value &data, const string&name) {
+		shared_ptr<Planet> p = std::make_shared<Planet>(textureName);
+		if (p) {
+			p->getSphere().getPlayer().setPosition(start);
+			p->readFromScript(data[name]);
+			addAnimatable(p);
+		}
+		return p;
+	}
+
 	template<typename T> shared_ptr<T> Stage::CreateReadAndaddAnimatable(const Json::Value &data) {
 		shared_ptr<T> p = std::make_shared<T>();
 		if (p && p->readFromScript(data)) {
@@ -389,10 +399,4 @@ namespace Software2552 {
 		return true;
 	}
 
-	void SpaceScene::addPlanet(const string&textureName, const ofPoint& start, const Json::Value &data, const string&name) {
-		shared_ptr<Planet> p = std::make_shared<Planet>(textureName);
-		p->getPlayer().getPlayer().setPosition(start);
-		p->readFromScript(data[name]);
-		addAnimatable(p);
-	}
 }
