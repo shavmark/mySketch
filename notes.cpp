@@ -1,4 +1,5 @@
 // store notes here
+//https://forum.openframeworks.cc/t/interactive-mediawall-at-ipgs-nyc-headquarters/22012
 //get cams from all over https://github.com/bakercp/ofxIpVideoGrabber
 // 3d on the web https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API
 // https://github.com/processing, another platform

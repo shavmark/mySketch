@@ -261,32 +261,36 @@ namespace Software2552 {
 			 return false;
 		 }
 
-		// any actor can have settings set, or defaults used
-		Settings::readFromScript(data["settings"]);
+		 //if (!data.isNull()) {
 
-		shared_ptr<AnimiatedColor> ac = std::make_shared<AnimiatedColor>(getColor());
-		ac->readFromScript(data["coloranimation"]);
-		player->setColorAnimation(ac);
 
-		// any actor can have a reference
-		references = parse<Reference>(data["references"]);
-		 
-		// all actors can have a location
-		readStringFromJson(player->getLocationPath(), data["location"]);
+			 // any actor can have settings set, or defaults used
+			 Settings::readFromScript(data["settings"]);
 
-		// optional sizes, locations, durations for animation etc
-		readJsonValue(player->w, data["width"]);
-		readJsonValue(player->h, data["height"]);
-		float t=0;
-		readJsonValue(t, data["duration"]);
-		player->getAnimationHelper()->setObjectLifetime(t);
-		float w=0;
-		readJsonValue(w, data["wait"]);
-		player->getAnimationHelper()->setWait(w);
-		Point3D point;
-		point.readFromScript(data["startingPoint"]);
-		player->getAnimationHelper()->setPosition(point);
+			 shared_ptr<AnimiatedColor> ac = std::make_shared<AnimiatedColor>(getColor());
+			 ac->readFromScript(data["coloranimation"]);
+			 player->setColorAnimation(ac);
 
+			 // any actor can have a reference
+			 references = parse<Reference>(data["references"]);
+
+			 // all actors can have a location
+			 readStringFromJson(player->getLocationPath(), data["location"]);
+
+			 // optional sizes, locations, durations for animation etc
+			 readJsonValue(player->w, data["width"]);
+			 readJsonValue(player->h, data["height"]);
+			 float t = 0;
+			 readJsonValue(t, data["duration"]);
+			 player->getAnimationHelper()->setObjectLifetime(t);
+			 float w = 0;
+			 readJsonValue(w, data["wait"]);
+			 player->getAnimationHelper()->setWait(w);
+			 Point3D point;
+			 point.readFromScript(data["startingPoint"]);
+			 player->getAnimationHelper()->setPosition(point);
+
+			 //}
 		// read derived class data
 		myReadFromScript(data);
 
@@ -451,6 +455,9 @@ namespace Software2552 {
 	}
 
 	bool Video::myReadFromScript(const Json::Value &data) {
+		setType(DrawingBasics::draw2d);
+		setAnimation(true);
+
 		float volume=1;//default
 		READFLOAT(volume, data);
 		getPlayer().setVolume(volume);
@@ -486,6 +493,7 @@ namespace Software2552 {
 	
 	bool Camera::myReadFromScript(const Json::Value &data) {
 		//bugbug fill in
+		setOrbit(false); // not rotating
 		player.setScale(-1, -1, 1); // showing video
 		//getAnimationHelper()->setPositionZ(videoSphere.getPlayer().getRadius() * 2 + 100);
 		player.setFov(60);
@@ -497,7 +505,9 @@ namespace Software2552 {
 		// specular color, the highlight/shininess color //
 		//get from json player.setSpecularColor(ofColor(255.f, 0, 0));
 		//could get from json? not sure yet getAnimationHelper()->setPositionX(ofGetWidth()*.2);
-		//could get from json? not sure yet getAnimationHelper()->setPositionY(ofGetHeight()*.2);
+		setLoc(ofRandom(-200,200), 0, ofRandom(600,700));
+		getPlayer().setDiffuseColor(ofColor(255.f, 255.f, 255.f));
+		getPlayer().setSpecularColor(ofColor(0.f, 0.f, 255.f));
 		return true;
 	}
 	bool PointLight::myReadFromScript(const Json::Value &data) {
@@ -505,7 +515,10 @@ namespace Software2552 {
 		//get from json player.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
 		// specular color, the highlight/shininess color //
 		//get from json player.setSpecularColor(ofColor(255.f, 0, 0));
-		//could get from json? not sure yet getAnimationHelper()->setPositionX(ofGetWidth()*.2);
+		getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 255.f)); // set defaults
+		// specular color, the highlight/shininess color //
+		getPlayer().setSpecularColor(ofColor(255.f, 0, 255.f));
+		setLoc(ofGetWidth()*.2 + ofRandom(0, 25), ofGetHeight()*.2 + ofRandom(0, 25), 150+ofRandom(10,100));
 		//could get from json? not sure yet getAnimationHelper()->setPositionY(ofGetHeight()*.2);
 		return true;
 	}
@@ -514,9 +527,10 @@ namespace Software2552 {
 		//get from json player.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
 		// specular color, the highlight/shininess color //
 		//get from json player.setSpecularColor(ofColor(255.f, 0, 0));
-		//could get from json? not sure yet getAnimationHelper()->setPositionX(ofGetWidth()*.2);
-		//could get from json? not sure yet getAnimationHelper()->setPositionY(ofGetHeight()*.2);
-		//directionalLight->player.setOrientation(ofVec3f(0, 90, 0));
+		getPlayer().setDiffuseColor(ofColor(0.f, 0.f, 255.f));
+		getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
+		getPlayer().setOrientation(ofVec3f(0, 90, 0));
+		setLoc(ofGetWidth() / 2, ofGetHeight() / 2, 260);
 		return true;
 	}
 	bool SpotLight::myReadFromScript(const Json::Value &data) {
@@ -527,8 +541,17 @@ namespace Software2552 {
 		//could get from json? not sure yet getAnimationHelper()->setPositionX(ofGetWidth()*.2);
 		//could get from json? not sure yet getAnimationHelper()->setPositionY(ofGetHeight()*.2);
 		//directionalLight->player.setOrientation(ofVec3f(0, 90, 0));
-		//spotLight->getPlayer().setSpotlightCutOff(50);
-		//		spotLight->player.setSpotConcentration(2);
+		getPlayer().setDiffuseColor(ofColor(255.f, 0.f, 0.f));
+		getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
+		setLoc(ofGetWidth()*.1, ofGetHeight()*.1, 220);
+		// size of the cone of emitted light, angle between light axis and side of cone //
+		// angle range between 0 - 90 in degrees //
+		getPlayer().setSpotlightCutOff(50);
+
+		// rate of falloff, illumitation decreases as the angle from the cone axis increases //
+		// range 0 - 128, zero is even illumination, 128 is max falloff //
+		getPlayer().setSpotConcentration(2);
+		setLoc(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		return true;
 	}
 	void Ball::Role::myDraw() {
@@ -800,6 +823,7 @@ namespace Software2552 {
 		}
 	}
 	bool Grabber::myReadFromScript(const Json::Value &data) {
+		setAnimation(true);
 		//bugbug fill this in
 		setAnimationPositionY(100);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(SQUARE);
@@ -812,6 +836,7 @@ namespace Software2552 {
 		return true;
 	}
 	bool Picture::myReadFromScript(const Json::Value &data) { 
+		setType(DrawingBasics::draw2d);
 		setAnimationPositionY(50);
 		getDefaultPlayer()->getAnimationHelper()->setCurve(OBJECT_DROP);
 		getDefaultPlayer()->getAnimationHelper()->setRepeatType(LOOP_BACK_AND_FORTH);
@@ -855,7 +880,6 @@ namespace Software2552 {
 	}
 	bool TextureVideo::myReadFromScript(const Json::Value &data) {
 		//bugbug fill this in with json reads as needed
-		getDefaultPlayer()->setLocationPath("Clyde.mp4");// read from data in base class if this line removed
 		if (!getPlayer().isLoaded()) {
 			if (!getPlayer().load(getDefaultPlayer()->getLocationPath())) {
 				logErrorString("setup TextureVideo Player");
@@ -898,7 +922,9 @@ namespace Software2552 {
 		setType(DrawingBasics::draw3dFixedCamera);
 		getRole<Sphere::Role>()->setWireframe(true);
 		getPlayer().set(250, 180);// set default
-		getTexture()->readFromScript(data);
+		if (getTexture() != nullptr) {
+			getTexture()->readFromScript(data);
+		}
 		return true;
 	}
 	void Planet::Role::setTexture(shared_ptr<ofTexture>p) {

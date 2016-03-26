@@ -14,7 +14,7 @@ namespace Software2552 {
 	bool echoJSONTree(const string& functionname, const Json::Value &root, bool isError = false);
 #define ECHOAll(data) echoJSONTree(__FUNCTION__, data);
 #define ERROR_ECHOAll(data) echoJSONTree(__FUNCTION__, data, true);
-	template<typename T> shared_ptr<vector<shared_ptr<T>>> parse(const Json::Value &data);
+	template<typename T> shared_ptr<vector<shared_ptr<T>>> parse(const Json::Value &data, const string&location);
 
 #if _DEBUG
 	template<typename T> void traceVector(T& vec);
@@ -460,7 +460,7 @@ namespace Software2552 {
 		public:
 			friend VideoSphere;
 			Role() : DrawingBasics() {	video = std::make_shared<TextureVideo>();	}
-			Role(const string& path) : DrawingBasics(path) { }
+			Role(const string& path) : DrawingBasics(path) { video = std::make_shared<TextureVideo>(path); }
 			void mySetup();
 			void myDraw();
 			Sphere sphere;
@@ -472,7 +472,6 @@ namespace Software2552 {
 		VideoSphere() :ActorBasics(new Role()) {  }
 		ofSpherePrimitive& getPlayer() { return getRole<Role>()->sphere.getPlayer(); }
 		shared_ptr<TextureVideo> getTexture() { return getRole<Role>()->video; }
-		void setStart(const ofPoint& start) { getPlayer().move(start); }
 	private:
 		bool myReadFromScript(const Json::Value &data);
 	};

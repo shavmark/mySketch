@@ -48,6 +48,12 @@ namespace Software2552 {
 
 		// things to draw
 		void addAnimatable(shared_ptr<ActorBasics>p) { animatables.push_back(p); }
+		template<typename T> shared_ptr<T> CreateReadAndaddAnimatable(const Json::Value &data, const string&location);
+		template<typename T> shared_ptr<T> CreateReadAndaddAnimatable(const Json::Value &data);
+		shared_ptr<Camera> CreateReadAndaddCamera(const Json::Value &data, bool rotate=false);
+		shared_ptr<VideoSphere> CreateReadAndaddVideoSphere(const Json::Value &data, const string&location);
+		template<typename T>shared_ptr<T> CreateReadAndaddLight(const Json::Value &data);
+
 		vector<shared_ptr<ActorBasics>>& getAnimatables() { return animatables; }
 
 		void draw2d();

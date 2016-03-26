@@ -284,104 +284,69 @@ namespace Software2552 {
 			a->getDefaultPlayer()->drawIt(DrawingBasics::draw3dFixedCamera);
 		}
 	}
+	template<typename T> shared_ptr<T> Stage::CreateReadAndaddAnimatable(const Json::Value &data, const string&location) {
+		shared_ptr<T> p = std::make_shared<T>(location);
+		if (p && p->readFromScript(data)){
+			addAnimatable(p);
+		}
+		return p;
+	}
+	template<typename T> shared_ptr<T> Stage::CreateReadAndaddAnimatable(const Json::Value &data) {
+		shared_ptr<T> p = std::make_shared<T>();
+		if (p && p->readFromScript(data)) {
+			addAnimatable(p);
+		}
+		return p;
+	}
+	shared_ptr<Camera> Stage::CreateReadAndaddCamera(const Json::Value &data, bool rotate) {
+		shared_ptr<Camera> p = std::make_shared<Camera>();
+		if (p && p->readFromScript(data)) {
+			p->setOrbit(rotate);
+			p->getPlayer().setPosition(0, 0, ofRandom(100,500));//bugbug clean up the rand stuff via data and more organized random
+			add(p);
+		}
+		return p;
+	}
+	template<typename T>shared_ptr<T> Stage::CreateReadAndaddLight(const Json::Value &data) {
+		shared_ptr<T> p = std::make_shared<T>();
+		if (p && p->readFromScript(data)) {
+			add(p);
+		}
+		return p;
+	}
+	shared_ptr<VideoSphere> Stage::CreateReadAndaddVideoSphere(const Json::Value &data, const string&location){
+
+		shared_ptr<VideoSphere> vs = std::make_shared<VideoSphere>(location);
+		if (vs) {
+			vs->readFromScript(data);
+			addAnimatable(vs->getTexture());
+			addAnimatable(vs);
+		}
+		return vs;
+	}
+
+
 
 	// bugbug all items in test() to come from json or are this is done in Director
 	bool TestScene::myCreate(const Json::Value &data) {
 
-		shared_ptr<Video> video = std::make_shared<Video>("carride.mp4");
-		video->setType(DrawingBasics::draw2d);
-		video->setAnimation(true);
-		video->readFromScript(data["video"]);
-		addAnimatable(video);
-
-		shared_ptr<Picture> raster = std::make_shared<Picture>("t1_0010.jpg");
-		raster->setType(DrawingBasics::draw2d);
-		raster->readFromScript(data["picture"]);
-		addAnimatable(raster);
-
-		shared_ptr<Cube> cube = std::make_shared<Cube>();
-		cube->readFromScript(data);
-		addAnimatable(cube);
-
-		shared_ptr<Grabber> grabber = std::make_shared<Grabber>("Logitech HD Pro Webcam C920");
-		video->setAnimation(true);
-		grabber->readFromScript(data["grabber"]);
-		addAnimatable(grabber);
-	
-		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
-		//cam1->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
-		cam1->readFromScript(data["cam1"]);
-		add(cam1);
-
-		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
-		cam2->setOrbit();
-		cam2->readFromScript(data["cam2"]);
-		add(cam2);
-
-		shared_ptr<PointLight> pointLight = std::make_shared<PointLight>();
-		pointLight->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 255.f)); // set defaults
-		// specular color, the highlight/shininess color //
-		pointLight->getPlayer().setSpecularColor(ofColor(255.f, 0, 255.f));
-		pointLight->setLoc(ofGetWidth()*.2, ofGetHeight()*.2, 150);
-		pointLight->readFromScript(data["pointLight1"]);
-		add(pointLight);
-
-		shared_ptr<PointLight> pointLight2 = std::make_shared<PointLight>();
-		pointLight2->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 0.f));// set defaults
-		// specular color, the highlight/shininess color //
-		pointLight2->getPlayer().setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight2->setLoc(ofGetWidth()*.2, ofGetHeight()*.2, 200);
-		pointLight2->readFromScript(data["pointLight2"]);
-		add(pointLight2);
-
-		shared_ptr<DirectionalLight> directionalLight = std::make_shared<DirectionalLight>();
-		// Directional Lights emit light based on their orientation, regardless of their position //
-		directionalLight->getPlayer().setDiffuseColor(ofColor(0.f, 0.f, 255.f));
-		directionalLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
-		directionalLight->getPlayer().setOrientation(ofVec3f(0, 90, 0));
-		directionalLight->setLoc(ofGetWidth() / 2, ofGetHeight() / 2, 260);
-		directionalLight->readFromScript(data["directionalLight"]);
-		add(directionalLight);
-
-		shared_ptr<Light> basic = std::make_shared<Light>();
-		basic->setLoc(-100.0f, 400.0f, 190);
-		basic->readFromScript(data["basicLight"]);
-		add(basic);
-
-		shared_ptr<SpotLight> spotLight = std::make_shared<SpotLight>();
-		spotLight->getPlayer().setDiffuseColor(ofColor(255.f, 0.f, 0.f));
-		spotLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
-		spotLight->setLoc(ofGetWidth()*.1, ofGetHeight()*.1, 220);
-		// size of the cone of emitted light, angle between light axis and side of cone //
-		// angle range between 0 - 90 in degrees //
-		spotLight->getPlayer().setSpotlightCutOff(50);
-
-		// rate of falloff, illumitation decreases as the angle from the cone axis increases //
-		// range 0 - 128, zero is even illumination, 128 is max falloff //
-		spotLight->getPlayer().setSpotConcentration(2);
-		spotLight->setLoc(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
-		spotLight->readFromScript(data["spotLight"]);
-		add(spotLight);
+		CreateReadAndaddAnimatable<Video>(data["video"], "carride.mp4");
+		CreateReadAndaddAnimatable<Picture>(data["picture"], "t1_0010.jpg");
+		CreateReadAndaddAnimatable<Cube>(data["cube"]);
+		CreateReadAndaddAnimatable<Grabber>(data["grabber"], "Logitech HD Pro Webcam C920");
+		CreateReadAndaddCamera(data["cam1"]);
+		CreateReadAndaddCamera(data["cam2"], true);
+		CreateReadAndaddLight<PointLight>(data["pointLight1"]);
+		CreateReadAndaddLight<PointLight>(data["pointLight2"]);
+		CreateReadAndaddLight<DirectionalLight>(data["directionalLight"]);
+		CreateReadAndaddLight<Light>(data["basicLight"]);
+		CreateReadAndaddLight<Light>(data["spotLight"]);
 
 		return true;
 
 	}
 	void TestScene::myUpdate() {
-
 		mesh.update();
-		/* use to show 3 at once
-		for (auto& image : getImages()) {
-			image.w = ofGetWidth() / 3;
-		}
-		for (auto& video : getVideos()) {
-			video.w = ofGetWidth() / 3;
-			video.x = ofGetWidth() / 3;
-		}
-		for (auto& grabber : getGrabbers()) {
-			grabber.w = ofGetWidth() / 3;
-			grabber.x = (ofGetWidth() / 3) * 2;
-		}
-		*/
 	}
 	void TestScene::myDraw3dFixed() {
 	
@@ -401,35 +366,12 @@ namespace Software2552 {
 
 	bool SpaceScene::myCreate(const Json::Value &data) {
 
-		shared_ptr<VideoSphere> vs = std::make_shared<VideoSphere>();
-		vs->readFromScript(data["videosphere"]);
-		//vs->getRole<VideoSphere::Role>()->setupForDrawing(); // read for size
-		addAnimatable(vs->getTexture());
-		addAnimatable(vs);
+		shared_ptr<VideoSphere> vs = CreateReadAndaddVideoSphere(data["videosphere"], "Clyde.mp4");
+		CreateReadAndaddLight<PointLight>(data["light1"]);
+		CreateReadAndaddCamera(data["cam2"]);
+		CreateReadAndaddCamera(data["cam1"], true);
 
-		shared_ptr<PointLight> light1 = std::make_shared<PointLight>();
-		light1->setLoc(-200, 0, 600);
-		light1->getPlayer().setDiffuseColor(ofColor(255.f, 255.f, 255.f));
-		light1->getPlayer().setSpecularColor(ofColor(0.f, 0.f, 255.f));
-		light1->readFromScript(data["light1"]);
-		add(light1);
-
-		// both moving and non moving cameras for this scene must always be used
-
-		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
-		cam2->setOrbit(false); // not rotating
-		float f = vs->getPlayer().getRadius();
-		//cam2->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius() / 2);
-		cam2->readFromScript(data["cam2"]);
-		add(cam2);
-
-		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
-		cam1->setOrbit(true); // rotating
-		cam1->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius());
-		cam1->readFromScript(data["cam1"]);
-		add(cam1);
-
-		setBackgroundImageName("hubble1.jpg");
+		setBackgroundImageName("hubble1.jpg");//bugbug read from json
 
 		float xStart = (vs->getPlayer().getRadius()*2) / 3;
 		float offset = abs(xStart);
