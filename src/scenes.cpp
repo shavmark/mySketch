@@ -212,7 +212,14 @@ namespace Software2552 {
 
 		return f;
 	}
-
+	// show light location, great for debugging and kind of fun too
+	void Stage::drawlights() {
+		for (const auto& light : getLights()) {
+			ofSetColor(light->getPlayer().getDiffuseColor());
+			ofPoint pos = light->getPlayer().getPosition();
+			ofDrawSphere(light->getPlayer().getPosition(), 20.f);
+		}
+	}
 	void Stage::draw2d() {
 		myDraw2d();
 		for (auto& a : animatables) {
@@ -369,13 +376,7 @@ namespace Software2552 {
 	}
 	void TestScene::myDraw3dFixed() {
 	
-
-		// draw a little light sphere
-		for (const auto& light : getLights()) {
-			ofSetColor(light->getPlayer().getDiffuseColor());
-			ofPoint pos = light->getPlayer().getPosition();
-			ofDrawSphere(light->getPlayer().getPosition(), 20.f);
-		}
+		drawlights();
 
 		return; // comment out to draw by vertice, less confusing but feel free to add it back in
 
@@ -395,13 +396,22 @@ namespace Software2552 {
 
 		shared_ptr<VideoSphere> vs = std::make_shared<VideoSphere>();
 		vs->readFromScript(data["videosphere"]);
-		vs->getRole<VideoSphere::Role>()->setupForDrawing(); // read for size
+		//vs->getRole<VideoSphere::Role>()->setupForDrawing(); // read for size
+		addAnimatable(vs->getTexture());
 		addAnimatable(vs);
 
-		shared_ptr<DirectionalLight> light1 = std::make_shared<DirectionalLight>();
-		light1->getPlayer().setPosition(0, 0, 600);
+		shared_ptr<PointLight> light1 = std::make_shared<PointLight>();
+		light1->getPlayer().setPosition(0, 0, 300);
 		light1->readFromScript(data["light1"]);
 		add(light1);
+
+		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
+		cam2->setOrbit(false); // not rotating
+		cam2->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius() / 2);
+		cam2->readFromScript(data["cam2"]);
+		add(cam2);
+
+		return true;
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->setOrbit(true); // rotating
@@ -409,22 +419,17 @@ namespace Software2552 {
 		cam1->readFromScript(data["cam1"]);
 		add(cam1);
 
-		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
-		cam2->setOrbit(false); // not rotating
-		cam2->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius() /2);
-		cam2->readFromScript(data["cam2"]);
-		add(cam2);
 
 		setBackgroundImageName("hubble1.jpg");
 
-		float xStart = vs->getRole<VideoSphere::Role>()->getTexture()->getPlayer().getWidth() / 3;
+		float xStart = (vs->getPlayer().getRadius()*2) / 3;
 		float offset = abs(xStart);
 		addPlanet("earth_day.jpg", ofPoint(xStart, 0, offset + 100), data, "p1");
 
 		xStart += ofRandom(xStart, xStart * 1.2); // need to keep sign
 		addPlanet("g04_s65_34658.gif", ofPoint(xStart, ofRandom(0, 100), offset + 100), data, "p2");
 		
-		xStart += ofRandom(xStart, vs->getRole<VideoSphere::Role>()->getTexture()->getPlayer().getWidth() / 2); // need to keep sign
+		xStart += ofRandom(xStart, (vs->getPlayer().getRadius() * 2) / 2); // need to keep sign
 		addPlanet("hubble1.jpg", ofPoint(xStart, ofRandom(0, 100), offset + 100), data, "p3");
 		
 		xStart = ofRandom(xStart, xStart * .2); // need to keep sign
@@ -449,5 +454,6 @@ namespace Software2552 {
 	void SpaceScene::myDraw3dMoving() {
 	}
 	void SpaceScene::myDraw3dFixed() {
+		drawlights();
 	}
 }

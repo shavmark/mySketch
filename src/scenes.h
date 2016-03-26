@@ -33,6 +33,7 @@ namespace Software2552 {
 		void pause();
 		void resume();
 		float findMaxWait();
+		void drawlights();
 		Settings settings;
 		string &getKeyName() { return keyname; }
 	protected:

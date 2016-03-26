@@ -343,7 +343,7 @@ namespace Software2552 {
 			ofSpherePrimitive player;
 		};
 		Sphere() : ActorWithPrimativeBaseClass(new Role()) {		}
-		ofSpherePrimitive* getPlayer() { return &getRole<Role>()->player; }
+		ofSpherePrimitive& getPlayer() { return getRole<Role>()->player; }
 
 	private:
 		bool myReadFromScript(const Json::Value &data);
@@ -429,18 +429,47 @@ namespace Software2552 {
 			Role() : DrawingBasics() {  }
 			Role(const string& path) : DrawingBasics(path) { }
 			void myUpdate() { player.update(); }
+			void myDraw();
 			void mySetup();
 			bool textureReady() { return  player.isInitialized(); }
 			bool mybind();
 			bool myunbind();
 			ofVideoPlayer player;
+			ofTexture& getTexture();
+			ofFbo fbo;
+		private:
+			
+			ofTexture defaulttexture;
 		};
 		TextureVideo(const string&s) :ActorBasics(new Role(s)) {  }
 		TextureVideo() :ActorBasics(new Role()) {  }
 		ofVideoPlayer& getPlayer() { return getRole<Role>()->player; }
+		ofTexture& getTexture() { return getRole<Role>()->getTexture(); }
+
 	private:
 		bool myReadFromScript(const Json::Value &data);
 
+	};
+	class VideoSphere : public ActorBasics {
+	public:
+		class Role : public DrawingBasics {
+		public:
+			friend VideoSphere;
+			Role() : DrawingBasics() {	video = std::make_shared<TextureVideo>();	}
+			Role(const string& path) : DrawingBasics(path) { }
+			void mySetup();
+			void myDraw();
+			Sphere sphere;//bugbug make this a base pointer to share this object with any 3d shape
+		private:
+			shared_ptr<TextureVideo> video;//bugbug make this a base pointer to share this object with any 3d shape
+		};
+		VideoSphere(const string&s) :ActorBasics(new Role(s)) {		}
+		VideoSphere() :ActorBasics(new Role()) {  }
+		ofSpherePrimitive& getPlayer() { return getRole<Role>()->sphere.getPlayer(); }
+		shared_ptr<TextureVideo> getTexture() { return getRole<Role>()->video; }
+		void setStart(const ofPoint& start) { getPlayer().move(start); }
+	private:
+		bool myReadFromScript(const Json::Value &data);
 	};
 
 	class Planet : public ActorBasics {
@@ -464,27 +493,6 @@ namespace Software2552 {
 		bool myReadFromScript(const Json::Value &data);
 	};
 
-	class VideoSphere : public ActorBasics {
-	public:
-		class Role : public DrawingBasics {
-		public:
-			Role() : DrawingBasics() { }
-			Role(const string& path) : DrawingBasics(path) { }
-			void mySetup();
-			void myDraw();
-			ofSpherePrimitive sphere;
-			shared_ptr<TextureVideo> getTexture() { return texture; }
-			void setTexture(shared_ptr<TextureVideo>t) { texture = t; };
-		private:
-			shared_ptr<TextureVideo> texture = nullptr;
-		};
-		VideoSphere(const string&s) :ActorBasics(new Role(s)) {		}
-		VideoSphere() :ActorBasics(new Role()) {  }
-		ofSpherePrimitive& getPlayer() { return getRole<Role>()->sphere; }
-		void setStart(const ofPoint& start) { getPlayer().move(start); }
-	private:
-		bool myReadFromScript(const Json::Value &data);
-	};
 
 	class Picture : public ActorBasics {
 	public:

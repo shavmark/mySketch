@@ -581,11 +581,11 @@ namespace Software2552 {
 	bool Sphere::myReadFromScript(const Json::Value &data) {
 		float radius = 100;//default
 		READFLOAT(radius, data);
-		getPlayer()->setRadius(radius);
+		getPlayer().setRadius(radius);
 
 		float resolution = 100;//default
 		READFLOAT(resolution, data);
-		getPlayer()->setResolution(resolution);
+		getPlayer().setResolution(resolution);
 
 		return true;
 	}
@@ -821,52 +821,74 @@ namespace Software2552 {
 		animateTo(p);
 		return true;
 	}
-	void TextureVideo::Role::mySetup() {
-		if (!player.isLoaded()) {
-			if (!player.load(getLocationPath())) {
-				logErrorString("setup TextureVideo Player");
-			}
+	void TextureVideo::Role::myDraw() {
+		if (player.isFrameNew()) {
+			fbo.begin();
+			player.draw(0, 0);
+			fbo.end();
 		}
-		player.play();
 
 	}
+	void TextureVideo::Role::mySetup() {
+	}
 	bool TextureVideo::Role::mybind() {
-		if (player.isInitialized() && player.isUsingTexture()) {
-			player.getTexture().bind();
+		if (player.isInitialized() && fbo.isUsingTexture()) {
+			//player.getTexture().bind();
+			fbo.getTexture().bind();
 			return true;
 		}
 		return false;
 	}
 	bool TextureVideo::Role::myunbind() {
 		if (player.isInitialized() && player.isUsingTexture()) {
-			player.getTexture().unbind();
+			//player.getTexture().unbind();
+			fbo.getTexture().unbind();
 			return true;
 		}
 		return false;
 	}
 	bool TextureVideo::myReadFromScript(const Json::Value &data) {
-		//bugbug fill this in
+		//bugbug fill this in with json reads as needed
+		getDefaultPlayer()->setLocationPath("Clyde.mp4");// read from data in base class if this line removed
+		if (!getPlayer().isLoaded()) {
+			if (!getPlayer().load(getDefaultPlayer()->getLocationPath())) {
+				logErrorString("setup TextureVideo Player");
+				return false;
+			}
+			getPlayer().play();
+			getRole<Role>()->fbo.allocate(getPlayer().getWidth() * 2, getPlayer().getHeight(), GL_RGBA);
+			// Clear its content
+			getRole<Role>()->fbo.begin();
+			ofClear(0, 0, 0, 0);
+			getRole<Role>()->fbo.end();
+		}
 		return true;
 	}
-	void VideoSphere::Role::myDraw() {
-		if (getTexture()->getRole<TextureVideo::Role>()->textureReady()) {
-			sphere.mapTexCoordsFromTexture(getTexture()->getPlayer().getTexture());
+	ofTexture& TextureVideo::Role::getTexture() { 
+		if (fbo.checkStatus()) {
+			return fbo.getTexture();
 		}
-		sphere.rotate(30, 0, 2.0, 0.0);
-		getTexture()->getRole<TextureVideo::Role>()->mybind();
-		sphere.draw();
-		getTexture()->getRole<TextureVideo::Role>()->myunbind();
+		return defaulttexture;
+	}
+
+	void VideoSphere::Role::myDraw() {
+		//bugbug just need to do this one time, maybe set a flag
+		if (video->getTexture().isAllocated()) {
+			sphere.getPlayer().mapTexCoordsFromTexture(video->getTexture());
+		}
+		//sphere.getPlayer().rotate(30, 0, 2.0, 0.0);
+		video->getRole<TextureVideo::Role>()->mybind();
+		sphere.getPlayer().draw();
+		video->getRole<TextureVideo::Role>()->myunbind();
 	}
 	void VideoSphere::Role::mySetup() {
-		//bugbug stopped coding here
-		setTexture(std::make_shared<TextureVideo>("Clyde.mp4"));
-		getTexture()->getDefaultPlayer()->setupForDrawing();
 	}
 	bool VideoSphere::myReadFromScript(const Json::Value &data) {
+
 		setType(DrawingBasics::draw3dFixedCamera);
-		getRole<DrawingPrimitive3d>()->setWireframe(true);
-		getRole<Role>()->getTexture()->readFromScript(data);
+		//getRole<DrawingPrimitive3d>()->setWireframe(true);
 		getPlayer().set(250, 180);// set default
+		getTexture()->readFromScript(data);
 		return true;
 	}
 	bool Planet::myReadFromScript(const Json::Value &data) {
