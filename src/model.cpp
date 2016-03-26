@@ -822,9 +822,14 @@ namespace Software2552 {
 		return true;
 	}
 	void TextureVideo::Role::myDraw() {
-		if (player.isFrameNew()) {
+		return; // not using fbo for video bugbug clean this up;
+		if (player.isFrameNew()) { // bugbug not sure why but this needs to be drawn ever time
 			fbo.begin();
+			int alpha = 255; // amount of smoothing bugbug play with this later
+			//ofEnableAlphaBlending();
+			ofSetColor(255, 255, 255, alpha);
 			player.draw(0, 0);
+			//ofDisableAlphaBlending();
 			fbo.end();
 		}
 
@@ -833,16 +838,17 @@ namespace Software2552 {
 	}
 	bool TextureVideo::Role::mybind() {
 		if (player.isInitialized() && fbo.isUsingTexture()) {
-			//player.getTexture().bind();
-			fbo.getTexture().bind();
+			player.getTexture().bind();
+			//fbo.getTexture().bind();
 			return true;
 		}
 		return false;
 	}
 	bool TextureVideo::Role::myunbind() {
 		if (player.isInitialized() && player.isUsingTexture()) {
-			//player.getTexture().unbind();
-			fbo.getTexture().unbind();
+			player.getTexture().unbind();
+			//bugbug try with grabber 
+			//fbo.getTexture().unbind();
 			return true;
 		}
 		return false;
@@ -856,7 +862,7 @@ namespace Software2552 {
 				return false;
 			}
 			getPlayer().play();
-			getRole<Role>()->fbo.allocate(getPlayer().getWidth() * 2, getPlayer().getHeight(), GL_RGBA);
+			getRole<Role>()->fbo.allocate(getPlayer().getWidth()*2, getPlayer().getHeight(), GL_RGBA);
 			// Clear its content
 			getRole<Role>()->fbo.begin();
 			ofClear(0, 0, 0, 0);
@@ -865,6 +871,8 @@ namespace Software2552 {
 		return true;
 	}
 	ofTexture& TextureVideo::Role::getTexture() { 
+		return player.getTexture();
+		//bugbug use this for grabber maybe?
 		if (fbo.checkStatus()) {
 			return fbo.getTexture();
 		}
@@ -873,10 +881,12 @@ namespace Software2552 {
 
 	void VideoSphere::Role::myDraw() {
 		//bugbug just need to do this one time, maybe set a flag
-		if (video->getTexture().isAllocated()) {
+		if (video->getTexture().isAllocated() && !set) {
 			sphere.getPlayer().mapTexCoordsFromTexture(video->getTexture());
+			//sphere.getPlayer().mapTexCoords(0, video->getTexture().getWidth(), 0, video->getTexture().getHeight());
+			sphere.getPlayer().rotate(180, 0, 1, 0.0);
+			set = true;
 		}
-		//sphere.getPlayer().rotate(30, 0, 2.0, 0.0);
 		video->getRole<TextureVideo::Role>()->mybind();
 		sphere.getPlayer().draw();
 		video->getRole<TextureVideo::Role>()->myunbind();
@@ -886,14 +896,14 @@ namespace Software2552 {
 	bool VideoSphere::myReadFromScript(const Json::Value &data) {
 
 		setType(DrawingBasics::draw3dFixedCamera);
-		//getRole<DrawingPrimitive3d>()->setWireframe(true);
+		getRole<Sphere::Role>()->setWireframe(true);
 		getPlayer().set(250, 180);// set default
 		getTexture()->readFromScript(data);
 		return true;
 	}
 	bool Planet::myReadFromScript(const Json::Value &data) {
 		setType(DrawingBasics::draw3dMovingCamera);
-		getRole<DrawingPrimitive3d>()->setWireframe(false);
+		getRole<Sphere::Role>()->setWireframe(false);
 		float r = ofRandom(5, 100);
 		getPlayer().set(r, 40);
 		shared_ptr<TextureFromImage>texture = std::make_shared<TextureFromImage>();

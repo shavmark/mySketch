@@ -138,7 +138,7 @@ namespace Software2552 {
 		void myUpdate();
 		bool myCreate(const Json::Value &data);
 	private:
-		bool drawIn3dMoving() { return true; }//derived classes make this call
+		bool drawIn3dMoving() { return false; }//derived classes make this call
 		bool drawIn3dFixed() { return true; }//derived classes make this call
 		void draw2d();
 		void myDraw3dFixed();

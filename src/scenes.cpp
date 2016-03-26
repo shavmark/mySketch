@@ -145,7 +145,10 @@ namespace Software2552 {
 			cam->getPlayer().begin();
 			cam->orbit(); 
 			for (auto& light : lights) {
+				ofPoint p = light->getPlayer().getPosition();
+				light->getPlayer().setPosition(light->loc);
 				light->getPlayer().enable();
+				light->getPlayer().draw();
 			}
 			material.begin();//bugbug figure out material
 			if (cam->isOrbiting()) {
@@ -164,7 +167,9 @@ namespace Software2552 {
 			// draw w/o a camera
 			ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2); // center when not using a camera
 			for (auto& light : lights) {
+				light->getPlayer().setPosition(0, 0, 600);
 				light->getPlayer().enable();
+				light->getPlayer().draw();
 			}
 			if (drawIn3dMoving() && !drawFixed) {
 				draw3dMoving();
@@ -193,11 +198,18 @@ namespace Software2552 {
 
 		pre3dDraw();
 
+		// fixed camera
 		if (drawIn3dFixed()) {
-			installLightAndMaterialThenDraw(director.pickem(cameras, false), true);
+			shared_ptr<Camera> cam = director.pickem(cameras, false);
+			if (cam != nullptr) {
+				installLightAndMaterialThenDraw(cam, true);
+			}
 		}
 		if (drawIn3dMoving()) {
-			installLightAndMaterialThenDraw(director.pickem(cameras, true), false);
+			shared_ptr<Camera> cam = director.pickem(cameras, true);
+			if (cam != nullptr) {
+				installLightAndMaterialThenDraw(cam, false);
+			}
 		}
 
 		post3dDraw();
@@ -310,7 +322,7 @@ namespace Software2552 {
 		pointLight->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 255.f)); // set defaults
 		// specular color, the highlight/shininess color //
 		pointLight->getPlayer().setSpecularColor(ofColor(255.f, 0, 255.f));
-		pointLight->getPlayer().setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 150);
+		pointLight->setLoc(ofGetWidth()*.2, ofGetHeight()*.2, 150);
 		pointLight->readFromScript(data["pointLight1"]);
 		add(pointLight);
 
@@ -318,7 +330,7 @@ namespace Software2552 {
 		pointLight2->getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 0.f));// set defaults
 		// specular color, the highlight/shininess color //
 		pointLight2->getPlayer().setSpecularColor(ofColor(255.f, 0, 0));
-		pointLight2->getPlayer().setPosition(ofGetWidth()*.2, ofGetHeight()*.2, 200);
+		pointLight2->setLoc(ofGetWidth()*.2, ofGetHeight()*.2, 200);
 		pointLight2->readFromScript(data["pointLight2"]);
 		add(pointLight2);
 
@@ -327,19 +339,19 @@ namespace Software2552 {
 		directionalLight->getPlayer().setDiffuseColor(ofColor(0.f, 0.f, 255.f));
 		directionalLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
 		directionalLight->getPlayer().setOrientation(ofVec3f(0, 90, 0));
-		directionalLight->getPlayer().setPosition(ofGetWidth() / 2, ofGetHeight() / 2, 260);
+		directionalLight->setLoc(ofGetWidth() / 2, ofGetHeight() / 2, 260);
 		directionalLight->readFromScript(data["directionalLight"]);
 		add(directionalLight);
 
 		shared_ptr<Light> basic = std::make_shared<Light>();
-		basic->getPlayer().setPosition(-100.0f, 400.0f, 190);
+		basic->setLoc(-100.0f, 400.0f, 190);
 		basic->readFromScript(data["basicLight"]);
 		add(basic);
 
 		shared_ptr<SpotLight> spotLight = std::make_shared<SpotLight>();
 		spotLight->getPlayer().setDiffuseColor(ofColor(255.f, 0.f, 0.f));
 		spotLight->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
-		spotLight->getPlayer().setPosition(ofGetWidth()*.1, ofGetHeight()*.1, 220);
+		spotLight->setLoc(ofGetWidth()*.1, ofGetHeight()*.1, 220);
 		// size of the cone of emitted light, angle between light axis and side of cone //
 		// angle range between 0 - 90 in degrees //
 		spotLight->getPlayer().setSpotlightCutOff(50);
@@ -347,7 +359,7 @@ namespace Software2552 {
 		// rate of falloff, illumitation decreases as the angle from the cone axis increases //
 		// range 0 - 128, zero is even illumination, 128 is max falloff //
 		spotLight->getPlayer().setSpotConcentration(2);
-		spotLight->getPlayer().setPosition(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
+		spotLight->setLoc(-ofGetWidth()*.1, ofGetHeight()*.1, 100);
 		spotLight->readFromScript(data["spotLight"]);
 		add(spotLight);
 
@@ -376,7 +388,7 @@ namespace Software2552 {
 	}
 	void TestScene::myDraw3dFixed() {
 	
-		drawlights();
+		//drawlights();
 
 		return; // comment out to draw by vertice, less confusing but feel free to add it back in
 
@@ -401,13 +413,18 @@ namespace Software2552 {
 		addAnimatable(vs);
 
 		shared_ptr<PointLight> light1 = std::make_shared<PointLight>();
-		light1->getPlayer().setPosition(0, 0, 300);
+		light1->setLoc(-200, 0, 600);
+		light1->getPlayer().setDiffuseColor(ofColor(255.f, 0.f, 0.f));
+		light1->getPlayer().setSpecularColor(ofColor(255.f, 255.f, 255.f));
 		light1->readFromScript(data["light1"]);
 		add(light1);
 
+		// both moving and non moving cameras for this scene must always be used
+
 		shared_ptr<Camera> cam2 = std::make_shared<Camera>();
 		cam2->setOrbit(false); // not rotating
-		cam2->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius() / 2);
+		float f = vs->getPlayer().getRadius();
+		//cam2->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius() / 2);
 		cam2->readFromScript(data["cam2"]);
 		add(cam2);
 
@@ -415,7 +432,7 @@ namespace Software2552 {
 
 		shared_ptr<Camera> cam1 = std::make_shared<Camera>();
 		cam1->setOrbit(true); // rotating
-		cam1->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius() * 2);
+		cam1->getPlayer().setPosition(0, 0, vs->getPlayer().getRadius());
 		cam1->readFromScript(data["cam1"]);
 		add(cam1);
 
@@ -454,6 +471,5 @@ namespace Software2552 {
 	void SpaceScene::myDraw3dMoving() {
 	}
 	void SpaceScene::myDraw3dFixed() {
-		drawlights();
 	}
 }

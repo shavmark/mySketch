@@ -241,6 +241,11 @@ namespace Software2552 {
 	class Light : public EquipementBaseClass {
 	public:
 		ofLight &getPlayer() { return player; }
+		void setX(float x) { loc.x = x; }
+		void setY(float y) { loc.y = y; }
+		void setZ(float z) { loc.z = z; }
+		void setLoc(float x, float y = 0, float z = 0) { loc.x = x; loc.y = y; loc.z = z; }
+		ofPoint loc; // light is set on object within camera scope
 	private:
 		ofLight player;
 		virtual bool myReadFromScript(const Json::Value &data);
@@ -438,7 +443,6 @@ namespace Software2552 {
 			ofTexture& getTexture();
 			ofFbo fbo;
 		private:
-			
 			ofTexture defaulttexture;
 		};
 		TextureVideo(const string&s) :ActorBasics(new Role(s)) {  }
@@ -461,6 +465,7 @@ namespace Software2552 {
 			void myDraw();
 			Sphere sphere;//bugbug make this a base pointer to share this object with any 3d shape
 		private:
+			bool set = false;
 			shared_ptr<TextureVideo> video;//bugbug make this a base pointer to share this object with any 3d shape
 		};
 		VideoSphere(const string&s) :ActorBasics(new Role(s)) {		}
