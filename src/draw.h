@@ -152,22 +152,7 @@ namespace Software2552 {
 		void triangle(bool rotate = false);
 		void shape(int twistx, int shifty, bool rect, bool fill, int rotate, int alpha = 100);
 	};
-	class Fbo : public ofFbo {
-	public:
-	};
 
-	class TextureFromImage : public ofTexture {
-	public:
-		void create(const string& name, float w, float h);
-		float getWidth() { return fbo.getWidth(); }
-		float getHeight() { return fbo.getHeight(); }
-		void bind() { fbo.getTextureReference().bind(); }
-		void unbind() { fbo.getTextureReference().unbind(); }
-		
-	private:
-		Fbo	fbo;
-
-	};
 	class Material : public ofMaterial {
 	public:
 	};

@@ -51,9 +51,10 @@ namespace Software2552 {
 		template<typename T> shared_ptr<T> CreateReadAndaddAnimatable(const Json::Value &data, const string&location);
 		template<typename T> shared_ptr<T> CreateReadAndaddAnimatable(const Json::Value &data);
 		shared_ptr<Camera> CreateReadAndaddCamera(const Json::Value &data, bool rotate=false);
-		shared_ptr<VideoSphere> CreateReadAndaddVideoSphere(const Json::Value &data, const string&location);
+		shared_ptr<VideoSphere> CreateReadAndaddVideoSphere(const Json::Value &data);
 		template<typename T>shared_ptr<T> CreateReadAndaddLight(const Json::Value &data);
-		shared_ptr<Planet> Stage::addPlanet(const string&textureName, const ofPoint& start, const Json::Value &data, const string&name);
+		void addPlanets(const Json::Value &data, ofPoint& min);
+
 		vector<shared_ptr<ActorBasics>>& getAnimatables() { return animatables; }
 
 		void draw2d();
@@ -99,11 +100,8 @@ namespace Software2552 {
 
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
 		Director director;
-
+		Background background;
 		void draw3d();
-
-		ofImage imageForBackground;//bugbug change this to use the background object that includes just a color background
-		string backgroundImageName;
 
 	};
 

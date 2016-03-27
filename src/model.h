@@ -153,6 +153,17 @@ namespace Software2552 {
 		DrawingBasics* player=nullptr; // need a down cast
 		shared_ptr<vector<shared_ptr<Reference>>> references=nullptr;
 	};
+	class TextureFromImage : public ofTexture {
+	public:
+		void create(const string& name, float w, float h);
+		float getWidth() { return fbo.getWidth(); }
+		float getHeight() { return fbo.getHeight(); }
+		void bind() { fbo.getTexture().bind(); }
+		void unbind() { fbo.getTexture().unbind(); }
+		ofTexture& getTexture() { return fbo.getTexture(); }
+	private:
+		ofFbo fbo;
+	};
 
 	template<typename T> void createTimeLineItems(const Settings& settings, vector<shared_ptr<ActorBasics>>& vec, const Json::Value &data, const string& key) {
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
@@ -168,6 +179,7 @@ namespace Software2552 {
 
 	class Background : public ActorBasics {
 	public:
+		enum TypeOfBackground {Image, Color, Gradient, none};
 		class Role : public DrawingBasics {
 		public:
 			Role() { mode = OF_GRADIENT_LINEAR; }
@@ -175,8 +187,12 @@ namespace Software2552 {
 			void myDraw();
 			void myUpdate();
 			Colors player;
+			ofImage& getImage() { return imageForBackground; }
+			void set(TypeOfBackground typeIn = Color) { type = typeIn; }
 		private:
+			ofImage imageForBackground;
 			ofGradientMode mode;
+			TypeOfBackground type = Color;
 			//ofBackgroundHex this is an option too bugbug enable background type
 		};
 
@@ -461,7 +477,7 @@ namespace Software2552 {
 			friend VideoSphere;
 			Role() : DrawingBasics() {	video = std::make_shared<TextureVideo>();	}
 			Role(const string& path) : DrawingBasics(path) { video = std::make_shared<TextureVideo>(path); }
-			void mySetup();
+			void mySetup() {};
 			void myDraw();
 			Sphere sphere;
 		private:
@@ -470,7 +486,7 @@ namespace Software2552 {
 		};
 		VideoSphere(const string&s) :ActorBasics(new Role(s)) {		}
 		VideoSphere() :ActorBasics(new Role()) {  }
-		ofSpherePrimitive& getPlayer() { return getRole<Role>()->sphere.getPlayer(); }
+		Sphere& getSphere() { return getRole<Role>()->sphere; }
 		shared_ptr<TextureVideo> getTexture() { return getRole<Role>()->video; }
 	private:
 		bool myReadFromScript(const Json::Value &data);
@@ -480,16 +496,14 @@ namespace Software2552 {
 	public:
 		class Role : public DrawingBasics {
 		public:
-			Role() : DrawingBasics() { }
-			Role(const string& path) : DrawingBasics(path) { }
+			Role() : DrawingBasics() { texture = std::make_shared<TextureFromImage>(); }
+			void mySetup();
 			void myDraw();
 			Sphere sphere;
-			shared_ptr<ofTexture> getTexture() {	return texture;		}
-			void setTexture(shared_ptr<ofTexture>);
+			shared_ptr<TextureFromImage> getTexturePtr() {	return texture;		}
 		private:
-			shared_ptr<ofTexture> texture=nullptr;
+			shared_ptr<TextureFromImage> texture=nullptr;
 		};
-		Planet(const string&s) :ActorBasics(new Role(s)) {		}
 		Planet() :ActorBasics(new Role()) {  }
 		Sphere& getSphere() { return getRole<Role>()->sphere; }
 	private:

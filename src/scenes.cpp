@@ -64,12 +64,8 @@ namespace Software2552 {
 	void Stage::draw() {
 
 		//bugbug code in the data driven background object
-		if (backgroundImageName.size() > 0) {
-			imageForBackground.draw(0, 0);
-		}
-		else {
-			ofSetBackgroundColor(ofColor::white);
-		}
+		background.getRole<Background::Role>()->getImage().resize(ofGetWidth(), ofGetHeight());
+		background.getRole<Background::Role>()->getImage().draw(0, 0);
 
 		if (drawIn2d()) {
 			ofPushStyle();
@@ -113,13 +109,8 @@ namespace Software2552 {
 	}
 
 	void Stage::setup() {
-		
-		if (backgroundImageName.size() > 0) {
-			imageForBackground.load(backgroundImageName);
-		}
-		for (auto& a : animatables) {
-			a->getDefaultPlayer()->setupForDrawing();
-		}
+
+		background.getRole<Background::Role>()->mySetup();
 
 		material.setShininess(90);
 		material.setSpecularColor(ofColor::olive);
@@ -132,9 +123,8 @@ namespace Software2552 {
 			a->getDefaultPlayer()->updateForDrawing();
 		}
 
-		if (backgroundImageName.size() > 0) {
-			imageForBackground.resize(ofGetWidth(), ofGetHeight());
-		}
+		background.getRole<Background::Role>()->getImage().resize(ofGetWidth(), ofGetHeight());
+		background.getRole<Background::Role>()->getImage().update();
 
 		myUpdate();
 
@@ -258,13 +248,7 @@ namespace Software2552 {
 	//great animation example
 	bool TestBallScene::myCreate(const Json::Value &data) {
 		try {
-		
-			shared_ptr<Ball> b = std::make_shared<Ball>();
-			b->readFromScript(data);
-
-			addAnimatable(b);
-			
-			return true;
+			return CreateReadAndaddAnimatable<Ball>(data) != nullptr;
 		}
 		catch (std::exception e) {
 			logErrorString(e.what());
@@ -287,23 +271,33 @@ namespace Software2552 {
 	template<typename T> shared_ptr<T> Stage::CreateReadAndaddAnimatable(const Json::Value &data, const string&location) {
 		shared_ptr<T> p = std::make_shared<T>(location);
 		if (p && p->readFromScript(data)){
+			p->setSettings(settings);
 			addAnimatable(p);
 		}
 		return p;
 	}
-	shared_ptr<Planet> Stage::addPlanet(const string&textureName, const ofPoint& start, const Json::Value &data, const string&name) {
-		shared_ptr<Planet> p = std::make_shared<Planet>(textureName);
-		if (p) {
-			p->getSphere().getPlayer().setPosition(start);
-			p->readFromScript(data[name]);
-			addAnimatable(p);
+	// return new location
+	void Stage::addPlanets(const Json::Value &data, ofPoint& min) {
+		ofPoint point;
+		for (Json::ArrayIndex j = 0; j < data.size(); ++j) {
+			shared_ptr<Planet> p = std::make_shared<Planet>();
+			if (p) {
+				p->setSettings(settings);// pass on settings
+				point.x = ofRandom(min.x + point.x*1.2, point.x * 2.8);
+				point.y = ofRandom(min.y, 500);
+				point.z = ofRandom(min.z, 500);
+				p->getSphere().getPlayer().setPosition(point);
+				p->readFromScript(data[j]);
+				addAnimatable(p);
+			}
 		}
-		return p;
+
 	}
 
 	template<typename T> shared_ptr<T> Stage::CreateReadAndaddAnimatable(const Json::Value &data) {
 		shared_ptr<T> p = std::make_shared<T>();
 		if (p && p->readFromScript(data)) {
+			p->setSettings(settings);
 			addAnimatable(p);
 		}
 		return p;
@@ -324,18 +318,19 @@ namespace Software2552 {
 		}
 		return p;
 	}
-	shared_ptr<VideoSphere> Stage::CreateReadAndaddVideoSphere(const Json::Value &data, const string&location){
+	shared_ptr<VideoSphere> Stage::CreateReadAndaddVideoSphere(const Json::Value &data){
 
-		shared_ptr<VideoSphere> vs = std::make_shared<VideoSphere>(location);
+		shared_ptr<VideoSphere> vs = std::make_shared<VideoSphere>();
 		if (vs) {
+			vs->setSettings(settings);
+			vs->getTexture()->setSettings(settings);
 			vs->readFromScript(data);
+			vs->getTexture()->readFromScript(data);
 			addAnimatable(vs->getTexture());
 			addAnimatable(vs);
 		}
 		return vs;
 	}
-
-
 
 	// bugbug all items in test() to come from json or are this is done in Director
 	bool TestScene::myCreate(const Json::Value &data) {
@@ -376,25 +371,16 @@ namespace Software2552 {
 
 	bool SpaceScene::myCreate(const Json::Value &data) {
 
-		shared_ptr<VideoSphere> vs = CreateReadAndaddVideoSphere(data["videosphere"], "Clyde.mp4");
+		shared_ptr<VideoSphere> vs = CreateReadAndaddVideoSphere(data["videoSphere"]);
+
 		CreateReadAndaddLight<PointLight>(data["light1"]);
 		CreateReadAndaddCamera(data["cam2"]);
 		CreateReadAndaddCamera(data["cam1"], true);
 
 		setBackgroundImageName("hubble1.jpg");//bugbug read from json
 
-		float xStart = (vs->getPlayer().getRadius()*2) / 3;
-		float offset = abs(xStart);
-		addPlanet("earth_day.jpg", ofPoint(xStart, 0, offset + 100), data, "p1");
-
-		xStart += ofRandom(xStart, xStart * 1.2); // need to keep sign
-		addPlanet("g04_s65_34658.gif", ofPoint(xStart, ofRandom(0, 100), offset + 100), data, "p2");
-		
-		xStart += ofRandom(xStart, (vs->getPlayer().getRadius() * 2) / 2); // need to keep sign
-		addPlanet("hubble1.jpg", ofPoint(xStart, ofRandom(0, 100), offset + 100), data, "p3");
-		
-		xStart = ofRandom(xStart, xStart * .2); // need to keep sign
-		addPlanet("Floodwaters_of_Mars_highlight_std.jpg", ofPoint(xStart, ofRandom(0, 100), offset + 100), data, "p4");
+		ofPoint min(vs->getSphere().getPlayer().getRadius() * 2, 0, 200);
+		addPlanets(data["Planets"], min);
 
 		return true;
 	}

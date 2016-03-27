@@ -259,16 +259,6 @@ namespace Software2552 {
 		ofTriangle(0, 0, -50, 100, 50, 100);
 	}
 
-	void TextureFromImage::create(const string& name, float w, float h) {
-		// create texture
-		ofLoadImage(*this, name);
-		fbo.allocate(w, h, GL_RGB);
-		fbo.begin();//fbo does drawing
-		ofSetColor(ofColor::white); // no image color change when using white
-		draw(0, 0, w, h);
-		fbo.end();// normal drawing resumes
-	}
-
 
 
 	void Line3D::setup() {

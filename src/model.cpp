@@ -261,36 +261,33 @@ namespace Software2552 {
 			 return false;
 		 }
 
-		 //if (!data.isNull()) {
+		// any actor can have settings set, or defaults used
+		Settings::readFromScript(data["settings"]);
 
+		shared_ptr<AnimiatedColor> ac = std::make_shared<AnimiatedColor>(getColor());
+		ac->readFromScript(data["coloranimation"]);
+		player->setColorAnimation(ac);
 
-			 // any actor can have settings set, or defaults used
-			 Settings::readFromScript(data["settings"]);
+		// any actor can have a reference
+		references = parse<Reference>(data["references"]);
 
-			 shared_ptr<AnimiatedColor> ac = std::make_shared<AnimiatedColor>(getColor());
-			 ac->readFromScript(data["coloranimation"]);
-			 player->setColorAnimation(ac);
+		// all actors can have a location
+		readStringFromJson(player->getLocationPath(), data["locationPath"]);
+		string s = player->getLocationPath();
 
-			 // any actor can have a reference
-			 references = parse<Reference>(data["references"]);
+		// optional sizes, locations, durations for animation etc
+		readJsonValue(player->w, data["width"]);
+		readJsonValue(player->h, data["height"]);
+		float t = 0;
+		readJsonValue(t, data["duration"]);
+		player->getAnimationHelper()->setObjectLifetime(t);
+		float w = 0;
+		readJsonValue(w, data["wait"]);
+		player->getAnimationHelper()->setWait(w);
+		Point3D point;
+		point.readFromScript(data["startingPoint"]);
+		player->getAnimationHelper()->setPosition(point);
 
-			 // all actors can have a location
-			 readStringFromJson(player->getLocationPath(), data["location"]);
-
-			 // optional sizes, locations, durations for animation etc
-			 readJsonValue(player->w, data["width"]);
-			 readJsonValue(player->h, data["height"]);
-			 float t = 0;
-			 readJsonValue(t, data["duration"]);
-			 player->getAnimationHelper()->setObjectLifetime(t);
-			 float w = 0;
-			 readJsonValue(w, data["wait"]);
-			 player->getAnimationHelper()->setWait(w);
-			 Point3D point;
-			 point.readFromScript(data["startingPoint"]);
-			 player->getAnimationHelper()->setPosition(point);
-
-			 //}
 		// read derived class data
 		myReadFromScript(data);
 
@@ -494,8 +491,8 @@ namespace Software2552 {
 	bool Camera::myReadFromScript(const Json::Value &data) {
 		//bugbug fill in
 		setOrbit(false); // not rotating
-		player.setScale(-1, -1, 1); // showing video
-		//getAnimationHelper()->setPositionZ(videoSphere.getPlayer().getRadius() * 2 + 100);
+		//player.setScale(-1, -1, 1); // showing video
+		player.setPosition(ofRandom(-100, 200), ofRandom(60, 70), ofRandom(600, 700));
 		player.setFov(60);
 		return true;
 	}
@@ -515,10 +512,10 @@ namespace Software2552 {
 		//get from json player.setDiffuseColor(ofColor(0.f, 255.f, 0.f));
 		// specular color, the highlight/shininess color //
 		//get from json player.setSpecularColor(ofColor(255.f, 0, 0));
-		getPlayer().setDiffuseColor(ofColor(0.f, 255.f, 255.f)); // set defaults
+		getPlayer().setDiffuseColor(ofColor(255.f, 255.f, 255.f)); // set defaults
 		// specular color, the highlight/shininess color //
 		getPlayer().setSpecularColor(ofColor(255.f, 0, 255.f));
-		setLoc(ofGetWidth()*.2 + ofRandom(0, 25), ofGetHeight()*.2 + ofRandom(0, 25), 150+ofRandom(10,100));
+		setLoc(ofRandom(ofGetWidth()*.2, ofGetWidth()*.4), ofRandom(ofGetHeight()*.2, ofGetHeight()*.4), ofRandom(500,700));
 		//could get from json? not sure yet getAnimationHelper()->setPositionY(ofGetHeight()*.2);
 		return true;
 	}
@@ -610,13 +607,25 @@ namespace Software2552 {
 
 		return true;
 	}
+	bool Background::myReadFromScript(const Json::Value &data) {
+		return true;
+	}
 	void Background::Role::myDraw() {
-		//ofBackgroundHex this is an option too bugbug enable background type
-
-		ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
-			ofColor::fromHex(Colors::getBackground()), mode);
-		Text text;
-		text.drawText("print", 100, 200);
+		switch (type) {
+		case Image:
+			imageForBackground.draw(0, 0);
+			break;
+		case Color:
+			ofSetBackgroundColor(Colors::getBackground());
+			break;
+		case Gradient:
+			ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
+				ofColor::fromHex(Colors::getBackground()), mode);
+			break;
+		case none:
+			ofSetBackgroundColor(ofColor::white);
+			break;
+		}
 	}
 
 	void Paragraph::Role::myDraw() {
@@ -626,6 +635,10 @@ namespace Software2552 {
 	void Background::Role::mySetup() {
 		mode = OF_GRADIENT_LINEAR;
 		getAnimationHelper()->setRefreshRate(60000);// just set something different while in dev
+		if (getLocationPath().size() > 0) {
+			imageForBackground.load(getLocationPath());
+			type = Image;
+		}
 	}
 	// colors and background change over time but not at the same time
 	void Background::Role::myUpdate() {
@@ -905,45 +918,52 @@ namespace Software2552 {
 		//bugbug just need to do this one time, maybe set a flag
 		if (video->getTexture().isAllocated() && !set) {
 			sphere.getPlayer().mapTexCoordsFromTexture(video->getTexture());
-			//sphere.getPlayer().mapTexCoords(0, video->getTexture().getWidth(), 0, video->getTexture().getHeight());
 			sphere.getPlayer().rotate(180, 0, 1, 0.0);
 			set = true;
 		}
 		video->getRole<TextureVideo::Role>()->mybind();
-		sphere.getRole<Role>()->myDraw();
+		sphere.getRole<Sphere::Role>()->myDraw();
 		video->getRole<TextureVideo::Role>()->myunbind();
-	}
-	void VideoSphere::Role::mySetup() {
 	}
 	bool VideoSphere::myReadFromScript(const Json::Value &data) {
 
 		setType(DrawingBasics::draw3dFixedCamera);
-		getRole<Sphere::Role>()->setWireframe(true);
-		getPlayer().set(250, 180);// set default
+		getSphere().getRole<Sphere::Role>()->setWireframe(false);
+		getSphere().getPlayer().set(250, 180);// set default
 		if (getTexture() != nullptr) {
 			getTexture()->readFromScript(data);
 		}
 		return true;
 	}
-	void Planet::Role::setTexture(shared_ptr<ofTexture>p) {
-		texture = p;
+	void TextureFromImage::create(const string& name, float w, float h) {
+		// create texture
+		ofLoadImage(*this, name);
+		fbo.allocate(w, h, GL_RGB);
+		fbo.begin();//fbo does drawing
+		ofSetColor(ofColor::white); // no image color change when using white
+		draw(0, 0, w, h);
+		fbo.end();// normal drawing resumes
+	}
+
+	void Planet::Role::mySetup() {
+
 	}
 	bool Planet::myReadFromScript(const Json::Value &data) {
 		setType(DrawingBasics::draw3dMovingCamera);
 		getSphere().getRole<Sphere::Role>()->setWireframe(false);
 		float r = ofRandom(5, 100);
 		getSphere().getPlayer().set(r, 40);
-		shared_ptr<TextureFromImage>texture = std::make_shared<TextureFromImage>();
-		texture->create(getRole<Role>()->getLocationPath(), r * 2, r * 2);
-		getSphere().getPlayer().mapTexCoordsFromTexture(*texture);
-		getRole<Role>()->setTexture(texture);
-		//getSphere().getPlayer()->move(start);
+		//bugbug could get sphere location here
+
+		getRole<Role>()->getTexturePtr()->create(getDefaultPlayer()->getLocationPath(), r * 2, r * 2);
+
+		getSphere().getPlayer().mapTexCoordsFromTexture(getRole<Role>()->getTexturePtr()->getTexture());
 		return true;
 	}
 	void Planet::Role::myDraw() {
-		getTexture()->bind();
+		getTexturePtr()->bind();
 		sphere.getPlayer().rotate(30, 0, 2.0, 0.0);
 		sphere.getRole<Role>()->myDraw();
-		getTexture()->unbind();
+		getTexturePtr()->unbind();
 	}
 }
