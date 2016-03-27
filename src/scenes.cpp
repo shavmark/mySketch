@@ -375,7 +375,8 @@ namespace Software2552 {
 		CreateReadAndaddCamera(data["cam2"]);
 		CreateReadAndaddCamera(data["cam1"], true);
 
-		setBackgroundImageName("hubble1.jpg");//bugbug read from json
+		background.getDefaultPlayer()->setLocationPath("hubble1.jpg");
+		background.readFromScript(data);
 
 		ofPoint min(vs->getSphere().getPlayer().getRadius() * 2, 0, 200);
 		addPlanets(data["Planets"], min);

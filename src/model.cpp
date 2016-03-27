@@ -608,6 +608,15 @@ namespace Software2552 {
 		return true;
 	}
 	bool Background::myReadFromScript(const Json::Value &data) {
+		getRole<Role>()->setForegroundColor(Colors::getForeground());
+		getRole<Role>()->setBackgroundColor(Colors::getBackground());
+		getRole<Role>()->type = ColorFixed;
+		getRole<Role>()->mode = OF_GRADIENT_LINEAR;
+		getRole<Role>()->getAnimationHelper()->setRefreshRate(60000);// just set something different while in dev
+		if (getRole<Role>()->getLocationPath().size() > 0) {
+			getRole<Role>()->imageForBackground.load(getRole<Role>()->getLocationPath());
+			getRole<Role>()->type = Image;
+		}
 		return true;
 	}
 	void Background::Role::myDraw() {
@@ -615,12 +624,14 @@ namespace Software2552 {
 		case Image:
 			imageForBackground.draw(0, 0);
 			break;
-		case Color:
-			ofSetBackgroundColor(Colors::getBackground());
+		case ColorFixed:
+		case ColorChanging:
+			ofSetBackgroundColor(currentBackgroundColor);
 			break;
-		case Gradient:
+		case GradientFixed:
+		case GradientChanging:
 			ofBackgroundGradient(ofColor::fromHex(Colors::getForeground()),
-				ofColor::fromHex(Colors::getBackground()), mode);
+				currentBackgroundColor, mode);
 			break;
 		case none:
 			ofSetBackgroundColor(ofColor::white);
@@ -628,41 +639,42 @@ namespace Software2552 {
 		}
 	}
 
-	void Paragraph::Role::myDraw() {
-		player.setPosition(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
-		player.draw();
-	}
 	void Background::Role::mySetup() {
-		mode = OF_GRADIENT_LINEAR;
-		getAnimationHelper()->setRefreshRate(60000);// just set something different while in dev
-		if (getLocationPath().size() > 0) {
-			imageForBackground.load(getLocationPath());
-			type = Image;
-		}
 	}
 	// colors and background change over time but not at the same time
 	void Background::Role::myUpdate() {
 		if (type == Image) {
 			getImage().resize(ofGetWidth(), ofGetHeight());
 			getImage().update();
+			return;
 		}
-
-		//bugbug can add other back grounds like a video loop, sound
-		// picture, any graphic etc
-		if (getAnimationHelper()->refreshAnimation()) {
-			switch ((int)ofRandom(0, 3)) {
-			case 0:
-				mode = OF_GRADIENT_LINEAR;
-				break;
-			case 1:
-				mode = OF_GRADIENT_CIRCULAR;
-				break;
-			case 2:
-				mode = OF_GRADIENT_BAR;
-				break;
+		if (type == ColorChanging || type == GradientChanging) {
+			setForegroundColor(Colors::getForeground());
+			setBackgroundColor(Colors::getBackground());
+		}
+		if (type == GradientChanging) {
+			//bugbug can add other back grounds like a video loop, sound
+			// picture, any graphic etc
+			//bugbug test out refreshAnimation
+			if (getAnimationHelper()->refreshAnimation()) {
+				switch ((int)ofRandom(0, 3)) {
+				case 0:
+					mode = OF_GRADIENT_LINEAR;
+					break;
+				case 1:
+					mode = OF_GRADIENT_CIRCULAR;
+					break;
+				case 2:
+					mode = OF_GRADIENT_BAR;
+					break;
+				}
 			}
 		}
 
+	}
+	void Paragraph::Role::myDraw() {
+		player.setPosition(getAnimationHelper()->getCurrentPosition().x, getAnimationHelper()->getCurrentPosition().y);
+		player.draw();
 	}
 	bool ChannelList::skipChannel(const string&keyname) {
 		for (auto& item : list) {

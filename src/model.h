@@ -179,25 +179,25 @@ namespace Software2552 {
 
 	class Background : public ActorBasics {
 	public:
-		enum TypeOfBackground {Image, Color, Gradient, none};
+		enum TypeOfBackground {Image, ColorFixed, ColorChanging, GradientFixed, GradientChanging, none};
 		class Role : public DrawingBasics {
 		public:
-			Role() { mode = OF_GRADIENT_LINEAR; }
+			Role() {	mode = OF_GRADIENT_LINEAR; 		}
 			void mySetup();
 			void myDraw();
 			void myUpdate();
-			Colors player;
+			void setForegroundColor(const ofColor&c) { currentForegroundColor = c; }
+			void setBackgroundColor(const ofColor&c) { currentBackgroundColor = c; }
 			ofImage& getImage() { return imageForBackground; }
-			void set(TypeOfBackground typeIn = Color) { type = typeIn; }
-		private:
+			void set(TypeOfBackground typeIn = ColorFixed) { type = typeIn; }
+
 			ofImage imageForBackground;
 			ofGradientMode mode;
-			TypeOfBackground type = Color;
-			//ofBackgroundHex this is an option too bugbug enable background type
+			TypeOfBackground type = ColorFixed;
+			ofColor currentBackgroundColor;
+			ofColor currentForegroundColor;
 		};
-
 		Background() :ActorBasics(new Role()) {  }
-		Colors& getPlayer() { return getRole<Role>()->player; }
 	private:
 		bool myReadFromScript(const Json::Value &data);
 

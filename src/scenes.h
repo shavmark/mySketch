@@ -37,8 +37,6 @@ namespace Software2552 {
 		Settings settings;
 		string &getKeyName() { return keyname; }
 	protected:
-		// drawing tools
-		void setBackgroundImageName(const string&name) { backgroundImageName = name; }
 
 		void add(shared_ptr<Camera> camera) { cameras.push_back(camera); };
 		void add(shared_ptr<Light> light) { lights.push_back(light); };
@@ -78,6 +76,7 @@ namespace Software2552 {
 		virtual bool drawIn2d() { return true; }
 		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>, bool drawfixed); // derive to change where cameras are
 		string keyname;
+		Background background;
 
 	private:
 		static bool OKToRemove(shared_ptr<ActorBasics> me) {
@@ -100,7 +99,6 @@ namespace Software2552 {
 
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
 		Director director;
-		Background background;
 		void draw3d();
 
 	};
