@@ -64,8 +64,7 @@ namespace Software2552 {
 	void Stage::draw() {
 
 		//bugbug code in the data driven background object
-		background.getRole<Background::Role>()->getImage().resize(ofGetWidth(), ofGetHeight());
-		background.getRole<Background::Role>()->getImage().draw(0, 0);
+		background.getRole<Background::Role>()->myDraw();
 
 		if (drawIn2d()) {
 			ofPushStyle();
@@ -123,8 +122,7 @@ namespace Software2552 {
 			a->getDefaultPlayer()->updateForDrawing();
 		}
 
-		background.getRole<Background::Role>()->getImage().resize(ofGetWidth(), ofGetHeight());
-		background.getRole<Background::Role>()->getImage().update();
+		background.getRole<Background::Role>()->myUpdate();
 
 		myUpdate();
 

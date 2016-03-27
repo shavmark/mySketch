@@ -642,6 +642,11 @@ namespace Software2552 {
 	}
 	// colors and background change over time but not at the same time
 	void Background::Role::myUpdate() {
+		if (type == Image) {
+			getImage().resize(ofGetWidth(), ofGetHeight());
+			getImage().update();
+		}
+
 		//bugbug can add other back grounds like a video loop, sound
 		// picture, any graphic etc
 		if (getAnimationHelper()->refreshAnimation()) {
