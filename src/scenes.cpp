@@ -62,6 +62,9 @@ namespace Software2552 {
 		if (backgroundIn) {
 			// should always be first in this vector
 			backgroundIn->readFromScript(data["background"]); // in low memory there will be no back ground
+			if (!getAnimatables().empty) {
+				getAnimatables().pop_front(); // remove current if present, assumes first element is always background
+			}
 			getAnimatables().push_front(backgroundIn);
 		}
 	}
