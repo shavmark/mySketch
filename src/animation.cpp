@@ -84,7 +84,7 @@ namespace Software2552 {
 		if (getColorAnimation() != nullptr) {
 			getColorAnimation()->update(dt);
 		}
-		if (getAnimationHelper()->isAnimationEnabled()) {
+		if (getAnimationHelper() && getAnimationHelper()->isAnimationEnabled()) {
 			getAnimationHelper()->update(dt);
 		}
 		myUpdate(); // call derived classes

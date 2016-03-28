@@ -27,7 +27,7 @@ namespace Software2552 {
 		void setup();
 		void update();
 		void draw();
-		virtual bool create(const Json::Value &data) { return myCreate(data); };
+		virtual bool create(const Json::Value &data);
 
 		void clear(bool force=false);
 		void pause();
@@ -76,7 +76,6 @@ namespace Software2552 {
 		virtual bool drawIn2d() { return true; }
 		virtual void installLightAndMaterialThenDraw(shared_ptr<Camera>, bool drawfixed); // derive to change where cameras are
 		string keyname;
-		Background background;
 
 	private:
 		static bool OKToRemove(shared_ptr<ActorBasics> me) {

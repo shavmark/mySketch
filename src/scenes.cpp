@@ -8,7 +8,6 @@
 
 namespace Software2552 {
 
-
 	// convert name to object
 	shared_ptr<Stage> getScene(const string&name)
 	{
@@ -61,10 +60,19 @@ namespace Software2552 {
 		logErrorString("no camera");
 		return nullptr;
 	}
-	void Stage::draw() {
+	
+	bool Stage::create(const Json::Value &data) { 
 
-		//bugbug code in the data driven background object
-		background.getRole<Background::Role>()->myDraw();
+		shared_ptr<Background> background = std::make_shared<Background>();
+		if (background) {
+			background->readFromScript(data); // in low memory there will be no back ground
+			addAnimatable(background); // should always be first in this vector
+		}
+
+		return myCreate(data); 
+	};
+
+	void Stage::draw() {
 
 		if (drawIn2d()) {
 			ofPushStyle();
@@ -109,7 +117,6 @@ namespace Software2552 {
 
 	void Stage::setup() {
 
-		background.getRole<Background::Role>()->mySetup();
 
 		material.setShininess(90);
 		material.setSpecularColor(ofColor::olive);
@@ -121,8 +128,6 @@ namespace Software2552 {
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->updateForDrawing();
 		}
-
-		background.getRole<Background::Role>()->myUpdate();
 
 		myUpdate();
 
@@ -374,9 +379,6 @@ namespace Software2552 {
 		CreateReadAndaddLight<PointLight>(data["light1"]);
 		CreateReadAndaddCamera(data["cam2"]);
 		CreateReadAndaddCamera(data["cam1"], true);
-
-		background.getDefaultPlayer()->setLocationPath("hubble1.jpg");
-		background.readFromScript(data);
 
 		ofPoint min(vs->getSphere().getPlayer().getRadius() * 2, 0, 200);
 		addPlanets(data["Planets"], min);

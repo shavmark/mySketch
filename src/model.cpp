@@ -610,19 +610,23 @@ namespace Software2552 {
 	bool Background::myReadFromScript(const Json::Value &data) {
 		getRole<Role>()->setForegroundColor(Colors::getForeground());
 		getRole<Role>()->setBackgroundColor(Colors::getBackground());
-		getRole<Role>()->type = ColorFixed;
-		getRole<Role>()->mode = OF_GRADIENT_LINEAR;
+		getRole<Role>()->setType(ColorFixed);
+		getRole<Role>()->setGradientMode(OF_GRADIENT_LINEAR);
 		getRole<Role>()->getAnimationHelper()->setRefreshRate(60000);// just set something different while in dev
-		if (getRole<Role>()->getLocationPath().size() > 0) {
-			getRole<Role>()->imageForBackground.load(getRole<Role>()->getLocationPath());
-			getRole<Role>()->type = Image;
+		string backgroundimage;
+		READSTRING(backgroundimage, data); // can be read in other areas and set in this object
+		if (backgroundimage.size() > 0) {
+			getRole<Role>()->player = std::make_shared<Picture>(backgroundimage);
+			getRole<Role>()->setType(Image);
 		}
 		return true;
 	}
 	void Background::Role::myDraw() {
 		switch (type) {
 		case Image:
-			imageForBackground.draw(0, 0);
+			if (player) {
+				player->getPlayer().draw(0, 0);
+			}
 			break;
 		case ColorFixed:
 		case ColorChanging:
@@ -634,18 +638,16 @@ namespace Software2552 {
 				currentBackgroundColor, mode);
 			break;
 		case none:
-			ofSetBackgroundColor(ofColor::white);
+			//ofSetBackgroundColor(ofColor::white);
 			break;
 		}
 	}
 
-	void Background::Role::mySetup() {
-	}
 	// colors and background change over time but not at the same time
 	void Background::Role::myUpdate() {
-		if (type == Image) {
-			getImage().resize(ofGetWidth(), ofGetHeight());
-			getImage().update();
+		if (type == Image && player) {
+			player->getPlayer().resize(ofGetWidth(), ofGetHeight());
+			player->getPlayer().update();
 			return;
 		}
 		if (type == ColorChanging || type == GradientChanging) {
