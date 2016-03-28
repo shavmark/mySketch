@@ -231,7 +231,7 @@ namespace Software2552 {
 	void Colors::setup() {
 
 		// only needs to be setup one time since its static data
-		if (getList().size() == 0) {
+		if (getList().empty()) {
 			std::array<int, COLORNAME_COUNT> modern =
 			{ 0x003F53, 0x3994B3, 0x64B1D1, 0x00626D, 0x079CBA, 0x60CDD9, 0x003E6B,
 				0x0073A0, 0xBAECE9, 0xD0FC0E, 0xFDB075, 0xFFD76E, 0x4D5E6C, 0x858E9C, 0xCCD1D5 };

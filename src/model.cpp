@@ -613,10 +613,10 @@ namespace Software2552 {
 		getRole<Role>()->setType(ColorFixed);
 		getRole<Role>()->setGradientMode(OF_GRADIENT_LINEAR);
 		getRole<Role>()->getAnimationHelper()->setRefreshRate(60000);// just set something different while in dev
-		string backgroundimage;
-		READSTRING(backgroundimage, data); // can be read in other areas and set in this object
-		if (backgroundimage.size() > 0) {
-			getRole<Role>()->player = std::make_shared<Picture>(backgroundimage);
+		string image;
+		READSTRING(image, data); // can be read in other areas and set in this object
+		if (image.size() > 0) {
+			getRole<Role>()->player = std::make_shared<Picture>(image);
 			getRole<Role>()->setType(Image);
 		}
 		return true;

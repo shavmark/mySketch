@@ -4,6 +4,7 @@
 #include "animation.h"
 #include "color.h"
 #include "draw.h"
+#include <forward_list>
 
 // json driven model
 
@@ -165,13 +166,13 @@ namespace Software2552 {
 		ofFbo fbo;
 	};
 
-	template<typename T> void createTimeLineItems(const Settings& settings, vector<shared_ptr<ActorBasics>>& vec, const Json::Value &data, const string& key) {
+	template<typename T> void createTimeLineItems(const Settings& settings, forward_list<shared_ptr<ActorBasics>>& vec, const Json::Value &data, const string& key) {
 		for (Json::ArrayIndex j = 0; j < data[key].size(); ++j) {
 			shared_ptr<T> v = std::make_shared<T>();
 			v->setSettings(settings); // inherit settings
 			if (v->readFromScript(data[key][j])) {
 				// only save if data was read in 
-				vec.push_back(v);
+				vec.push_front(v);
 			}
 		}
 	}

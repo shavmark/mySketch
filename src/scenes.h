@@ -3,6 +3,7 @@
 #include "model.h"
 #include "ofxBox2d.h"
 #include "draw.h"
+#include <forward_list>
 
 // home of custom scenes
 
@@ -13,7 +14,7 @@ namespace Software2552 {
 	class Director {
 	public:
 		// return a possibly changed and live value from the cameras vector
-		shared_ptr<Camera> pickem(vector<shared_ptr<Camera>>&cameras, bool rotating);
+		shared_ptr<Camera> pickem(forward_list<shared_ptr<Camera>>&cameras, bool rotating);
 		// owns scenes, read, run, delete when duration is over
 		//objectLifeTimeManager
 	};
@@ -28,7 +29,7 @@ namespace Software2552 {
 		void update();
 		void draw();
 		virtual bool create(const Json::Value &data);
-
+		virtual void setBackground(const Json::Value &data, shared_ptr<Background> background);
 		void clear(bool force=false);
 		void pause();
 		void resume();
@@ -38,14 +39,14 @@ namespace Software2552 {
 		string &getKeyName() { return keyname; }
 	protected:
 
-		void add(shared_ptr<Camera> camera) { cameras.push_back(camera); };
-		void add(shared_ptr<Light> light) { lights.push_back(light); };
+		void add(shared_ptr<Camera> camera) { cameras.push_front(camera); };
+		void add(shared_ptr<Light> light) { lights.push_front(light); };
 
-		vector<shared_ptr<Camera>>& getCameras() { return cameras; }
-		vector<shared_ptr<Light>>& getLights() { return lights; }
+		forward_list<shared_ptr<Camera>>& getCameras() { return cameras; }
+		forward_list<shared_ptr<Light>>& getLights() { return lights; }
 
 		// things to draw
-		void addAnimatable(shared_ptr<ActorBasics>p) { animatables.push_back(p); }
+		void addAnimatable(shared_ptr<ActorBasics>p) { animatables.push_front(p); }
 		template<typename T> shared_ptr<T> CreateReadAndaddAnimatable(const Json::Value &data, const string&location);
 		template<typename T> shared_ptr<T> CreateReadAndaddAnimatable(const Json::Value &data);
 		shared_ptr<Camera> CreateReadAndaddCamera(const Json::Value &data, bool rotate=false);
@@ -53,7 +54,7 @@ namespace Software2552 {
 		template<typename T>shared_ptr<T> CreateReadAndaddLight(const Json::Value &data);
 		void addPlanets(const Json::Value &data, ofPoint& min);
 
-		vector<shared_ptr<ActorBasics>>& getAnimatables() { return animatables; }
+		forward_list<shared_ptr<ActorBasics>>& getAnimatables() { return animatables; }
 
 		void draw2d();
 		void draw3dFixed();
@@ -81,19 +82,19 @@ namespace Software2552 {
 		static bool OKToRemove(shared_ptr<ActorBasics> me) {
 			return me->getDefaultPlayer()->OKToRemoveNormalPointer(me->getDefaultPlayer());
 		}
-		void removeExpiredItems(vector<shared_ptr<ActorBasics>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), OKToRemove), v.end());
+		void removeExpiredItems(forward_list<shared_ptr<ActorBasics>>&v) {
+			v.remove_if(OKToRemove);
 		}
-		void removeExpiredItems(vector<shared_ptr<Camera>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
+		void removeExpiredItems(forward_list<shared_ptr<Camera>>&v) {
+			v.remove_if(objectLifeTimeManager::OKToRemove);
 		}
-		void removeExpiredItems(vector<shared_ptr<Light>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
+		void removeExpiredItems(forward_list<shared_ptr<Light>>&v) {
+			v.remove_if(objectLifeTimeManager::OKToRemove);
 		}
 		//bugbug maybe just animatables is needed, a a typeof or such can be used
-		vector<shared_ptr<ActorBasics>> animatables;
-		vector<shared_ptr<Camera>> cameras;
-		vector<shared_ptr<Light>> lights;
+		forward_list<shared_ptr<ActorBasics>> animatables;
+		forward_list<shared_ptr<Camera>> cameras;
+		forward_list<shared_ptr<Light>> lights;
 		//bugbug can put more things like spheres here once spheres work and if it makes sense
 
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>

@@ -25,49 +25,50 @@ namespace Software2552 {
 	}
 
 	// return a possibly modifed version such as camera moved
-	shared_ptr<Camera> Director::pickem(vector<shared_ptr<Camera>>&cameras, bool orbiting) {
-		if (cameras.size() == 0) {
-			return nullptr;
-		}
-		// maybe build this out using the color count techqiue (make that a base class?)
-		for (int i = 0; i < cameras.size(); ++i) {
+	shared_ptr<Camera> Director::pickem(forward_list<shared_ptr<Camera>>&cameras, bool orbiting) {
+		for (auto it = cameras.begin(); it != cameras.end(); ++it) {
 			if (orbiting) {
-				if (cameras[i]->isOrbiting()) {
-					return cameras[i];
+				if ((*it)->isOrbiting()) {
+					return (*it);
 				}
 			}
 			else {
-				if (!cameras[i]->isOrbiting()) {
+				if (!(*it)->isOrbiting()) {
 					//bugbug return only fixed cameras
-					return cameras[i];// stuff data in the Camera class
-					// lots to do here to make things nice, learn and see how to bring this in
-					//void lookAt(const ofNode& lookAtNode, const ofVec3f& upVector = ofVec3f(0, 1, 0));
-					//if (j == 1) {
-						//cameras[j].move(-100,0,0);
-						//cameras[j].pan(5);
-					//}
-					//else {
-						//cameras[j].move(100, 0, 0);
-					//}
-					//bugbug just one thing we can direct http://halfdanj.github.io/ofDocGenerator/ofEasyCam.html#CameraSettings
-					//float f = cameras[j].getDistance();
-					//figure all this out, with times, animation etc:
-					//cameras[j].setDistance(cameras[j].getDistance() + ofRandom(-100,100));
-					//return &cameras[j];
+					return (*it);// stuff data in the Camera class
+									  // lots to do here to make things nice, learn and see how to bring this in
+									  //void lookAt(const ofNode& lookAtNode, const ofVec3f& upVector = ofVec3f(0, 1, 0));
+									  //if (j == 1) {
+									  //cameras[j].move(-100,0,0);
+									  //cameras[j].pan(5);
+									  //}
+									  //else {
+									  //cameras[j].move(100, 0, 0);
+									  //}
+									  //bugbug just one thing we can direct http://halfdanj.github.io/ofDocGenerator/ofEasyCam.html#CameraSettings
+									  //float f = cameras[j].getDistance();
+									  //figure all this out, with times, animation etc:
+									  //cameras[j].setDistance(cameras[j].getDistance() + ofRandom(-100,100));
+									  //return &cameras[j];
 				}
+
 			}
 		}
 		logErrorString("no camera");
 		return nullptr;
 	}
-	
+	// set background object at location 0 every time
+	void Stage::setBackground(const Json::Value &data, shared_ptr<Background> backgroundIn) {
+		if (backgroundIn) {
+			// should always be first in this vector
+			backgroundIn->readFromScript(data["background"]); // in low memory there will be no back ground
+			getAnimatables().push_front(backgroundIn);
+		}
+	}
+
 	bool Stage::create(const Json::Value &data) { 
 
-		shared_ptr<Background> background = std::make_shared<Background>();
-		if (background) {
-			background->readFromScript(data); // in low memory there will be no back ground
-			addAnimatable(background); // should always be first in this vector
-		}
+		setBackground(data, std::make_shared<Background>());
 
 		return myCreate(data); 
 	};
