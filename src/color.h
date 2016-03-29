@@ -21,12 +21,8 @@ namespace Software2552 {
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
 		// just use multiple ColorSets, find out more as we continue on
-		ColorSet(const ColorGroup& groupIn);
-		ColorSet(const ColorGroup& groupIn, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4, const ofColor& color5);
-		ColorSet(const ColorGroup&groupIn, int color1, int color2, int color3, int color4, int color5);
-		void setSetcolors(int c, ...);
-		void setGroup(const ColorGroup&groupin) {group = groupin;}
-		static ColorGroup setGroup(const string&name);
+		ColorSet(const ColorGroup groupIn, int fore, int back, int text, int other, int lightest, int darkest);
+		ColorGroup setGroup(const string&name);
 		ColorGroup getGroup() const {return group;}
 		int getHex(int index) const  {return colors[index];	}
 		bool operator== (const ColorSet& rhs) {	return getGroup() == rhs.getGroup();}
@@ -34,10 +30,8 @@ namespace Software2552 {
 		bool lessThan(const ColorSet& j, ColorGroup type);
 		ColorSet& operator=(const ColorSet& rhs);
 		int size() { return colors.size(); }
-		ofColor getOfColor(int index) {
-			return ofColor().fromHex(getHex(index));
-		}
 	private:
+		void setSetcolors(int c, ...);
 		ColorGroup group;
 		vector<int> colors; //hex values of all matching colors
 	};
@@ -56,7 +50,8 @@ namespace Software2552 {
 			A, B, C, D, E, F, G, H, I, J, K, L, M, N, O
 		};
 		// known colors, these are indexs into the color data
-		enum ColorUse {foreColor,backColor,	fontColor, lightestColor, darketsColor	};
+		enum ColorUse {foreColor,backColor,	fontColor, lightestColor, darkestColor
+		};
 
 		void update();
 
@@ -67,7 +62,6 @@ namespace Software2552 {
 				smallest = -1;
 			}
 			vector<shared_ptr<ColorSet>> colorlist;
-			std::map<std::pair <ColorSet::ColorGroup, ColorList::ColorName>, int> colorTable; // key,hex pair
 			int currentColor;
 			int smallest;//index of smallest value
 			int lightest = 0;
@@ -96,29 +90,17 @@ namespace Software2552 {
 
 		static shared_ptr<colordata> privateData;// never call directly to assure allocation
 		static shared_ptr<colordata> getprivateData();
-		static shared_ptr<ColorSet> getDefaultColors();
+		static shared_ptr<ColorSet> getDefaultColors() { return nullptr; };
 		// foreground, background, font
 		static shared_ptr<ColorSet> get();
 		void setup();
-		int find(ColorSet::ColorGroup group, ColorName name);
-		void setupBasicColors(ColorSet::ColorGroup type, std::array<int, COLORNAME_COUNT>);
 
-		void add(ColorSet::ColorGroup group, int fore, int back, int text, int other, int lightest, int darkest);
-
-		void add(ColorSet::ColorGroup group, ColorName fore, ColorName back, ColorName text, ColorName other, ColorName lightest, ColorName darkest);
-
-		void add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& other, const ofColor& lightest, const ofColor& darkest);
-
-		void add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& other, const ofColor& lightest, const ofColor& darkest);
-
-		void AddColorRow(ColorSet::ColorGroup group, ColorName name, int val);
+		void add(const ColorSet::ColorGroup group, int fore, int back, int text, int other, int lightest, int darkest);
 
 		static void setSmallest(int i) { getprivateData()->smallest = i; }
 		static int  getSmallest() { return getprivateData()->smallest; }
 		static void setCurrent(int i) { getprivateData()->currentColor = i; }
 		static int  getCurrent() { return getprivateData()->currentColor; }
-		static std::map<std::pair <ColorSet::ColorGroup, ColorList::ColorName>, int>& getTable() { return getprivateData()->colorTable; }
-		static void setColorTableItem(pair <ColorSet::ColorGroup, ColorName> p, int i) { getprivateData()->colorTable[p] = i; }
 		static vector<shared_ptr<ColorSet>>& getList() { return getprivateData()->colorlist; }
 		static shared_ptr<ColorSet> getListItem(int i);
 		// there must always be at least one color

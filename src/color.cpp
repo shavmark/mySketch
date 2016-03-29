@@ -7,20 +7,10 @@
 
 namespace Software2552 {
 	shared_ptr<Colors::colordata> Colors::privateData=nullptr; // declare static data
-	
-	ColorSet::ColorSet(const ColorGroup& groupIn) :objectLifeTimeManager() {
-		setGroup(groupIn);
-		// always set a color to avoid bad errors
-		setSetcolors(5, ofColor::blue.getHex(), ofColor::orangeRed.getHex(), ofColor::azure.getHex(), ofColor::black.getHex(), ofColor::white.getHex());
-	}
-	ColorSet::ColorSet(const ColorGroup& groupIn, const ofColor& color1, const ofColor& color2, const ofColor& color3, const ofColor& color4, const ofColor& color5) : objectLifeTimeManager() {
-		// always store as hex
-		setGroup(groupIn);
-		setSetcolors(5, color1.getHex(), color2.getHex(), color3.getHex(), color4.getHex(), color5.getHex());
-	}
-	ColorSet::ColorSet(const ColorGroup&groupIn, int color1, int color2, int color3, int color4, int color5) : objectLifeTimeManager() {
-		setGroup(groupIn);
-		setSetcolors(5, color1, color2, color3, color4, color5);
+
+	ColorSet::ColorSet(const ColorGroup groupIn, int fore, int back, int text, int other, int lightest, int darkest) : objectLifeTimeManager() {
+		group = groupIn;
+		setSetcolors(6, fore, back, text, other, lightest, darkest);
 	}
 	void ColorSet::setSetcolors(int c, ...) {
 		colors.clear();
@@ -32,13 +22,15 @@ namespace Software2552 {
 		}
 		va_end(args);
 	}
-
-	shared_ptr<ColorSet> ColorList::getDefaultColors() {
-		if (getprivateData()->defaultColorset == nullptr) {
-			getprivateData()->defaultColorset = std::make_shared<ColorSet>(ColorSet::Default);
+	bool ColorSet::lessThan(const ColorSet& j, ColorGroup group) {
+		if (isExpired() || (group != Random && getGroup() != j.getGroup())) {
+			return false;
 		}
-		++(*getprivateData()->defaultColorset);
-		return getprivateData()->defaultColorset;
+		return *this > j;
+	}
+	ColorSet& ColorSet::operator=(const ColorSet& rhs) {
+		*this = rhs;
+		return *this;
 	}
 
 	// get a color set if the current one is not set or if its expired
@@ -103,49 +95,13 @@ namespace Software2552 {
 		return getprivateData()->colorlist[i]; 
 	}
 
-	// make a bunch of colors that match using various techniques
-	// return hex color
-	int ColorList::find(ColorSet::ColorGroup group, ColorName name)	{
-		pair <ColorSet::ColorGroup, ColorName> p (group, name);
-		auto it = getTable().find(p);
-		if (it != getTable().end()) {
-			return it->second;
-		}
-		return 0; // none found
-	}
 	shared_ptr<Colors::colordata> ColorList::getprivateData() {
 		if (privateData == nullptr) {
 			privateData = std::make_shared<colordata>();
 		}
 		return privateData;
 	}
-
-	void ColorList::AddColorRow(ColorSet::ColorGroup group, ColorName name, int val) {
-		setColorTableItem(pair<ColorSet::ColorGroup, ColorName>(group, name), val);
-		int i = find(group, name); // for testing
-
-	}
-	// use the build the sets 
-	void ColorList::setupBasicColors(ColorSet::ColorGroup group, std::array<int, COLORNAME_COUNT>a) {
-		// fixed list 
-		//bugbug allow any number of colors per group, these 14 are special sets from the book
-		AddColorRow(group, A, a[0]);
-		AddColorRow(group, B, a[1]);
-		AddColorRow(group, C, a[2]);
-		AddColorRow(group, D, a[3]);
-		AddColorRow(group, E, a[4]);
-		AddColorRow(group, F, a[5]);
-		AddColorRow(group, G, a[6]);
-		AddColorRow(group, H, a[7]);
-		AddColorRow(group, I, a[8]);
-		AddColorRow(group, J, a[9]);
-		AddColorRow(group, K, a[10]);
-		AddColorRow(group, L, a[11]);
-		AddColorRow(group, M, a[12]);
-		AddColorRow(group, N, a[13]);
-		AddColorRow(group, O, a[14]);
-	}
-	void ColorList::add(ColorSet::ColorGroup group, int fore, int back, int text, int other, int lightest, int darkest) { 
+	void ColorList::add(const ColorSet::ColorGroup group, int fore, int back, int text, int other, int lightest, int darkest) { 
 		// colors stored as hex
 		shared_ptr<ColorSet> s = std::make_shared<ColorSet>(group,
 			fore,
@@ -159,42 +115,6 @@ namespace Software2552 {
 		getList().push_back(s);
 	}
 
-	void ColorList::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, ColorName text, ColorName lightest, ColorName darkest) {
-
-		shared_ptr<ColorSet> s = std::make_shared<ColorSet>(group,
-			find(group, fore),
-			find(group, back),
-			find(group, text),
-			find(group, lightest),
-			find(group, darkest)
-			);
-		//s->setDarkest(x);
-		getList().push_back(s);
-	}
-	void ColorList::add(ColorSet::ColorGroup group, ColorName fore, ColorName back, const ofColor& text, const ofColor& lightest, const ofColor& darkest) {
-
-		shared_ptr<ColorSet> s = std::make_shared<ColorSet>(group,
-			find(group, fore),
-			find(group, back),
-			text.getHex(),
-			lightest.getHex(),
-			darkest.getHex()
-			);
-
-		getList().push_back(s);
-	}
-	void ColorList::add(ColorSet::ColorGroup group, const ofColor& fore, const ofColor& back, const ofColor& text, const ofColor& other, const ofColor& lightest, const ofColor& darkest);
-
-		shared_ptr<ColorSet> s = std::make_shared<ColorSet>(group,
-			fore.getHex(),
-			back.getHex(),
-			text.getHex(),
-			lightest.getHex(),
-			darkest.getHex()
-			);
-
-		getList().push_back(s);
-	}
 	ColorSet::ColorGroup ColorSet::setGroup(const string&name) {
 		if (name == "Modern") {
 			return Modern;
@@ -225,16 +145,6 @@ namespace Software2552 {
 		}
 	}
 
-	bool ColorSet::lessThan(const ColorSet& j, ColorGroup group) {
-		if (isExpired() || (group != Random && getGroup() != j.getGroup())) {
-			return false;
-		}
-		return *this > j;
-	}
-	ColorSet& ColorSet::operator=(const ColorSet& rhs) {
-		*this = rhs;
-		return *this;
-	}
 
 	//http://www.creativecolorschemes.com/resources/free-color-schemes/art-deco-color-scheme.shtml
 	void ColorList::setup() {
@@ -255,13 +165,12 @@ namespace Software2552 {
 				{ 'K',  0xF3541B },{ 'L',  0xFE872B },{ 'M',  0x8FD173 },{ 'N',  0xB7B96B },{ 'O',  0xAD985F } };
 
 			std::unordered_map<char, int>  earthtone ={
-			{ 'A',0x493829 },{ 'B',  0x816C5B },{ 'B',  0xA9A18C },{ 'B',  0x613318 },{ 'B',  0x855723 },{ 'B',  0xB99C6B },{ 'B',  0x8F3B1B },{ 'B', 0xD57500 },
-			{ 'B',  0xDBCA69 },{ 'B',  0x404F24 },{ 'B',  0x668D3C },{ 'B',  0xBDD09F },{ 'B',  0x4E6172 },{ 'B',  0x83929F },{ 'B',  0xA3ADB8} };
+			{ 'A',0x493829 },{ 'B',  0x816C5B },{ 'C',  0xA9A18C },{ 'D',  0x613318 },{ 'E',  0x855723 },{ 'F',  0xB99C6B },{ 'G',  0x8F3B1B },{ 'H', 0xD57500 },
+			{ 'I',  0xDBCA69 },{ 'J',  0x404F24 },{ 'K',  0x668D3C },{ 'L',  0xBDD09F },{ 'M',  0x4E6172 },{ 'N',  0x83929F },{ 'O',  0xA3ADB8} };
 
-			setupBasicColors(ColorSet::Modern, modern);
 			//A C B D A C
-			add(ColorSet::Modern, 0x003F53, 0x64B1D1, 0x3994B3, 0x00626D, 0x003F53, 0x64B1D1);
-
+			add(ColorSet::Modern, modern['A'], modern['C'], modern['B'], modern['D'], modern['A'], modern['C']);
+			/*
 			add(ColorSet::Modern, E, D, ofColor::black.getHex(), ofColor::white.getHex());
 
 			add(ColorSet::Modern, N, M, ofColor::white, ofColor::white);
@@ -317,7 +226,7 @@ namespace Software2552 {
 			add(ColorSet::White, ofColor::white, ofColor::black, ofColor::blue, ofColor::white); 
 			add(ColorSet::RedBlue, ofColor::red, ofColor::lightCoral, ofColor::blue, ofColor::indianRed);
 			add(ColorSet::Default, ofColor::red, ofColor::blue, ofColor::white, ofColor::green);
-
+			*/
 		}
 
 #if 0

@@ -236,8 +236,8 @@ namespace Software2552 {
 	}
 	bool AnimiatedColor::readFromScript(const Json::Value &data) {
 		// set defaults or read from data
-		setColor(Colors::getFirstColors(color.getGroup())->getOfColor(Colors::foreColor));
-		animateTo(Colors::getLastColors(color.getGroup())->getOfColor(Colors::foreColor));
+		setColor(ofColor(Colors::getFirstColors(color.getGroup())->getHex(Colors::lightestColor)));
+		animateTo(ofColor(Colors::getFirstColors(color.getGroup())->getHex(Colors::darkestColor)));
 		setDuration(0.5f);
 		setRepeatType(LOOP_BACK_AND_FORTH);
 		setCurve(LINEAR);
@@ -378,7 +378,7 @@ namespace Software2552 {
 	bool ColorChoice::readFromScript(const Json::Value &data) {
 		string colorgroup;
 		READSTRING(colorgroup, data);
-		group = ColorSet::setGroup(colorgroup);
+		//bugbug not sure what to do here group = ColorSet::setGroup(colorgroup);
 		return true;
 	}
 	bool Point3D::readFromScript(const Json::Value &data) {
