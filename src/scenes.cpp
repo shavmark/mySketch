@@ -71,6 +71,8 @@ namespace Software2552 {
 
 	bool Stage::create(const Json::Value &data) { 
 
+		colors = std::make_shared<Colors>(ColorSet::ColorGroup::Extreme);// setup colors bugbug get from json
+
 		setBackground(data, std::make_shared<Background>());
 
 		return myCreate(data); 
@@ -132,7 +134,9 @@ namespace Software2552 {
 		for (auto& a : animatables) {
 			a->getDefaultPlayer()->updateForDrawing();
 		}
-
+		if (colors != nullptr) {
+			colors->update();
+		}
 		myUpdate();
 
 	}

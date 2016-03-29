@@ -236,8 +236,8 @@ namespace Software2552 {
 	}
 	bool AnimiatedColor::readFromScript(const Json::Value &data) {
 		// set defaults or read from data
-		setColor(ofColor(Colors::getFirstColors(color.getGroup())->getHex(Colors::lightestColor)));
-		animateTo(ofColor(Colors::getFirstColors(color.getGroup())->getHex(Colors::darkestColor)));
+		setColor(ofColor(Colors::getLightest()));
+		animateTo(ofColor(Colors::getDarkest()));
 		setDuration(0.5f);
 		setRepeatType(LOOP_BACK_AND_FORTH);
 		setCurve(LINEAR);
@@ -570,7 +570,7 @@ namespace Software2552 {
 
 	void Text::Role::drawText(const string &s, int x, int y) {
 		ofPushStyle();
-		Colors::setFontColor();
+		ofSetColor(Colors::getFontColor());
 		Font font;
 		font.get().drawString(s, x, y);
 		ofPopStyle();

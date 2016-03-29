@@ -22,35 +22,6 @@ namespace Software2552 {
 		}
 		va_end(args);
 	}
-	bool ColorSet::lessThan(const ColorSet& j, ColorGroup group) {
-		if (isExpired() || (group != Random && getGroup() != j.getGroup())) {
-			return false;
-		}
-		return *this > j;
-	}
-	ColorSet& ColorSet::operator=(const ColorSet& rhs) {
-		*this = rhs;
-		return *this;
-	}
-
-	// get a color set if the current one is not set or if its expired
-	shared_ptr<ColorSet> ColorList::get() {
-		if (getListItem(getCurrent()) == nullptr) {
-			return getDefaultColors();
-		}
-		// if first time in set things up
-		if (getSmallest() < 0 || getListItem(getCurrent())->refreshAnimation()) {
-			getNextColors(); 
-		}
-		// no data or no match found in data
-		if (getSmallest() < 0) {
-			return getDefaultColors();
-		}
-		if (getListItem(getCurrent()) != nullptr) {
-			++(*getListItem(getCurrent()));
-		}
-		return getListItem(getCurrent());
-	}
 
 	void ColorList::update() {
 		// clean up deleted items every so often
@@ -59,60 +30,51 @@ namespace Software2552 {
 		}
 		// remove expired colors
 		removeExpiredItems(getList());
-	}
 
-	shared_ptr<ColorSet> ColorList::getFirstColors(ColorSet::ColorGroup group) {
-		for (const auto& a : getList()) {
-			if (a->getGroup() == group) {
-				return a;
-			}
+		//bugbug call this at the right time
+		if (getCurrentColor() && ofRandom(0,100) > 80) {
+			getNextColors(getCurrentColor()->getGroup());
 		}
-		return getDefaultColors();
+	}
+	// return current color, track its usage count
+	shared_ptr<ColorSet> ColorList::getCurrentColor() {
+		if (privateData == nullptr) {
+			return nullptr;
+		}
+		if (privateData->currentColor) {
+			++(*privateData->currentColor); // mark usage
+			return privateData->currentColor;
+		}
+		return nullptr;
 	}
 
 	// get next color based on type and usage count
 	// example: type==cool gets the next cool type, type=Random gets any next color
 	shared_ptr<ColorSet> ColorList::getNextColors(ColorSet::ColorGroup group) {
-		if (getSmallest() < 0) {
-			// first call 
-			setSmallest(0);
-			setCurrent(0);
-		}
-		// find smallest of type
-		//setSmallest(0); // code assume some data loaded
-		for (int i = 0; i < getList().size(); ++i) {
-			if (getListItem(getSmallest())->lessThan(*getListItem(i), group)) {
-				setSmallest(i);
-				setCurrent(i);
+		if (getCurrentColor() != nullptr) {
+			if (getCurrentColor()->getGroup() != group) {
+				// new group, delete current group
+				setCurrentColor(nullptr);
 			}
 		}
-		return getListItem(getCurrent());
-	}
-	shared_ptr<ColorSet> ColorList::getListItem(int i) {
-		if (i < 0 || i >= getprivateData()->colorlist.size())	{
-			return nullptr;
+		// find a match
+		for (auto it = getList().begin(); it != getList().end(); ++it) {
+			if ((*it)->getGroup() == group) {
+				if (getCurrentColor() == nullptr || getCurrentColor()->getUsage() >= (*it)->getUsage()) {
+					// first time in or a color as less usage than current color
+					setCurrentColor(*it);
+					break;
+				}
+			}
 		}
-		return getprivateData()->colorlist[i]; 
-	}
-
-	shared_ptr<Colors::colordata> ColorList::getprivateData() {
-		if (privateData == nullptr) {
-			privateData = std::make_shared<colordata>();
-		}
-		return privateData;
+		return getCurrentColor(); // maybe the current color is the best one after all
 	}
 	void ColorList::add(const ColorSet::ColorGroup group, int fore, int back, int text, int other, int lightest, int darkest) { 
 		// colors stored as hex
 		shared_ptr<ColorSet> s = std::make_shared<ColorSet>(group,
-			fore,
-			back,
-			text,
-			other,
-			lightest,
-			darkest
-			);
+			fore,	back,	text,	other,	lightest,	darkest);
 
-		getList().push_back(s);
+		getList().push_front(s);
 	}
 
 	ColorSet::ColorGroup ColorSet::setGroup(const string&name) {
@@ -168,7 +130,7 @@ namespace Software2552 {
 			{ 'A',0x493829 },{ 'B',  0x816C5B },{ 'C',  0xA9A18C },{ 'D',  0x613318 },{ 'E',  0x855723 },{ 'F',  0xB99C6B },{ 'G',  0x8F3B1B },{ 'H', 0xD57500 },
 			{ 'I',  0xDBCA69 },{ 'J',  0x404F24 },{ 'K',  0x668D3C },{ 'L',  0xBDD09F },{ 'M',  0x4E6172 },{ 'N',  0x83929F },{ 'O',  0xA3ADB8} };
 
-			//A C B D A C
+			//A C B D A C see the color doc to fill these in. use the 4 colors then pick the lightest and darkest 
 			add(ColorSet::Modern, modern['A'], modern['C'], modern['B'], modern['D'], modern['A'], modern['C']);
 			/*
 			add(ColorSet::Modern, E, D, ofColor::black.getHex(), ofColor::white.getHex());

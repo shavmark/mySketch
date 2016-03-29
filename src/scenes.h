@@ -95,10 +95,12 @@ namespace Software2552 {
 		forward_list<shared_ptr<ActorBasics>> animatables;
 		forward_list<shared_ptr<Camera>> cameras;
 		forward_list<shared_ptr<Light>> lights;
+		shared_ptr<Colors> colors = nullptr;
 		//bugbug can put more things like spheres here once spheres work and if it makes sense
 
 		Material material;//bugbug need to learn this but I expect it pairs with material, just make a vector<pair<>>
 		Director director;
+
 		void draw3d();
 
 	};

@@ -1,6 +1,7 @@
 #pragma once
 #include "2552software.h"
 #include "animation.h"
+#include <forward_list>
 
 #include <cstdarg>
 
@@ -18,6 +19,9 @@ namespace Software2552 {
 		enum ColorGroup {
 			Modern, Smart, Extreme, EarthTone, BuiltIn, Default, Black, White, Blue, RedBlue, Random//only modern so far, ArtDeco, Warm, Cool, Stark, Pastel, LightValue, DarkValue, MediumValue, Random
 		};
+		enum ColorType {
+			Fore, Back, Text, Other, Lightest, Darkest
+		};
 		//bugbug color set may need 4 or more colors once we do more with graphics
 		// something like fore/back/text/other[n], not sure, or maybe we
 		// just use multiple ColorSets, find out more as we continue on
@@ -27,134 +31,100 @@ namespace Software2552 {
 		int getHex(int index) const  {return colors[index];	}
 		bool operator== (const ColorSet& rhs) {	return getGroup() == rhs.getGroup();}
 		// return true if less than, and both of the desired type or Random
-		bool lessThan(const ColorSet& j, ColorGroup type);
-		ColorSet& operator=(const ColorSet& rhs);
 		int size() { return colors.size(); }
+		ColorSet& operator++() { usage++; return *this; }
+		int getUsage() { return usage; }
 	private:
 		void setSetcolors(int c, ...);
 		ColorGroup group;
+		int usage = 0;// usage count
 		vector<int> colors; //hex values of all matching colors
 	};
 
 	// global color data
 	class ColorList {
 	public:
-		class ColorList() {
+		class ColorList(ColorSet::ColorGroup group) {
 			// there must always be at least one color
+			privateData = std::make_shared<colordata>();
+			getNextColors(group);
 			setup();
 		}
 		//color naming modeled after http://www.creativecolorschemes.com/products/ccs1/rgbColorGuide.shtml
 		// names of customer colors, when paired they are a color set
-		enum ColorName {
-			// make sure A-O are just names, the other names are hex values
-			A, B, C, D, E, F, G, H, I, J, K, L, M, N, O
-		};
-		// known colors, these are indexs into the color data
-		enum ColorUse {foreColor,backColor,	fontColor, lightestColor, darkestColor
-		};
 
 		void update();
+		void setup();
 
 		class colordata {
 		public:
-			colordata() {
-				currentColor = -1;
-				smallest = -1;
-			}
-			vector<shared_ptr<ColorSet>> colorlist;
-			int currentColor;
-			int smallest;//index of smallest value
-			int lightest = 0;
-			int darkest = 255;
-			shared_ptr<ColorSet> defaultColorset = nullptr;
+			forward_list<shared_ptr<ColorSet>> colorlist;
+			shared_ptr<ColorSet> currentColor = nullptr;
 		};
 
-
-		static shared_ptr<ColorSet> getCurrentColors() { return get(); }
 		// call getNext at start up and when ever colors should change
 		// do not break colors up or things will not match
 		// get next color based on type and usage count
 		// example: type==cool gets the next cool type, type=Random gets any next color
-		static shared_ptr<ColorSet> getNextColors(ColorSet::ColorGroup type = ColorSet::ColorGroup::Default);
-		static shared_ptr<ColorSet> getFirstColors(ColorSet::ColorGroup group);
-
-		static int LightestColor() { return getprivateData()->lightest; }
-		static int DarkestColor() { return getprivateData()->darkest; }
-		static void setLightest(int c) { getprivateData()->lightest = c; }
-		static void setDarkest(int c) { getprivateData()->darkest = c; }
+		static shared_ptr<ColorSet> getNextColors(ColorSet::ColorGroup group = ColorSet::ColorGroup::Default);
+		static shared_ptr<ColorSet> getCurrentColor();
 
 	protected:
-		template<typename T> void removeExpiredItems(vector<shared_ptr<T>>&v) {
-			v.erase(std::remove_if(v.begin(), v.end(), objectLifeTimeManager::OKToRemove), v.end());
+		template<typename T> void removeExpiredItems(forward_list<shared_ptr<T>>&v) {
+			v.remove_if(objectLifeTimeManager::OKToRemove);
 		}
 
-		static shared_ptr<colordata> privateData;// never call directly to assure allocation
-		static shared_ptr<colordata> getprivateData();
-		static shared_ptr<ColorSet> getDefaultColors() { return nullptr; };
-		// foreground, background, font
-		static shared_ptr<ColorSet> get();
-		void setup();
 
 		void add(const ColorSet::ColorGroup group, int fore, int back, int text, int other, int lightest, int darkest);
 
-		static void setSmallest(int i) { getprivateData()->smallest = i; }
-		static int  getSmallest() { return getprivateData()->smallest; }
-		static void setCurrent(int i) { getprivateData()->currentColor = i; }
-		static int  getCurrent() { return getprivateData()->currentColor; }
-		static vector<shared_ptr<ColorSet>>& getList() { return getprivateData()->colorlist; }
-		static shared_ptr<ColorSet> getListItem(int i);
-		// there must always be at least one color
+	private:
+		static shared_ptr<colordata> privateData;// never call directly to assure allocation
+		static void setCurrentColor(shared_ptr<ColorSet>c) { privateData->currentColor = c; }
+		static forward_list<shared_ptr<ColorSet>>  getList() { return privateData->colorlist; }
 	};
 
 
 	// color helpers
 	class Colors : public ColorList {
 	public:
-		Colors() : ColorList(){		}
+		Colors(ColorSet::ColorGroup group) : ColorList(group){		}
 		// hue helpers, example getHue(getBackground()) bugbug maybe cache some data if needed
 		static float getSaturation(int index) {
-			return ofColor().fromHex(getCurrentColors()->getHex(index)).getSaturation();
+			return ofColor().fromHex(getCurrentColor()->getHex(index)).getSaturation();
 		}
 		static float getBrightness(int index) {
-			return ofColor().fromHex(getCurrentColors()->getHex(index)).getBrightness();
+			return ofColor().fromHex(getCurrentColor()->getHex(index)).getBrightness();
 		}
 		static float getHue(int index) {
-			return ofColor().fromHex(getCurrentColors()->getHex(index)).getHue();
+			return ofColor().fromHex(getCurrentColor()->getHex(index)).getHue();
 		}
 		static ofColor getOfColor(int index) {
-			return ofColor().fromHex(getCurrentColors()->getHex(index));
+			return ofColor().fromHex(getCurrentColor()->getHex(index));
 		}
 		static ofFloatColor getFloatColor(int index) {
-			return ofFloatColor().fromHex(getCurrentColors()->getHex(index));
+			return ofFloatColor().fromHex(getCurrentColor()->getHex(index));
 		}
 		// more like painting
 		static float getHueAngle(int index)	{
-			return ofColor().fromHex(getCurrentColors()->getHex(index)).getHueAngle();
+			return ofColor().fromHex(getCurrentColor()->getHex(index)).getHueAngle();
 		}
 		static int getForeground() {
-			return getCurrentColors()->getHex(foreColor);
-		}
-		static int getLightest() {
-			return getFontColor();
+			return getCurrentColor()->getHex(ColorSet::ColorType::Fore);
 		}
 		static  int getBackground() {
-			return getCurrentColors()->getHex(backColor);
+			return getCurrentColor()->getHex(ColorSet::ColorType::Back);
 		}
 		static  int getFontColor() {
-			if (getCurrentColors()->size() < fontColor) {
-				return getForeground(); // no need to force a font color
-			}
-			return getCurrentColors()->getHex(fontColor);
+			return getCurrentColor()->getHex(ColorSet::ColorType::Text);
 		}
-		// set current font color
-		static void setFontColor() {
-			ofSetHexColor(getFontColor());
+		static int getLightest() {
+			return getCurrentColor()->getHex(ColorSet::ColorType::Lightest);
 		}
-		static void setForegroundColor() {
-			ofSetHexColor(getForeground());
+		static int getDarkest() {
+			return getCurrentColor()->getHex(ColorSet::ColorType::Darkest);
 		}
-		static void setBackgroundColor() {
-			ofSetBackgroundColorHex(getBackground());
+		static int getOther() {
+			return getCurrentColor()->getHex(ColorSet::ColorType::Other);
 		}
 
 	};
