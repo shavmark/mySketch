@@ -11,7 +11,7 @@ namespace Software2552 {
 	bool Timeline::readScript(const string& path) {
 
 		return playlist.read(path);
-	}
+	} 
 	void Timeline::start() {
 		if (playlist.getCurrent() != nullptr) {
 			playlist.getCurrent()->getStage()->setup();
